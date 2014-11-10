@@ -1,0 +1,25 @@
+[alias]
+	co = checkout
+	ci = commit
+	st = status
+	br = branch
+	hist = log --graph --date=short --decorate --oneline
+[diff]
+	renames = true
+[user]
+	name = tpywao
+	email = tpywao@gmail.com
+[http]
+[https]
+[http]
+[https]
+[http]
+[https]
+[http]
+[https]
+[http]
+[https]
+[http]
+[https]
+[http]
+[https]
