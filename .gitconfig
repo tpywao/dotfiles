@@ -4,6 +4,7 @@
 	st = status
 	br = branch
 	hist = log --graph --date=short --decorate --oneline
+	adl = add .
 [diff]
 	renames = true
 [user]
