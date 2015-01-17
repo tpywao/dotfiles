@@ -8,4 +8,5 @@ ln -sf $dir_path/.bashrc ~/.bashrc
 ln -sf $dir_path/.bash_aliases ~/.bash_aliases
 ln -sf $dir_path/.bash_git ~/.bash_git
 ln -sf $dir_path/.gitconfig ~/.gitconfig
+ln -sf $dir_path/.gitignore ~/.gitignore
 

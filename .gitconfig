@@ -1,10 +1,12 @@
 [alias]
 	co = checkout
 	ci = commit
-	st = status
+	st = status --short --branch
 	br = branch
 	hist = log --graph --date=short --decorate --oneline
-	adl = add .
+	adl = add -A .
+	ls = ls-files
+	reci = commit --amend
 [diff]
 	renames = true
 [user]
@@ -12,15 +14,7 @@
 	email = tpywao@gmail.com
 [http]
 [https]
-[http]
-[https]
-[http]
-[https]
-[http]
-[https]
-[http]
-[https]
-[http]
-[https]
-[http]
-[https]
+[color]
+	ui = auto
+[core]
+	excludesfile = $HOME/.gitignore
