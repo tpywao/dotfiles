@@ -4,7 +4,9 @@
 	st = status --short --branch
 	br = branch
 	hist = log --graph --date=short --decorate --oneline
-	adl = add -A .
+	adl = add --all
+	adt = add .
+	adm = add --update
 	ls = ls-files
 	reci = commit --amend
 [diff]
