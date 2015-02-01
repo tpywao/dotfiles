@@ -2,7 +2,7 @@
 HISTCONTROL=ignoreboth
 HISTSIZE=1000
 HISTFILESIZE=2000
-HISTIGNORE='ls:ll:la:lla:cls:fg:bg:srcbash:man '
+HISTIGNORE='ls:ll:la:lla:cls:fg:fg :bg:bg :srcbash:man :irb'
 
 # alias setting
 if [ -f ~/.bash_aliases ]; then
@@ -14,7 +14,7 @@ if [ -f ~/.bash_git ]; then
 fi
 
 # rbenv setting
-if [ -f ~/.rbenv ]; then
+if [ -d ~/.rbenv ]; then
   export PATH="$HOME/.rbenv/bin:$PATH"
   eval "$(rbenv init --no-rehash -)"
 fi
