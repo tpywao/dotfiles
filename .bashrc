@@ -9,6 +9,9 @@ if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
 fi
 
+# local setting
+export PATH="$HOME/local/bin:$PATH"
+
 # rbenv setting
 if [ -d ~/.rbenv ]; then
   export PATH="$HOME/.rbenv/bin:$PATH"
@@ -28,4 +31,10 @@ function parse_git_branch {
 function precmd() {
   PROMPT="\u@\h:\W\$(parse_git_branch) \$ "
 }
-PS1="\[\e[0;33m\]\u@\h\[\e[00m\]:\[\e[0;32m\]\W\[\e[0;31m\]\$(parse_git_branch)\[\e[00m\]\$ "
+function proml {
+  PS1="\[\e[0;32m\]\u@\h\[\e[m\]:\[\e[0;33m\]\W\[\e[0;31m\]\$(parse_git_branch)\[\e[m\]\$ "
+}
+proml
+
+export PROMPT_COMMAND='echo -ne "\033]0;${USERNAME}@${HOSTNAME}: ${PWD}\007"'
+
