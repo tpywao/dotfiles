@@ -9,6 +9,7 @@
 	adm = add --update
 	ls = ls-files
 	reci = commit --amend
+	sb = show-branch
 [diff]
 	renames = true
 [user]
