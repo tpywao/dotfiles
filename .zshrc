@@ -36,12 +36,12 @@ if is-at-least 4.3.10; then
   ## git
   zstyle ":vcs_info:git:*" check-for-changes true
   # formats %c staged, %u unstaged
-  zstyle ":vcs_info:git:*" stagedstr "%F{yellow}!"
-  zstyle ":vcs_info:git:*" unstagedstr "%F{red}+"
-  zstyle ":vcs_info:git:*" formats "%F{green}[%S]%c%u(%b)%f"
-  zstyle ":vcs_info:git:*" actionformats "%F{red}[%S] [%a]%c%u(%b)%f"
-  # zstyle ":vcs_info:git:*" formats "%F{green}%S (%b)%f"
-  # zstyle ":vcs_info:git:*" actionformats "%S [%a](%b)"
+  zstyle ":vcs_info:git:*" stagedstr "%F{yellow}+"
+  zstyle ":vcs_info:git:*" unstagedstr "%F{magenta}-"
+  zstyle ":vcs_info:git:*" formats "%F{green}(%b%f%c%u%F{green})[%S/]%f"
+  zstyle ":vcs_info:git:*" actionformats "%F{red}[%a](%b%f%c%u%f%F{red})[%S/]%f"
+  # zstyle ":vcs_info:git:*" formats "%F{green}(%b)[%S/]%f"
+  # zstyle ":vcs_info:git:*" actionformats "%F{red}[%a](%b)[%S/]%f"
 fi
 
 function vcs_prompt_info() {
@@ -50,13 +50,14 @@ function vcs_prompt_info() {
 
 
 # prompt
-PROMPT="%F{yellow}%n@%m%f:%F{green}%~%f"
+PROMPT="%F{yellow}%n@%m%f"
+PROMPT+="\$(vcs_prompt_info)"
 PROMPT+="
 "
 PROMPT+="%# "
 ## right
-RPROMPT=""
-RPROMPT+="\$(vcs_prompt_info)"
+RPROMPT="[%~]"
+# RPROMPT+="\$(vcs_prompt_info)"
 
 
 # alias
