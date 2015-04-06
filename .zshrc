@@ -38,8 +38,8 @@ if is-at-least 4.3.10; then
   # formats %c staged, %u unstaged
   zstyle ":vcs_info:git:*" stagedstr "%F{yellow}!"
   zstyle ":vcs_info:git:*" unstagedstr "%F{red}+"
-  zstyle ":vcs_info:git:*" formats "%F{green}%S%c%u(%b)%f"
-  zstyle ":vcs_info:git:*" actionformats "%F{red}%S [%a]%c%u(%b)%f"
+  zstyle ":vcs_info:git:*" formats "%F{green}[%S]%c%u(%b)%f"
+  zstyle ":vcs_info:git:*" actionformats "%F{red}[%S] [%a]%c%u(%b)%f"
   # zstyle ":vcs_info:git:*" formats "%F{green}%S (%b)%f"
   # zstyle ":vcs_info:git:*" actionformats "%S [%a](%b)"
 fi
