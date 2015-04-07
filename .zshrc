@@ -1,8 +1,9 @@
 # Setting
+# autoload
+# -U unalias, -z type zsh
 setopt print_eight_bit
 setopt prompt_subst
 autoload -Uz colors; colors
-setopt no_beep
 setopt no_tify
 setopt noflow_control
 
@@ -13,10 +14,12 @@ SAVEHIST=100000
 setopt hist_ignore_all_dups
 setopt hist_ignore_space
 setopt hist_reduce_blanks
+setopt hist_no_store
 
 # auto complete
 autoload -Uz compinit; compinit
 setopt correct
+setopt no_beep
 setopt auto_list
 setopt auto_menu
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
@@ -26,6 +29,7 @@ setopt auto_cd
 alias ...='../..'
 alias ....='../../..'
 setopt auto_pushd
+setopt pushd_ignore_dups
 
 # vcs
 autoload -Uz vcs_info
@@ -69,6 +73,8 @@ alias    lh='ls -d .*'
 alias    lla='ls -la'
 alias    llh='ls -ld .*'
 ##
+alias    vi='vim'
+alias srczsh="exec $SHELL"
 alias -g L=' | less'
 alias -g G=' | grep'
 alias    mkdir='mkdir -p'
@@ -76,31 +82,35 @@ alias    mkdir='mkdir -p'
 
 # keybind
 bindkey -e
+# ^ ctrl, ^[ alt, ^[[Z shift+tab
 ## cursor
 bindkey "^F" forward-char
 bindkey "^B" backward-char
 bindkey "^A" beginning-of-line
 bindkey "^E" end-of-line
+bindkey "^[f" forward-word
+bindkey "^[b" backward-word
 ## delete
 bindkey "^H" backward-delete-char
 bindkey "^D" delete-char-or-list
 bindkey "^W" backward-kill-word
 bindkey "^K" kill-line
 bindkey "^U" kill-whole-line
+## input
+bindkey "^M" accept-line
+bindkey "^Y" yank
+bindkey "^Z" undo
+bindkey "^[[Z" reverse-menu-complete
 ## history
-autoload history-search-end
+autoload -Uz history-search-end
 zle -N history-beginning-search-backward-end history-search-end
 zle -N history-beginning-search-forward-end history-search-end
 bindkey "^P" history-beginning-search-backward-end
 bindkey "^N" history-beginning-search-forward-end
-bindkey '^R' history-incremental-pattern-search-backward
-bindkey '^S' history-incremental-pattern-search-forward
+bindkey "^R" history-incremental-pattern-search-backward
+bindkey "^S" history-incremental-pattern-search-forward
 ##
-bindkey "^G" send-break
-bindkey "^M" accept-line
 bindkey "^L" clear-screen
-bindkey "^Z" undo
-bindkey "^[[Z" reverse-menu-complete
 
 
 # pre
