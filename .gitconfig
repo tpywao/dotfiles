@@ -12,9 +12,6 @@
 	sb = show-branch
 [diff]
 	renames = true
-[user]
-	name = tpywao
-	email = tpywao@gmail.com
 [color]
 	ui = auto
 [core]

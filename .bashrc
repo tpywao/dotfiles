@@ -5,8 +5,8 @@ HISTFILESIZE=2000
 HISTIGNORE='ls:ll:la:lla:cls:fg:fg :bg:bg :srcbash:man :irb'
 
 # alias setting
-if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
+if [ -f ~/.bashrc.aliases ]; then
+    . ~/.bashrc.aliases
 fi
 
 # local setting

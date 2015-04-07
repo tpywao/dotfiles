@@ -12,7 +12,7 @@ case $shell in
     ;;
   *bash )
     ln -si $dir_path/.bashrc ~/.bashrc
-    ln -si $dir_path/.bash_aliases ~/.bash_aliases
+    ln -si $dir_path/.bashrc.aliases ~/.bashrc.aliases
     ;;
 esac
 
