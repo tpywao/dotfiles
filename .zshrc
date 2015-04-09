@@ -26,8 +26,6 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 # cd
 setopt auto_cd
-alias ...='../..'
-alias ....='../../..'
 setopt auto_pushd
 setopt pushd_ignore_dups
 
@@ -66,18 +64,19 @@ RPROMPT="[%~]"
 
 # alias
 ## ls
-alias -g ls='ls -F'
-alias    ll='ls -l'
-alias    la='ls -a'
-alias    lh='ls -d .*'
-alias    lla='ls -la'
-alias    llh='ls -ld .*'
+alias ls='ls -F'
+alias ll='ls -l'
+alias la='ls -a'
+alias lh='ls -d .*'
+alias lla='ls -la'
+alias llh='ls -ld .*'
 ##
-alias    vi='vim'
+alias vi='vim'
 alias srczsh="exec $SHELL"
+alias mkdir='mkdir -p'
+## global
 alias -g L=' | less'
 alias -g G=' | grep'
-alias    mkdir='mkdir -p'
 
 
 # keybind
