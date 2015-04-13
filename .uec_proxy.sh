@@ -2,6 +2,8 @@
 proxy=proxy.uec.ac.jp:8080
 
 set_proxy() {
+  echo "Turn on proxy for university network."
+
   export http_proxy=$proxy
   export HTTP_PROXY=$proxy
   export ftp_proxy=$proxy
@@ -16,6 +18,8 @@ set_proxy() {
 }
 
 unset_proxy() {
+  echo "Turn off proxy for university network."
+
   unset http_proxy
   unset HTTP_PROXY
   unset ftp_proxy
@@ -25,18 +29,17 @@ unset_proxy() {
   unset https_proxy
   unset HTTPS_PROXY
 
-  git config --global --unset http.proxy
-  git config --global --unset https.proxy
+  git config --global --remove-section http
+  git config --global --remove-section https
 }
 
 if [ $# = 1 ]; then
   if [ $1 = "on" ]; then
-    echo "Switch to proxy for university network"
     set_proxy
   elif [ $1 = "off" ]; then
     unset_proxy
   fi
 else
-  unset_proxy
+  echo "Please, input one operator."
 fi
 
