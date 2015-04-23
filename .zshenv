@@ -1,6 +1,9 @@
 # lang
 export LANG=ja_JP.UTF-8
 
+# path to .zshrc
+export ZDOTDIR=$HOME/.dotfiles/.zsh
+
 # gem
 export GEM_HOME="$HOME/.gem"
 
