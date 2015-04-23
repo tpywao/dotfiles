@@ -38,6 +38,8 @@ if [ $# = 1 ]; then
     set_proxy
   elif [ $1 = "off" ]; then
     unset_proxy
+  else
+    echo "Please, input 'on' or 'off'."
   fi
 else
   echo "Please, input one operator."
