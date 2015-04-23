@@ -8,7 +8,7 @@ export ZDOTDIR=$HOME/.dotfiles/.zsh
 export GEM_HOME="$HOME/.gem"
 
 # path
-typeset -U path cdpath fpath manpath
+typeset -U path PATH cdpath fpath manpath
 path=(
       # local
       $HOME/local/bin(N-/)
