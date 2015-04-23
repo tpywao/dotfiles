@@ -18,6 +18,10 @@ path=(
       $HOME/local/bin(N-/)
       $GEM_HOME/bin(N-/)
       )
+fpath=(
+       $ZDOTDIR/zsh-completions/src(N-/)
+       $fpath
+       )
 
 # rbenv
 if [ -d $HOME/.rbenv ]; then
