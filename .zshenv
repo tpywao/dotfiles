@@ -10,13 +10,13 @@ export GEM_HOME="$HOME/.gem"
 # path
 typeset -U path cdpath fpath manpath
 path=(
+      # local
+      $HOME/local/bin(N-/)
+      $GEM_HOME/bin(N-/)
       /bin(N-/)
       /usr/bin(N-/)
       /usr/local/bin(N-/)
       $path
-      # local
-      $HOME/local/bin(N-/)
-      $GEM_HOME/bin(N-/)
       )
 fpath=(
        $ZDOTDIR/zsh-completions/src(N-/)
@@ -26,8 +26,9 @@ fpath=(
 # rbenv
 if [ -d $HOME/.rbenv ]; then
   path=(
-        $path
         $HOME/.rbenv/bin(N-/)
+        $path
         )
   eval "$(rbenv init --no-rehash - zsh)"
+  . $HOME/.rbenv/completions/rbenv.zsh
 fi
