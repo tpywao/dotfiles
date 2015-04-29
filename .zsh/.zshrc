@@ -1,9 +1,10 @@
 # Setting
 # autoload
 # -U unalias, -z type zsh
+autoload -Uz colors; colors
+autoload -Uz add-zsh-hook
 setopt print_eight_bit
 setopt prompt_subst
-autoload -Uz colors; colors
 setopt no_tify
 setopt noflow_control
 
@@ -111,6 +112,5 @@ bindkey "^S" history-incremental-pattern-search-forward
 ##
 bindkey "^L" clear-screen
 
-
-# pre
-precmd () { vcs_info }
+# hook
+add-zsh-hook precmd vcs_info
