@@ -9,7 +9,7 @@ setopt no_tify
 setopt noflow_control
 
 # history
-HISTFILE=~/.zsh_history
+HISTFILE=$HOME/.zsh_history
 HISTSIZE=20000
 SAVEHIST=100000
 setopt hist_ignore_all_dups
