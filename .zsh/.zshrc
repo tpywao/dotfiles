@@ -53,7 +53,12 @@ function vcs_prompt_info() {
 
 
 # prompt
-PROMPT="%F{yellow}%n@%m%f"
+function remote_host_name_color() {
+  [[ -n $REMOTEHOST ]] && echo -n "%f%F{cyan}"
+}
+## default
+PROMPT="%F{yellow}%n@"
+PROMPT+="\$(remote_host_name_color)%m%f"
 PROMPT+="\$(vcs_prompt_info)"
 PROMPT+="
 "
