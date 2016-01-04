@@ -13,9 +13,9 @@ path=(
       # local
       $HOME/local/bin(N-/)
       $GEM_HOME/bin(N-/)
-      /bin(N-/)
-      /usr/bin(N-/)
       /usr/local/bin(N-/)
+      /usr/bin(N-/)
+      /bin(N-/)
       $path
       )
 fpath=(
