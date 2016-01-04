@@ -24,11 +24,12 @@ fpath=(
        )
 
 # rbenv
-if [ -d $HOME/.rbenv ]; then
+export RBENV_ROOT="$HOME/.rbenv"
+if [ -d $RBENV_ROOT ]; then
   path=(
-        $HOME/.rbenv/bin(N-/)
+        $RBENV_ROOT/bin(N-/)
         $path
         )
   eval "$(rbenv init --no-rehash - zsh)"
-  . $HOME/.rbenv/completions/rbenv.zsh
+  . $RBENV_ROOT/completions/rbenv.zsh
 fi
