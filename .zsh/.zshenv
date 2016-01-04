@@ -33,3 +33,17 @@ if [ -d $RBENV_ROOT ]; then
   eval "$(rbenv init --no-rehash - zsh)"
   . $RBENV_ROOT/completions/rbenv.zsh
 fi
+
+# pyenv
+export PYENV_ROOT="$HOME/.pyenv"
+if [ -d $PYENV_ROOT ]; then
+  path=(
+        $PYENV_ROOT/bin(N-/)
+        $path
+        )
+  eval "$(pyenv init --no-rehash - zsh)"
+  eval "$(pyenv virtualenv-init - zsh)"
+  . $PYENV_ROOT/completions/pyenv.zsh
+fi
+
+
