@@ -19,6 +19,7 @@ path=(
       $path
       )
 fpath=(
+       $HOME/.completions.local(N-/)
        $ZDOTDIR/zsh-completions/src(N-/)
        $fpath
        )
