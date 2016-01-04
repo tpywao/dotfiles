@@ -10,6 +10,7 @@
 	ls = ls-files
 	reci = commit --amend
 	sb = show-branch
+	dfw = diff --ignore-all-space
 [diff]
 	renames = true
 [color]
