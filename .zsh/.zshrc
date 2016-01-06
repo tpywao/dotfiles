@@ -54,7 +54,7 @@ function vcs_prompt_info() {
 
 # prompt
 function remote_host_name_color() {
-  [[ -n $REMOTEHOST ]] && echo -n "%f%F{cyan}"
+  [[ -n $SSH_TTY ]] && echo -n "%f%F{cyan}"
 }
 ## default
 PROMPT="%F{yellow}%n@"
