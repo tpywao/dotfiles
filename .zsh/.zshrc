@@ -80,6 +80,9 @@ alias llh='ls -ld .*'
 alias vi='vim'
 alias srczsh="exec $SHELL"
 alias mkdir='mkdir -p'
+function mkcd () {
+  mkdir "$@" && cd $_
+}
 ## global
 alias -g L=' | less'
 alias -g G=' | grep'
