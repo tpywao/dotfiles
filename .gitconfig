@@ -11,6 +11,7 @@
 	reci = commit --amend
 	sb = show-branch
 	dfw = diff --ignore-all-space
+	adp = add --patch
 [diff]
 	renames = true
 [color]
