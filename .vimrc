@@ -1,5 +1,5 @@
 "
-set title
+set notitle
 set showmode
 set showcmd
 set nu
