@@ -47,4 +47,9 @@ if [ -d $PYENV_ROOT ]; then
   . $PYENV_ROOT/completions/pyenv.zsh
 fi
 
+export DIRENV_ROOT="$HOME/.direnv"
+if [ -d $DIRENV_ROOT ]; then
+  export EDITOR=vim
+  eval "$(direnv hook zsh)"
+fi
 
