@@ -1,0 +1,27 @@
+# escape key
+escape ^t^t
+
+#
+startup_message off
+autodetach on
+defscrollback 20480
+
+# statusbar
+hardstatus alwayslastline '%{= gk}[%n] %L=%-w%40L>%n %t* %+w%70< %="%H" %c %m/%d'
+
+# keybind
+bind n screen
+bind '['  eval 'prev' 'command -c select_window'
+bind '^[' eval 'prev' 'command -c select_window'
+bind ']'  eval 'next' 'command -c select_window'
+bind '^]' eval 'next' 'command -c select_window'
+bind -c select_window '['  eval 'prev' 'command -c select_window'
+bind -c select_window '^[' eval 'prev' 'command -c select_window'
+bind -c select_window ']'  eval 'next' 'command -c select_window'
+bind -c select_window '^]' eval 'next' 'command -c select_window'
+## disable
+bind x
+bind ^x
+bind c
+bind ^c
+

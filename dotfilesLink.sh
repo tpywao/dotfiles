@@ -28,3 +28,5 @@ ln -si $dir_path/.gitignore ~/.gitignore
 # tmux
 ln -si $dir_path/.tmux.conf ~/.tmux.conf
 
+# screen
+ln -si $dir_path/.screenrc ~/.screenrc

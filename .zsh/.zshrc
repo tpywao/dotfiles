@@ -78,6 +78,7 @@ alias lla='ls -la'
 alias llh='ls -ld .*'
 ##
 alias vi='vim'
+alias screen='screen -U'
 alias srczsh="exec $SHELL"
 alias mkdir='mkdir -p'
 function mkcd () {
