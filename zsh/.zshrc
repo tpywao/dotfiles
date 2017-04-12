@@ -18,7 +18,7 @@ setopt hist_reduce_blanks
 setopt hist_no_store
 
 # auto complete
-autoload -Uz compinit; compinit
+autoload -Uz compinit && compinit
 setopt correct
 setopt no_beep
 setopt auto_list
@@ -37,6 +37,8 @@ zstyle ":vcs_info:*" formats "(%s)-[%b]"
 autoload -Uz is-at-least
 if is-at-least 4.3.10; then
   ## git
+  # for git aliased by github/hub
+  # zstyle ":vcs_info:git:*" command =git
   zstyle ":vcs_info:git:*" check-for-changes true
   # formats %c staged, %u unstaged
   zstyle ":vcs_info:git:*" stagedstr "%F{yellow}+"
@@ -62,11 +64,13 @@ PROMPT+="\$(remote_host_name_color)%m%f"
 PROMPT+="\$(vcs_prompt_info)"
 PROMPT+="
 "
+PROMPT+="%F{blue}[%~]%f"
+PROMPT+="
+"
 PROMPT+="%# "
 ## right
-RPROMPT="[%~]"
-# RPROMPT+="\$(vcs_prompt_info)"
-
+# commented because: https://github.com/Guake/guake/issues/823
+# RPROMPT="[%~]"
 
 # alias
 ## ls
@@ -77,17 +81,20 @@ alias lh='ls -d .*'
 alias lla='ls -la'
 alias llh='ls -ld .*'
 ##
-alias vi='vim'
+alias vi=vim
 alias screen='screen -U'
-alias srczsh="exec $SHELL"
 alias mkdir='mkdir -p'
 function mkcd () {
   mkdir "$@" && cd $_
 }
+eval "$(hub alias -s)"
+alias pbcopy="xsel --clipboard --input"
+alias pbpaste="xsel --clipboard --output"
 ## global
 alias -g L=' | less'
 alias -g G=' | grep'
-
+alias -g F=' | fzf --reverse --select-1 --exit-0'
+alias -g C=' | pbcopy'
 
 # keybind
 bindkey -e
@@ -123,3 +130,11 @@ bindkey "^L" clear-screen
 
 # hook
 add-zsh-hook precmd vcs_info
+
+# fzf
+if [ -d $HOME/.fzf ]; then
+  source $HOME/.fzf/.fzf.zsh
+  [ -f $HOME/.fzf/fzf.functions.zsh ] && source $HOME/.fzf/fzf.functions.zsh
+fi
+
+

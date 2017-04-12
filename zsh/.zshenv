@@ -1,26 +1,27 @@
 # lang
 export LANG=ja_JP.UTF-8
 
+# ghq and etc.
+export REPOSITORIES_HOME="$HOME/local/src/repositories"
+export GHQ_ROOT=$REPOSITORIES_HOME
+# path to dotfiles dir
+export DOTFILES=$HOME/.dotfiles
 # path to .zshrc
-export ZDOTDIR=$HOME/.dotfiles/.zsh
-
-# gem
-export GEM_HOME="$HOME/.gem"
+export ZDOTDIR=$DOTFILES/zsh
 
 # path
 typeset -U path PATH cdpath fpath manpath
 path=(
       # local
       $HOME/local/bin(N-/)
-      $GEM_HOME/bin(N-/)
       /usr/local/bin(N-/)
       /usr/bin(N-/)
       /bin(N-/)
       $path
       )
 fpath=(
-       $HOME/.completions.local(N-/)
-       $ZDOTDIR/zsh-completions/src(N-/)
+       $HOME/.completions(N-/)
+       $ZDOTDIR/completions(N-/)
        $fpath
        )
 
@@ -43,8 +44,25 @@ if [ -d $PYENV_ROOT ]; then
         $path
         )
   eval "$(pyenv init --no-rehash - zsh)"
-  eval "$(pyenv virtualenv-init - zsh)"
+  # eval "$(pyenv virtualenv-init - zsh)"
+  pyenv virtualenvwrapper_lazy
   . $PYENV_ROOT/completions/pyenv.zsh
+  if type pip > /dev/null 2>&1; then
+    eval "$(pip completion --zsh)"
+  fi
+fi
+
+# golang
+export GOROOT="/usr/local/go"
+export GOPATH="/usr/local/gocode"
+if [ -d $GOROOT ] && [ -d $GOPATH ]; then
+  path=(
+        $GOPATH/bin(N-/)
+        $GOROOT/bin(N-/)
+        $path
+        )
+  export GO15VENDOREXPERIMENT=1
+  export PROJECT_HOME=$REPOSITORIES_HOME
 fi
 
 export DIRENV_ROOT="$HOME/.direnv"
