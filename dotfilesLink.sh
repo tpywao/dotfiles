@@ -17,6 +17,8 @@ case $shell in
     ;;
 esac
 
+# EditorConfig
+ln -si $dir_path/editorconfig ~/.editorconfig
 # vim
 # ln -sin $dir_path/.vim ~/.vim
 ln -si $dir_path/vimrc ~/.vimrc
