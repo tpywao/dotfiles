@@ -23,8 +23,10 @@ function cli-find-file() {
   local source_files
   local selected_files
   echo -n 'searching...'
+  # git managed
   if git rev-parse 2> /dev/null; then
     source_files=$(git ls-files)
+  # default
   else
     source_files=$(find . -type f)
   fi
