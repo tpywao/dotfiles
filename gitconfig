@@ -26,3 +26,5 @@
 	default = simple
 [include]
 	path = ~/.gitconfig.local
+[rebase]
+	autosquash = true
