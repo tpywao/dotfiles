@@ -12,6 +12,8 @@
 	sb = show-branch
 	dfw = diff --ignore-all-space
 	adp = add --patch
+	dfs = diff --staged
+	dfh = diff HEAD
 [diff]
 	renames = true
 [color]
