@@ -65,6 +65,16 @@ if [ -d $GOROOT ] && [ -d $GOPATH ]; then
   export PROJECT_HOME=$REPOSITORIES_HOME
 fi
 
+# nodebrew
+# https://github.com/hokaccha/nodebrew
+export NODEBREW_ROOT="$HOME/.nodebrew"
+if [ -d $NODEBREW_ROOT ]; then
+  path=(
+        $NODEBREW_ROOT/current/bin(N-/)
+        $path
+        )
+fi
+
 export DIRENV_ROOT="$HOME/.direnv"
 if [ -d $DIRENV_ROOT ]; then
   export EDITOR=vim
