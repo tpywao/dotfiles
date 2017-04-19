@@ -87,7 +87,7 @@ alias mkdir='mkdir -p'
 function mkcd () {
   mkdir "$@" && cd $_
 }
-eval "$(hub alias -s)"
+type hub >/dev/null 2>&1  && eval "$(hub alias -s)"
 alias pbcopy="xsel --clipboard --input"
 alias pbpaste="xsel --clipboard --output"
 ## global
