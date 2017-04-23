@@ -7,7 +7,7 @@ shell=${1:-$SHELL}
 case $shell in
   *zsh )
     zsh_path=$dir_path/zsh
-    ln -si $zsh_path/zshenv ~/.zshenv
+    ln -si $zsh_path/.zshenv ~/.zshenv
     # ln -si $zsh_path/.zshrc ~/.zshrc
     # ln -si $dir_path/.zshrc.alias ~/.zshrc.alias
     ;;
