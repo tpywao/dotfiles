@@ -28,13 +28,15 @@ set shiftwidth=2
 
 " skip initialization for vim-tiny or small.
 if isdirectory( expand("~/.vim/bundle/neobundle.vim") )
-  if !1 | finish | endif
-  if has('vim_starting')
+  if 0 | endif
+  if &compatible
     set nocompatible
-    set runtimepath+=~/.vim/bundle/neobundle.vim/
-    " call neobundle#rc(expand('~/.vim/bundle/'))
   endif
 
+  " Required
+  set runtimepath+=~/.vim/bundle/neobundle.vim/
+
+  " Required
   call neobundle#begin(expand('~/.vim/bundle/'))
 
   " Let NeoBundle manage NeoBundle
