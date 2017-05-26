@@ -43,23 +43,16 @@ if isdirectory( expand("~/.vim/bundle/neobundle.vim") )
   NeoBundleFetch 'Shougo/neobundle.vim'
 
   " My Bundles here:
-  NeoBundle 'Shougo/unite.vim'
-  NeoBundle 'The-NERD-tree'
+  NeoBundle 'tpope/vim-surround'
+  NeoBundle 'airblade/vim-gitgutter'
+  "" code syntax
+  NeoBundle 'kchmck/vim-coffee-script'
 
   call neobundle#end()
 
   filetype plugin indent on
 
   NeoBundleCheck
-
-  " NERDTree setting
-  " 隠しファイルを表示する。
-  let NERDTreeShowHidden = 1
-  " 引数なしで実行したとき、NERDTreeを実行する
-  let file_name = expand("%:p")
-  if has('vim_starting') &&  file_name == ""
-    autocmd VimEnter * execute 'NERDTree ./'
-  endif
 endif
 
 
