@@ -21,9 +21,9 @@
 [core]
 	excludesfile = $HOME/.gitignore
 [pager]
-	log = diff-highlight | less
-	show = diff-highlight | less
-	diff = diff-highlight | less
+	log = type diff-highlight >/dev/null 2>&1 && diff-highlight | less || less
+	show = type diff-highlight >/dev/null 2>&1 && diff-highlight | less || less
+	diff = type diff-highlight >/dev/null 2>&1 && diff-highlight | less || less
 [push]
 	default = simple
 [include]
