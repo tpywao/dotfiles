@@ -6,7 +6,7 @@ set_measure() {
   cp .zshrc .zshrc.org
   cp .zshenv .zshenv.org
   echo 'zmodload zsh/zprof && zprof' | cat - .zshenv.org > .zshenv
-  echo -e "if(type zporf > /dev/null); then\n  zprof\nfi" >> .zshrc
+  echo -e "if(type zprof > /dev/null) ; then\n  zprof\nfi" >> .zshrc
 }
 
 unset_measure() {
