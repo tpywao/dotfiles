@@ -43,6 +43,7 @@ if isdirectory( expand("~/.vim/bundle/neobundle.vim") )
   NeoBundleFetch 'Shougo/neobundle.vim'
 
   " My Bundles here:
+  NeoBundle 'editorconfig/editorconfig-vim'
   NeoBundle 'tpope/vim-surround'
   NeoBundle 'airblade/vim-gitgutter'
   "" code syntax
