@@ -7,11 +7,22 @@ set ruler
 set showmatch
 set list
 set listchars=eol:\ ,tab:\>-,trail:-
-" tab setting
+"" tab setting
 set expandtab
 set autoindent
 set tabstop=2
 set shiftwidth=2
+
+"" split under
+set splitbelow
+"" split right
+set splitright
+
+" netrw
+"" split under
+let g:netrw_alto = 1
+"" split right
+let g:netrw_altv = 1
 
 " set cpo-=<
 " map z $
