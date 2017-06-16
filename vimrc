@@ -12,17 +12,17 @@ set expandtab
 set autoindent
 set tabstop=2
 set shiftwidth=2
-
 "" split under
 set splitbelow
 "" split right
 set splitright
 
 " netrw
-"" split under
-let g:netrw_alto = 1
-"" split right
-let g:netrw_altv = 1
+let g:netrw_winsize = 20
+"" tree style listing
+let g:netrw_liststyle = 3
+"" No banner
+let g:netrw_banner = 0
 
 " set cpo-=<
 " map z $
