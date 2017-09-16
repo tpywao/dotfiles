@@ -13,6 +13,7 @@ export ZDOTDIR=$DOTFILES/zsh
 
 # path
 typeset -U path PATH cdpath fpath manpath
+setopt no_global_rcs
 path=(
       # local
       $LOCAL_ROOT/bin(N-/)
