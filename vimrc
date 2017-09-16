@@ -1,4 +1,5 @@
 "
+syntax on
 set notitle
 set showmode
 set showcmd
