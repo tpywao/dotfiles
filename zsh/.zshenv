@@ -1,8 +1,10 @@
 # lang
 export LANG=ja_JP.UTF-8
 
+# local
+LOCAL_ROOT=$HOME/local
 # ghq and etc.
-export REPOSITORIES_HOME="$HOME/local/src/repositories"
+export REPOSITORIES_HOME="$LOCAL_ROOT/src/repositories"
 export GHQ_ROOT=$REPOSITORIES_HOME
 # path to dotfiles dir
 export DOTFILES=$HOME/.dotfiles
@@ -13,7 +15,7 @@ export ZDOTDIR=$DOTFILES/zsh
 typeset -U path PATH cdpath fpath manpath
 path=(
       # local
-      $HOME/local/bin(N-/)
+      $LOCAL_ROOT/bin(N-/)
       /usr/local/bin(N-/)
       /usr/bin(N-/)
       /bin(N-/)
