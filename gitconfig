@@ -30,3 +30,6 @@
 	path = ~/.gitconfig.local
 [rebase]
 	autosquash = true
+[user]
+	name = tpywao
+	email = tpywao@gmail.com
