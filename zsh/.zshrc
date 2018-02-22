@@ -88,8 +88,15 @@ function mkcd () {
   mkdir "$@" && cd $_
 }
 type hub >/dev/null 2>&1  && eval "$(hub alias -s)"
-alias pbcopy="xsel --clipboard --input"
-alias pbpaste="xsel --clipboard --output"
+
+case $OSTYPE in
+  darwin*)
+    ;;
+  linux*)
+    alias pbcopy="xsel --clipboard --input"
+    alias pbpaste="xsel --clipboard --output"
+    ;;
+esac
 ## global
 alias -g L=' | less'
 alias -g G=' | grep'
@@ -133,7 +140,7 @@ add-zsh-hook precmd vcs_info
 
 # fzf
 if [ -d $HOME/.fzf ]; then
-  source $HOME/.fzf/.fzf.zsh
+  [ -f $HOME/.fzf/.fzf.zsh ] && source $HOME/.fzf/.fzf.zsh
   [ -f $HOME/.fzf/fzf.functions.zsh ] && source $HOME/.fzf/fzf.functions.zsh
 fi
 

@@ -3,6 +3,7 @@ export LANG=ja_JP.UTF-8
 
 # local
 LOCAL_ROOT=$HOME/local
+export EDITOR=vim
 # ghq and etc.
 export REPOSITORIES_HOME="$LOCAL_ROOT/src/repositories"
 export GHQ_ROOT=$REPOSITORIES_HOME
@@ -36,7 +37,14 @@ if [ -d $RBENV_ROOT ]; then
         $path
         )
   eval "$(rbenv init --no-rehash - zsh)"
-  . $RBENV_ROOT/completions/rbenv.zsh
+  case $OSTYPE in
+    darwin*)
+      . "$(brew --cellar)/rbenv/$(brew list rbenv --versions | awk '{print $NF}')/completions/rbenv.zsh"
+      ;;
+    linux*)
+      . $RBENV_ROOT/completions/rbenv.zsh
+      ;;
+  esac
 fi
 
 # pyenv
@@ -56,8 +64,16 @@ if [ -d $PYENV_ROOT ]; then
 fi
 
 # golang
-export GOROOT="/usr/local/go"
-export GOPATH="/usr/local/gocode"
+# case $OSTYPE in
+#   darwin*)
+#     # export GOROOT="/usr/local/Cellar/go/1.9/libexec"
+#     # export GOROOT="/usr/local/Cellar/go/1.9"
+#     ;;
+#   linux*)
+#     export GOROOT="/usr/local/go"
+#     ;;
+# esac
+# export GOPATH="/usr/local/gocode"
 if [ -d $GOROOT ] && [ -d $GOPATH ]; then
   path=(
         $GOPATH/bin(N-/)
@@ -78,9 +94,8 @@ if [ -d $NODEBREW_ROOT ]; then
         )
 fi
 
-export DIRENV_ROOT="$HOME/.direnv"
-if [ -d $DIRENV_ROOT ]; then
-  export EDITOR=vim
+# direnv
+if type direnv > /dev/null 2>&1; then
   eval "$(direnv hook zsh)"
 fi
 

@@ -19,7 +19,7 @@
 [color]
 	ui = auto
 [core]
-	excludesfile = $HOME/.gitignore
+	excludesfile = /Users/ke-ichi/.gitignore_global
 [pager]
 	log = type diff-highlight >/dev/null 2>&1 && diff-highlight | less || less
 	show = type diff-highlight >/dev/null 2>&1 && diff-highlight | less || less
@@ -33,3 +33,16 @@
 [user]
 	name = tpywao
 	email = tpywao@gmail.com
+[filter "lfs"]
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path = 
+[mergetool "sourcetree"]
+	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true
+[commit]
+	template = /Users/ke-ichi/.stCommitMsg

@@ -1,0 +1,4 @@
+[http]
+proxy = "http://proxy.uec.ac.jp:8080"
+[https]
+proxy = "http://proxy.uec.ac.jp:8080"

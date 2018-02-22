@@ -13,8 +13,19 @@ set_proxy() {
   export https_proxy=$proxy
   export HTTPS_PROXY=$proxy
 
-  git config --global http.proxy $proxy
-  git config --global https.proxy $proxy
+  if type -a git > /dev/null 2>&1; then
+    git config --global http.proxy $proxy
+    git config --global https.proxy $proxy
+  fi
+
+  if type -a yarn > /dev/null 2>&1; then
+    yarn config set http-proxy $proxy
+    yarn config set https-proxy $proxy
+  fi
+
+  if type -a cargo > /dev/null 2>&1; then
+    cp -f $DOTFILES/cargo/config_on_proxy $HOME/.cargo/config
+  fi
 }
 
 unset_proxy() {
@@ -29,8 +40,19 @@ unset_proxy() {
   unset https_proxy
   unset HTTPS_PROXY
 
-  git config --global --remove-section http
-  git config --global --remove-section https
+  if type -a git > /dev/null 2>&1; then
+    git config --global --remove-section http
+    git config --global --remove-section https
+  fi
+
+  if type -a yarn > /dev/null 2>&1; then
+    yarn config delete http-proxy
+    yarn config delete https-proxy
+  fi
+
+  if type -a cargo > /dev/null 2>&1; then
+    rm $HOME/.cargo/config
+  fi
 }
 
 if [ $# = 1 ]; then
