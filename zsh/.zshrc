@@ -84,6 +84,13 @@ alias llh='ls -ld .*'
 alias vi=vim
 alias screen='screen -U'
 alias mkdir='mkdir -p'
+function cdp () {
+  dir=$(echo $@(N-/))
+  if [ "$dir" = "" ]; then
+    dir=$(dirname $@)
+  fi
+  cd $dir
+}
 function mkcd () {
   mkdir "$@" && cd $_
 }
