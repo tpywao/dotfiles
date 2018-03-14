@@ -14,6 +14,9 @@ dir_path=`dirname $path`
 shell=${1:-$SHELL}
 
 case $shell in
+  *fish )
+    ln -si $dir_path/fish ~/.config/fish
+    ;;
   *zsh )
     zsh_path=$dir_path/zsh
     ln -si $zsh_path/.zshenv ~/.zshenv
