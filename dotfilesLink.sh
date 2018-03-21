@@ -1,7 +1,7 @@
 #! /bin/sh
 function __readlink_f {
   target="$1"
-  while [ -n "$target"]; do
+  while [ -n "$target" ]; do
     filepath="$target"
     cd `dirname "$filepath"`
     target=`readlink "$filepath"`
