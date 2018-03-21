@@ -45,3 +45,6 @@ ln -si $dir_path/tmux.conf ~/.tmux.conf
 
 # screen
 ln -si $dir_path/screenrc ~/.screenrc
+
+# sqlite
+ln -si $dir_path/sqliterc ~/.sqliterc
