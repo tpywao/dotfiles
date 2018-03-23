@@ -1,50 +1,39 @@
 #! /bin/sh
-function __readlink_f {
-  target="$1"
-  while [ -n "$target" ]; do
-    filepath="$target"
-    cd `dirname "$filepath"`
-    target=`readlink "$filepath"`
-  done
-  /bin/echo `pwd -P`/`basename "$filepath"`
-}
-path=`__readlink_f $0`
-dir_path=`dirname $path`
-# if ( $1 == NULL or $1 == '' )
+DOTFILES=`cd $(dirname $0) && pwd -P`
 shell=${1:-$SHELL}
 
+FZF_ROOT=$HOME/.fzf
 case $shell in
   *fish )
-    ln -si $dir_path/fish ~/.config/fish
+    ln -si $DOTFILES/fish ~/.config/fish
     ;;
   *zsh )
-    zsh_path=$dir_path/zsh
-    ln -si $zsh_path/.zshenv ~/.zshenv
-    # ln -si $zsh_path/.zshrc ~/.zshrc
-    # ln -si $dir_path/.zshrc.alias ~/.zshrc.alias
-    mkdir $HOME/.fzf
-    ln -si $dir_path/fzf/fzf.functions.zsh $HOME/.fzf/fzf.functions.zsh
+    ln -si $DOTFILES/zsh/.zshenv ~/.zshenv
+    # fzf
+    mkdir -p $FZF_ROOT
+    ln -si $DOTFILES/fzf/fzf.functions.zsh $FZF_ROOT/fzf.functions.zsh
     ;;
   *bash )
-    ln -si $dir_path/bashrc ~/.bashrc
-    ln -si $dir_path/bashrc.aliases ~/.bashrc.aliases
+    ln -si $DOTFILES/bashrc ~/.bashrc
+    ln -si $DOTFILES/bashrc.aliases ~/.bashrc.aliases
     ;;
 esac
 
 # EditorConfig
-ln -si $dir_path/editorconfig ~/.editorconfig
+ln -si $DOTFILES/editorconfig ~/.editorconfig
+
 # vim
-# ln -sin $dir_path/.vim ~/.vim
-ln -si $dir_path/vimrc ~/.vimrc
+# ln -sin $DOTFILES/.vim ~/.vim
+ln -si $DOTFILES/vimrc ~/.vimrc
 
 # git
-ln -si $dir_path/gitconfig ~/.gitconfig
+ln -si $DOTFILES/gitconfig ~/.gitconfig
 
 # tmux
-ln -si $dir_path/tmux.conf ~/.tmux.conf
+ln -si $DOTFILES/tmux.conf ~/.tmux.conf
 
 # screen
-ln -si $dir_path/screenrc ~/.screenrc
+ln -si $DOTFILES/screenrc ~/.screenrc
 
 # sqlite
-ln -si $dir_path/sqliterc ~/.sqliterc
+ln -si $DOTFILES/sqliterc ~/.sqliterc
