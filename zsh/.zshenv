@@ -73,7 +73,7 @@ fi
 #     export GOROOT="/usr/local/go"
 #     ;;
 # esac
-# export GOPATH="/usr/local/gocode"
+export GOPATH="/usr/local/gocode"
 if [ -d $GOROOT ] && [ -d $GOPATH ]; then
   path=(
         $GOPATH/bin(N-/)
