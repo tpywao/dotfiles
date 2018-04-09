@@ -29,6 +29,18 @@ fpath=(
        $fpath
        )
 
+# brew openssl
+path=(
+      /usr/local/opt/openssl/bin(N-/)
+      $path
+      )
+
+# rust
+export CARGO_ROOT="$HOME/.cargo"
+if [ -d $CARGO_ROOT ]; then
+  source $CARGO_ROOT/env
+fi
+
 # rbenv
 export RBENV_ROOT="$HOME/.rbenv"
 if [ -d $RBENV_ROOT ]; then
