@@ -7,11 +7,11 @@
 	adl = add --all
 	adt = add .
 	adm = add --update
+	adp = add --patch
 	ls = ls-files
 	reci = commit --amend
 	sb = show-branch
 	dfw = diff --ignore-all-space
-	adp = add --patch
 	dfs = diff --staged
 	dfh = diff HEAD
 [diff]
