@@ -67,8 +67,6 @@ if [ -d $PYENV_ROOT ]; then
         $path
         )
   eval "$(pyenv init --no-rehash - zsh)"
-  # eval "$(pyenv virtualenv-init - zsh)"
-  pyenv virtualenvwrapper_lazy
   . $PYENV_ROOT/completions/pyenv.zsh
   if type pip > /dev/null 2>&1; then
     eval "$(pip completion --zsh)"

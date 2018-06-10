@@ -25,6 +25,16 @@ setopt auto_list
 setopt auto_menu
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
+# pipenv
+# .zshenv に書いても動かないが...こっちに書くとなぜかちゃんと動く...
+if type pipenv > /dev/null 2>&1; then
+  # pipenv --completion
+  _pipenv() {
+    eval $(env COMMANDLINE="${words[1,$CURRENT]}" _PIPENV_COMPLETE=complete-zsh  pipenv)
+  }
+  compdef _pipenv pipenv
+fi
+
 # cd
 setopt auto_cd
 setopt auto_pushd
@@ -150,5 +160,3 @@ if [ -d $HOME/.fzf ]; then
   [ -f $HOME/.fzf/.fzf.zsh ] && source $HOME/.fzf/.fzf.zsh
   [ -f $HOME/.fzf/fzf.functions.zsh ] && source $HOME/.fzf/fzf.functions.zsh
 fi
-
-
