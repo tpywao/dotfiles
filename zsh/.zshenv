@@ -71,6 +71,8 @@ if [ -d $PYENV_ROOT ]; then
   if type pip > /dev/null 2>&1; then
     eval "$(pip completion --zsh)"
   fi
+  export WORKON_HOME="$HOME/.virtualenvs"
+  export PIPENV_VENV_IN_PROJECT=true
 fi
 
 # golang
