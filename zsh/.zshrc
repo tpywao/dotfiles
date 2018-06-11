@@ -18,7 +18,7 @@ setopt hist_reduce_blanks
 setopt hist_no_store
 
 # auto complete
-autoload -Uz compinit && compinit
+autoload -Uz compinit && compinit -C
 setopt correct
 setopt no_beep
 setopt auto_list
