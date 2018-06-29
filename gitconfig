@@ -14,6 +14,7 @@
 	dfw = diff --ignore-all-space
 	dfs = diff --staged
 	dfh = diff HEAD
+	todo = grep --heading --line-number -e TODO -e FIXME -e OPTIMEZE
 [diff]
 	renames = true
 [color]
