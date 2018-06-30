@@ -29,6 +29,9 @@ ln -si $DOTFILES/vimrc ~/.vimrc
 # git
 ln -si $DOTFILES/gitconfig ~/.gitconfig
 
+# docker
+ln -si $DOTFILES/docker/config.json ~/.docker/config.json
+
 # tmux
 ln -si $DOTFILES/tmux.conf ~/.tmux.conf
 
