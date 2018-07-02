@@ -72,7 +72,6 @@ if [ -d $PYENV_ROOT ]; then
     eval "$(pip completion --zsh)"
   fi
   export WORKON_HOME="$HOME/.virtualenvs"
-  export PIPENV_VENV_IN_PROJECT=true
 fi
 
 # golang
