@@ -29,8 +29,9 @@ fpath=(
        $fpath
        )
 
-# brew openssl
+# use brew keg-only formula
 path=(
+      /usr/local/opt/mysql-client/bin(N-/)
       /usr/local/opt/openssl/bin(N-/)
       $path
       )
