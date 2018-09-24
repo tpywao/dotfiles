@@ -119,6 +119,7 @@ alias -g L=' | less'
 alias -g G=' | grep'
 alias -g F=' | fzf --reverse --select-1 --exit-0'
 alias -g C=' | pbcopy'
+alias -g CC=' | (v=$(cat); echo -n $v) | pbcopy'
 
 # keybind
 bindkey -e
