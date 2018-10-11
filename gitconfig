@@ -15,6 +15,7 @@
 	dfs = diff --staged
 	dfh = diff HEAD
 	todo = grep --heading --line-number -e TODO -e FIXME -e OPTIMEZE
+	cpush = !git push origin `git rev-parse --abbrev-ref HEAD`
 [diff]
 	renames = true
 [color]
