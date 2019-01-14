@@ -4,9 +4,8 @@ export LANG=ja_JP.UTF-8
 # local
 LOCAL_ROOT=$HOME/local
 export EDITOR=vim
-# ghq and etc.
+# golang etc.
 export REPOSITORIES_HOME="$LOCAL_ROOT/src/repositories"
-export GHQ_ROOT=$REPOSITORIES_HOME
 # path to dotfiles dir
 export DOTFILES=$HOME/.dotfiles
 # path to .zshrc
@@ -31,10 +30,13 @@ fpath=(
 
 # use brew keg-only formula
 path=(
+      /usr/local/opt/mysql@5.7/bin
       /usr/local/opt/mysql-client/bin(N-/)
       /usr/local/opt/openssl/bin(N-/)
       $path
       )
+
+export CLOUDSDK_PYTHON=~/.pyenv/shims/python2.7
 
 # rust
 export CARGO_ROOT="$HOME/.cargo"

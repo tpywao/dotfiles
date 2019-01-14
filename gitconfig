@@ -48,3 +48,6 @@
 	trustExitCode = true
 [commit]
 	template = /Users/ke-ichi/.stCommitMsg
+[ghq]
+	root = /Users/ke-ichi/local/src/repositories
+	root = /Volumes/extssd/src
