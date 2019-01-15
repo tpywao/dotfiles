@@ -8,6 +8,7 @@ set ruler
 set showmatch
 set list
 set listchars=eol:\ ,tab:\>-,trail:-
+set clipboard+=unnamed
 "" tab setting
 set expandtab
 set autoindent
