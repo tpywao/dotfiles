@@ -1,8 +1,14 @@
 function cli-select-src() {
-  local selected_dir=$(ghq list | fzf --reverse --query "$LBUFFER")
-  if [ -n "$selected_dir" ]; then
-    BUFFER="cd $(ghq root)/${selected_dir}"
-    zle accept-line
+  local repo=$(ghq list | fzf --reverse --query "$LBUFFER")
+  if [ -n $repo ]; then
+    # `ghq look` は新規シェルを開くため、遅いので使わない
+    for ghq_root in $(ghq root --all); do
+      local dir="${ghq_root}/${repo}"
+      if [ -d $dir ]; then
+        BUFFER="cd ${dir}"
+        zle accept-line
+      fi
+    done
   fi
   zle redisplay
 }
