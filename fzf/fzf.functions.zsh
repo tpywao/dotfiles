@@ -1,6 +1,6 @@
 function cli-select-src() {
   local repo=$(ghq list | fzf --reverse --query "$LBUFFER")
-  if [ -n $repo ]; then
+  if [ -n "$repo" ]; then
     # `ghq look` は新規シェルを開くため、遅いので使わない
     for ghq_root in $(ghq root --all); do
       local dir="${ghq_root}/${repo}"
