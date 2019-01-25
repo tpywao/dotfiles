@@ -113,7 +113,8 @@ if type direnv > /dev/null 2>&1; then
   eval "$(direnv hook zsh)"
 fi
 
-# heroku
-if type heroku > /dev/null 2>&1; then
-  HEROKU_AC_ZSH_SETUP_PATH=/Users/ke-ichi/Library/Caches/heroku/autocomplete/zsh_setup && test -f $HEROKU_AC_ZSH_SETUP_PATH && source $HEROKU_AC_ZSH_SETUP_PATH;
-fi
+# 内部でcompinitしているためコメントアウト
+# # heroku
+# if type heroku > /dev/null 2>&1; then
+#   HEROKU_AC_ZSH_SETUP_PATH=/Users/ke-ichi/Library/Caches/heroku/autocomplete/zsh_setup && test -f $HEROKU_AC_ZSH_SETUP_PATH && source $HEROKU_AC_ZSH_SETUP_PATH;
+# fi
