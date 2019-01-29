@@ -40,13 +40,13 @@ export CLOUDSDK_PYTHON=~/.pyenv/shims/python2.7
 
 # rust
 export CARGO_ROOT="$HOME/.cargo"
-if [ -d $CARGO_ROOT ]; then
+if [ -d "$CARGO_ROOT" ]; then
   source $CARGO_ROOT/env
 fi
 
 # rbenv
 export RBENV_ROOT="$HOME/.rbenv"
-if [ -d $RBENV_ROOT ]; then
+if [ -d "$RBENV_ROOT" ]; then
   path=(
         $RBENV_ROOT/bin(N-/)
         $path
@@ -64,7 +64,7 @@ fi
 
 # pyenv
 export PYENV_ROOT="$HOME/.pyenv"
-if [ -d $PYENV_ROOT ]; then
+if [ -d "$PYENV_ROOT" ]; then
   path=(
         $PYENV_ROOT/bin(N-/)
         $path
@@ -88,7 +88,7 @@ fi
 #     ;;
 # esac
 export GOPATH="/usr/local/gocode"
-if [ -d $GOROOT ] && [ -d $GOPATH ]; then
+if [ -d "$GOROOT" ] && [ -d "$GOPATH" ]; then
   path=(
         $GOPATH/bin(N-/)
         $GOROOT/bin(N-/)
@@ -101,7 +101,7 @@ fi
 # nodebrew
 # https://github.com/hokaccha/nodebrew
 export NODEBREW_ROOT="$HOME/.nodebrew"
-if [ -d $NODEBREW_ROOT ]; then
+if [ -d "$NODEBREW_ROOT" ]; then
   path=(
         $NODEBREW_ROOT/current/bin(N-/)
         $path
