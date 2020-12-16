@@ -65,5 +65,5 @@ function cli-select-tmux-session() {
     tmux attach-session -t $res
   fi
 }
-cli-select-tmux-session
+# cli-select-tmux-session
 

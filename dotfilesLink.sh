@@ -40,3 +40,6 @@ ln -si $DOTFILES/screenrc ~/.screenrc
 
 # sqlite
 ln -si $DOTFILES/sqliterc ~/.sqliterc
+
+# direnv
+ln -si $DOTFILES/direnvrc ~/.direnvrc

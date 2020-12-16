@@ -18,8 +18,13 @@ set_proxy() {
     git config --global https.proxy $proxy
   fi
 
+  if type -a npm > /dev/null 2>&1; then
+    npm config set proxy $proxy
+    npm config set https-proxy $proxy
+  fi
+
   if type -a yarn > /dev/null 2>&1; then
-    yarn config set http-proxy $proxy
+    yarn config set proxy $proxy
     yarn config set https-proxy $proxy
   fi
 
@@ -45,8 +50,13 @@ unset_proxy() {
     git config --global --remove-section https
   fi
 
+  if type -a npm > /dev/null 2>&1; then
+    npm config delete proxy
+    npm config delete https-proxy
+  fi
+
   if type -a yarn > /dev/null 2>&1; then
-    yarn config delete http-proxy
+    yarn config delete proxy
     yarn config delete https-proxy
   fi
 

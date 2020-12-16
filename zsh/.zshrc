@@ -18,12 +18,16 @@ setopt hist_reduce_blanks
 setopt hist_no_store
 
 # auto complete
-autoload -Uz compinit && compinit -C
-setopt correct
-setopt no_beep
-setopt auto_list
-setopt auto_menu
+source $ZDOTDIR/compinit.zsh
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+
+# iterm2(Mac Only)
+# https://iterm2.com/documentation-shell-integration.html
+case $OSTYPE in
+  darwin*)
+    . ~/.iterm2_shell_integration.zsh
+    ;;
+esac
 
 # pipenv
 # .zshenv に書いても動かないが...こっちに書くとなぜかちゃんと動く...
@@ -33,6 +37,7 @@ if type pipenv > /dev/null 2>&1; then
     eval $(env COMMANDLINE="${words[1,$CURRENT]}" _PIPENV_COMPLETE=complete-zsh  pipenv)
   }
   compdef _pipenv pipenv
+  export PIPENV_VENV_IN_PROJECT=true
 fi
 
 # cd
@@ -94,15 +99,29 @@ alias llh='ls -ld .*'
 alias vi=vim
 alias screen='screen -U'
 alias mkdir='mkdir -p'
-function cdp () {
-  dir=$(echo $@(N-/))
-  if [ "$dir" = "" ]; then
-    dir=$(dirname $@)
-  fi
-  cd $dir
-}
 function mkcd () {
   mkdir "$@" && cd $_
+}
+function cd () {
+  # avoid `not a directory`
+  # FIXME: directory name starts with `-`
+  local a args=() dir=()
+
+  for a in $@; do
+    if [ ${#a} -ne 1 -a "${a:0:1}" = "-" ]; then
+      args+=($a)
+      continue
+    fi
+
+    if ! [ -d $a ]; then
+      # 末尾から後方最短一致
+      a=${a%/*}
+    fi
+    dir+=($a)
+  done
+
+  # echo $args -- $dir
+  builtin cd $args -- $dir
 }
 type hub >/dev/null 2>&1  && eval "$(hub alias -s)"
 
@@ -160,4 +179,20 @@ add-zsh-hook precmd vcs_info
 if [ -d $HOME/.fzf ]; then
   [ -f $HOME/.fzf/.fzf.zsh ] && source $HOME/.fzf/.fzf.zsh
   [ -f $HOME/.fzf/fzf.functions.zsh ] && source $HOME/.fzf/fzf.functions.zsh
+fi
+
+# Google Cloud SDK
+if type gcloud > /dev/null 2>&1; then
+  GOOGLE_CLOUD_SDK_ROOT=$(gcloud info --format='value(installation.sdk_root)')
+  # The next line updates PATH for the Google Cloud SDK.
+  GOOGLE_CLOUD_SDK_PATH=$GOOGLE_CLOUD_SDK_ROOT/path.zsh.inc
+  if [ -f "$GOOGLE_CLOUD_SDK_PATH" ]; then
+    source "$GOOGLE_CLOUD_SDK_PATH"
+  fi
+
+  # The next line enables shell command completion for gcloud.
+  GOOGLE_CLOUD_SDK_COMPLETION=$GOOGLE_CLOUD_SDK_ROOT/completion.zsh.inc
+  if [ -f "$GOOGLE_CLOUD_SDK_COMPLETION" ]; then
+    source "$GOOGLE_CLOUD_SDK_COMPLETION"
+  fi
 fi

@@ -1,0 +1,15 @@
+# gcloud
+if type gcloud > /dev/null 2>&1; then
+  function change_gcloud_configuration() {
+    if [ ! "$#" = "1" ]; then
+      echo 1 arg \`configuration name\` is required.
+      return
+    fi
+
+    if [ ! "$(gcloud config configurations list | grep True | awk '{print $1}')" = "$1" ]; then
+      gcloud config configurations activate $1
+    fi
+  }
+else
+  echo gcloud is not defined
+fi

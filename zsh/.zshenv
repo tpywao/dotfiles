@@ -1,6 +1,9 @@
 # lang
 export LANG=ja_JP.UTF-8
 
+# build
+export CFLAGS="-I$(xcrun --show-sdk-path)/usr/include -I/usr/local/include -L/usr/local/lib $CFLAGS"
+
 # local
 LOCAL_ROOT=$HOME/local
 export EDITOR=vim
@@ -25,27 +28,38 @@ path=(
 fpath=(
        $HOME/.completions(N-/)
        $ZDOTDIR/completions(N-/)
+       /usr/local/share/zsh-completions(N-/)
        $fpath
        )
 
 # use brew keg-only formula
+BREW_PREFIX=$(brew --prefix)
+OPENSSL_HOME=$BREW_PREFIX/opt/openssl
 path=(
-      /usr/local/opt/mysql@5.7/bin
-      /usr/local/opt/mysql-client/bin(N-/)
-      /usr/local/opt/openssl/bin(N-/)
+      $BREW_PREFIX/opt/mysql@5.7/bin(N-/)
+      $BREW_PREFIX/opt/mysql-client/bin(N-/)
+      $OPENSSL_HOME/bin(N-/)
       $path
       )
+export LIBRARY_PATH="$OPENSSL_HOME/lib:$LIBRARY_PATH"
+export LD_LIBRARY_PATH="$OPENSSL_HOME/lib:$LD_LIBRARY_PATH"
+export CPATH="-I$OPENSSL_HOME/include:$CPATH"
+export LDFLAGS="-L$OPENSSL_HOME/lib:$LDFLAGS"
+export CPPFLAGS="-I$OPENSSL_HOME/include:$CPPFLAGS"
+export PKG_CONFIG_PATH="$OPENSSL_HOME/lib/pkgconfig:$PKG_CONFIG_PATH"
 
-export CLOUDSDK_PYTHON=~/.pyenv/shims/python2.7
 
 # rust
 export CARGO_ROOT="$HOME/.cargo"
 if [ -d "$CARGO_ROOT" ]; then
-  source $CARGO_ROOT/env
+  path=(
+        $CARGO_ROOT/bin(N-/)
+        $path
+        )
 fi
 
 # rbenv
-export RBENV_ROOT="$HOME/.rbenv"
+# export RBENV_ROOT="$HOME/.rbenv"
 if [ -d "$RBENV_ROOT" ]; then
   path=(
         $RBENV_ROOT/bin(N-/)
@@ -70,11 +84,14 @@ if [ -d "$PYENV_ROOT" ]; then
         $path
         )
   eval "$(pyenv init --no-rehash - zsh)"
-  . $PYENV_ROOT/completions/pyenv.zsh
+  PYENV_INSTALLED_DIR=$(brew --prefix pyenv)
+  . $PYENV_INSTALLED_DIR/completions/pyenv.zsh
+  # . $PYENV_ROOT/completions/pyenv.zsh
   if type pip > /dev/null 2>&1; then
     eval "$(pip completion --zsh)"
   fi
   export WORKON_HOME="$HOME/.virtualenvs"
+  export CLOUDSDK_PYTHON=~/.pyenv/shims/python2
 fi
 
 # golang
@@ -87,11 +104,15 @@ fi
 #     export GOROOT="/usr/local/go"
 #     ;;
 # esac
-export GOPATH="/usr/local/gocode"
-if [ -d "$GOROOT" ] && [ -d "$GOPATH" ]; then
+# if [ -d "$GOROOT" ] && [ -d "$GOPATH" ]; then
+export GOPATH_PACKAGES="$HOME/go/packages"
+export GOPATH_WORKSPACE="$HOME/go/workspace"
+export GOPATH=$GOPATH_PACKAGES:$GOPATH_WORKSPACE
+if [ -d "$GOPATH_PACKAGES" -a -d "$GOPATH_WORKSPACE" ]; then
   path=(
-        $GOPATH/bin(N-/)
-        $GOROOT/bin(N-/)
+        $GOPATH_PACKAGES/bin(N-/)
+        $GOPATH_WORKSPACE/bin(N-/)
+        $BREW_PREFIX/libexec(N-/)
         $path
         )
   export GO15VENDOREXPERIMENT=1
@@ -100,7 +121,7 @@ fi
 
 # nodebrew
 # https://github.com/hokaccha/nodebrew
-export NODEBREW_ROOT="$HOME/.nodebrew"
+# export NODEBREW_ROOT="$HOME/.nodebrew"
 if [ -d "$NODEBREW_ROOT" ]; then
   path=(
         $NODEBREW_ROOT/current/bin(N-/)
@@ -113,8 +134,8 @@ if type direnv > /dev/null 2>&1; then
   eval "$(direnv hook zsh)"
 fi
 
-# 内部でcompinitしているためコメントアウト
-# # heroku
-# if type heroku > /dev/null 2>&1; then
-#   HEROKU_AC_ZSH_SETUP_PATH=/Users/ke-ichi/Library/Caches/heroku/autocomplete/zsh_setup && test -f $HEROKU_AC_ZSH_SETUP_PATH && source $HEROKU_AC_ZSH_SETUP_PATH;
-# fi
+# Android Studio
+export ANDROID_SDK_HOME=/Volumes/extssd/Android
+export ANDROID_SDK_ROOT=/Volumes/extssd/Android/sdk
+export ANDROID_EMULATOR_HOME=/Volumes/extssd/Android/Emulator
+export ANDROID_AVD_HOME=/Volumes/extssd/Android/Emulator/avd
