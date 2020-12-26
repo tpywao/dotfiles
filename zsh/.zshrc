@@ -19,6 +19,10 @@ setopt hist_no_store
 
 # auto complete
 source $ZDOTDIR/compinit.zsh
+setopt correct
+setopt no_beep
+setopt auto_list
+setopt auto_menu
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 # iterm2(Mac Only)
@@ -32,6 +36,7 @@ esac
 # pipenv
 # .zshenv に書いても動かないが...こっちに書くとなぜかちゃんと動く...
 if type pipenv > /dev/null 2>&1; then
+  export PIPENV_VENV_IN_PROJECT=true
   # pipenv --completion
   _pipenv() {
     eval $(env COMMANDLINE="${words[1,$CURRENT]}" _PIPENV_COMPLETE=complete-zsh  pipenv)

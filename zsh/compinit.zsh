@@ -1,8 +1,8 @@
 # custom by tpywao
 # ref by: https://gist.github.com/ctechols/ca1035271ad134841284
 
-# On slow systems, checking the cached .zcompdump file to see if it must be 
-# regenerated adds a noticable delay to zsh startup.  This little hack restricts 
+# On slow systems, checking the cached .zcompdump file to see if it must be
+# regenerated adds a noticable delay to zsh startup.  This little hack restricts
 # it to once a day.  It should be pasted into your own completion file.
 #
 # The globbing is a little complicated here:
