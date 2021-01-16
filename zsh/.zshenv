@@ -35,18 +35,21 @@ fpath=(
 # use brew keg-only formula
 BREW_PREFIX=$(brew --prefix)
 OPENSSL_HOME=$BREW_PREFIX/opt/openssl
+ZLIB_HOME=$BREW_PREFIX/opt/zlib
+BZIP2_HOME=$BREW_PREFIX/opt/bzip2
 path=(
       $BREW_PREFIX/opt/mysql@5.7/bin(N-/)
       $BREW_PREFIX/opt/mysql-client/bin(N-/)
       $OPENSSL_HOME/bin(N-/)
+      $BZIP2_HOME/bin(N-/)
       $path
       )
 export LIBRARY_PATH="$OPENSSL_HOME/lib:$LIBRARY_PATH"
 export LD_LIBRARY_PATH="$OPENSSL_HOME/lib:$LD_LIBRARY_PATH"
 export CPATH="-I$OPENSSL_HOME/include:$CPATH"
-export LDFLAGS="-I$OPENSSL_HOME/include -L$OPENSSL_HOME/lib $LDFLAGS"
-export CPPFLAGS="-I$OPENSSL_HOME/include $CPPFLAGS"
-export PKG_CONFIG_PATH="$OPENSSL_HOME/lib/pkgconfig:$PKG_CONFIG_PATH"
+export LDFLAGS="-L$OPENSSL_HOME/lib -L$ZLIB_HOME/lib -L$BZIP2_HOME/lib $LDFLAGS"
+export CPPFLAGS="-I$OPENSSL_HOME/include -I$ZLIB_HOME/include -I$BZIP2_HOME $CPPFLAGS"
+export PKG_CONFIG_PATH="$OPENSSL_HOME/lib/pkgconfig:$ZLIB_HOME/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 
 # rust
