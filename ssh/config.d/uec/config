@@ -1,0 +1,6 @@
+Host uec
+  HostName sol.edu.cc.uec.ac.jp
+  User o1324023
+  IdentitiesOnly yes
+Host *-onuec
+  ProxyCommand ssh -W %h:%p uec

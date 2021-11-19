@@ -102,6 +102,7 @@ alias lla='ls -la'
 alias llh='ls -ld .*'
 ##
 alias vi=vim
+alias less='less -R'
 alias screen='screen -U'
 alias mkdir='mkdir -p'
 function mkcd () {
@@ -128,7 +129,7 @@ function cd () {
   # echo $args -- $dir
   builtin cd $args -- $dir
 }
-type hub >/dev/null 2>&1  && eval "$(hub alias -s)"
+# type hub >/dev/null 2>&1  && eval "$(hub alias -s)"
 
 case $OSTYPE in
   darwin*)

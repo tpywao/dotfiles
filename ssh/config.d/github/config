@@ -1,0 +1,24 @@
+# # https://help.github.com/articles/using-ssh-over-the-https-port/
+# Host github.com
+#   HostName ssh.github.com
+#   User git
+#   Port 443
+#   IdentitiesOnly yes
+
+Host github.com
+  User git
+  HostName github.com
+  IdentityFile ~/.ssh/config.d/github/id_rsa
+
+Host gist.github.com
+  User git
+  HostName gist.github.com
+  IdentityFile ~/.ssh/config.d/github/id_rsa
+
+# on uec proxy
+# Host github.com
+#   User git
+#   HostName ssh.github.com
+#   IdentityFile ~/.ssh/config.d/github/id_rsa
+#   Port 443
+#   ProxyCommand connect -H proxy.uec.ac.jp:8080 %h %p

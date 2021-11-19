@@ -1,0 +1,5 @@
+Host *
+  GSSAPIAuthentication no
+  # GSSAPIKeyExchange no
+
+Include ~/.ssh/config.d/**/config

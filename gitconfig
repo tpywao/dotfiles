@@ -22,6 +22,7 @@
 	todo = grep --heading --line-number -e TODO: -e FIXME: -e OPTIMEZE: -e WIP:
 	cpush = !git push -u origin `git rev-parse --abbrev-ref HEAD`
 	sw = switch
+	pclone = clone --depth 1 --filter=blob:none --sparse
 [diff]
 	renames = true
 [color]
@@ -48,14 +49,17 @@
 	clean = git-lfs clean -- %f
 [difftool "sourcetree"]
 	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path = 
 [mergetool "sourcetree"]
 	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
 	trustExitCode = true
 [commit]
 	template = /Users/ke-ichi/.stCommitMsg
 [ghq]
-	root = /Users/ke-ichi/local/src/repositories
 	root = /Volumes/extssd/src
+	root = /Users/ke-ichi/local/src/repositories
 [pull]
 	ff = only
+[fetch]
+	prune = true
+[init]
+	defaultBranch = main

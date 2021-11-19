@@ -1,9 +1,6 @@
 # lang
 export LANG=ja_JP.UTF-8
 
-# build
-export CFLAGS="-I$(xcrun --show-sdk-path)/usr/include -I/usr/local/include -L/usr/local/lib $CFLAGS"
-
 # local
 LOCAL_ROOT=$HOME/local
 export EDITOR=vim
@@ -34,22 +31,28 @@ fpath=(
 
 # use brew keg-only formula
 BREW_PREFIX=$(brew --prefix)
+AVR_GCC_HOME=$BREW_PREFIX/opt/avr-gcc@8
+LLVM_HOME=$BREW_PREFIX/opt/llvm
 OPENSSL_HOME=$BREW_PREFIX/opt/openssl
 ZLIB_HOME=$BREW_PREFIX/opt/zlib
 BZIP2_HOME=$BREW_PREFIX/opt/bzip2
+BISON_HOME=$BREW_PREFIX/opt/bison
 path=(
       $BREW_PREFIX/opt/mysql@5.7/bin(N-/)
       $BREW_PREFIX/opt/mysql-client/bin(N-/)
       $OPENSSL_HOME/bin(N-/)
       $BZIP2_HOME/bin(N-/)
+      $BISON_HOME/bin(N-/)
       $path
       )
-export LIBRARY_PATH="$OPENSSL_HOME/lib:$LIBRARY_PATH"
-export LD_LIBRARY_PATH="$OPENSSL_HOME/lib:$LD_LIBRARY_PATH"
-export CPATH="-I$OPENSSL_HOME/include:$CPATH"
-export LDFLAGS="-L$OPENSSL_HOME/lib -L$ZLIB_HOME/lib -L$BZIP2_HOME/lib $LDFLAGS"
-export CPPFLAGS="-I$OPENSSL_HOME/include -I$ZLIB_HOME/include -I$BZIP2_HOME $CPPFLAGS"
-export PKG_CONFIG_PATH="$OPENSSL_HOME/lib/pkgconfig:$ZLIB_HOME/lib/pkgconfig:$PKG_CONFIG_PATH"
+# export CFLAGS="-I/usr/local/include -L/usr/local/lib -I$(xcrun --show-sdk-path)/usr/include $CFLAGS"
+export CFLAGS="-I/usr/local/include -L/usr/local/lib $CFLAGS"
+export CPPFLAGS="-I$OPENSSL_HOME/include -I$LLVM_HOME/include -I$ZLIB_HOME/include -I$BZIP2_HOME/include $CPPFLAGS"
+export LIBRARY_PATH="/usr/local/lib:$OPENSSL_HOME/lib"
+export LD_LIBRARY_PATH="/usr/local/lib:$OPENSSL_HOME/lib"
+# export CPATH="-I$OPENSSL_HOME/include:$CPATH"
+export LDFLAGS="-L$AVR_GCC_HOME/lib -L$OPENSSL_HOME/lib -L$LLVM_HOME/lib -L$ZLIB_HOME/lib -L$BZIP2_HOME/lib -L$BISON_HOME $LDFLAGS"
+export PKG_CONFIG_PATH="$OPENSSL_HOME/lib/pkgconfig:$ZLIB_HOME/lib/pkgconfig"
 
 
 # rust
@@ -86,7 +89,8 @@ if [ -d "$PYENV_ROOT" ]; then
         $PYENV_ROOT/bin(N-/)
         $path
         )
-  eval "$(pyenv init --no-rehash - zsh)"
+  eval "$(pyenv init --path)"
+  eval "$(pyenv init --no-rehash -)"
   PYENV_INSTALLED_DIR=$(brew --prefix pyenv)
   . $PYENV_INSTALLED_DIR/completions/pyenv.zsh
   # . $PYENV_ROOT/completions/pyenv.zsh
@@ -94,7 +98,7 @@ if [ -d "$PYENV_ROOT" ]; then
     eval "$(pip completion --zsh)"
   fi
   export WORKON_HOME="$HOME/.virtualenvs"
-  export CLOUDSDK_PYTHON=~/.pyenv/shims/python2
+  # export CLOUDSDK_PYTHON=~/.pyenv/shims/python3
 fi
 
 # golang
