@@ -28,7 +28,7 @@
 [color]
 	ui = auto
 [core]
-	excludesfile = /Users/ke-ichi/.gitignore_global
+	excludesfile = /Users/ke-ichi/.gitignore
 [pager]
 	log = type diff-highlight >/dev/null 2>&1 && diff-highlight | less || less
 	show = type diff-highlight >/dev/null 2>&1 && diff-highlight | less || less

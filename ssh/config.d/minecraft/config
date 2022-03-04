@@ -1,0 +1,12 @@
+Host aws-minecraft
+  User ubuntu
+  Port 23287
+  HostName ec2-18-191-184-175.us-east-2.compute.amazonaws.com
+  IdentityFile ~/.ssh/config.d/minecraft/aws.pem
+
+Host oracle-minecraft
+  User ubuntu
+  Port 22
+  # Port 24328
+  HostName 152.70.99.182
+  IdentityFile ~/.ssh/config.d/minecraft/oracle

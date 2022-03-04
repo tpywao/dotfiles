@@ -4,3 +4,5 @@ known_hosts
 google_compute_engine
 heiwa
 tmp
+config.d/**/*
+!config.d/**/config
