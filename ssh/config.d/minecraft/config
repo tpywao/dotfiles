@@ -5,7 +5,8 @@ Host aws-minecraft
   IdentityFile ~/.ssh/config.d/minecraft/aws.pem
 
 Host oracle-minecraft
-  User ubuntu
+  # User ubuntu
+  User salva
   Port 22
   # Port 24328
   HostName 152.70.99.182
