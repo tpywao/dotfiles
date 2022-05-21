@@ -59,85 +59,13 @@ export LDFLAGS="-L$AVR_GCC_HOME/lib -L$OPENSSL_HOME/lib -L$LLVM_HOME/lib -L$ZLIB
 export PKG_CONFIG_PATH="$OPENSSL_HOME/lib/pkgconfig:$ZLIB_HOME/lib/pkgconfig"
 
 
-# rust
-export CARGO_ROOT="$HOME/.cargo"
-if [ -d "$CARGO_ROOT" ]; then
-  path=(
-        $CARGO_ROOT/bin(N-/)
-        $path
-        )
-fi
+LANGS_ROOT=$ZDOTDIR/langs;
+source $LANGS_ROOT/rust.zsh;
+# source $LANGS_ROOT/ruby.zsh;
+source $LANGS_ROOT/python.zsh;
+# source $LANGS_ROOT/go.zsh;
+# source $LANGS_ROOT/node.zsh;
 
-# rbenv
-# export RBENV_ROOT="$HOME/.rbenv"
-if [ -d "$RBENV_ROOT" ]; then
-  path=(
-        $RBENV_ROOT/bin(N-/)
-        $path
-        )
-  eval "$(rbenv init --no-rehash - zsh)"
-  case $OSTYPE in
-    darwin*)
-      . "$(brew --cellar)/rbenv/$(brew list rbenv --versions | awk '{print $NF}')/completions/rbenv.zsh"
-      ;;
-    linux*)
-      . $RBENV_ROOT/completions/rbenv.zsh
-      ;;
-  esac
-fi
-
-# pyenv
-export PYENV_ROOT="$HOME/.pyenv"
-if [ -d "$PYENV_ROOT" ]; then
-  path=(
-        $PYENV_ROOT/bin(N-/)
-        $path
-        )
-  eval "$(pyenv init --path)"
-  eval "$(pyenv init --no-rehash -)"
-  PYENV_INSTALLED_DIR=$(brew --prefix pyenv)
-  . $PYENV_INSTALLED_DIR/completions/pyenv.zsh
-  # . $PYENV_ROOT/completions/pyenv.zsh
-  if type pip > /dev/null 2>&1; then
-    eval "$(pip completion --zsh)"
-  fi
-  export WORKON_HOME="$HOME/.virtualenvs"
-  # export CLOUDSDK_PYTHON=~/.pyenv/shims/python3
-fi
-
-# golang
-# case $OSTYPE in
-#   darwin*)
-#     # export GOROOT="/usr/local/Cellar/go/1.9/libexec"
-#     # export GOROOT="/usr/local/Cellar/go/1.9"
-#     ;;
-#   linux*)
-#     export GOROOT="/usr/local/go"
-#     ;;
-# esac
-# if [ -d "$GOROOT" ] && [ -d "$GOPATH" ]; then
-export GOPATH_PACKAGES="$HOME/go/packages"
-export GOPATH_WORKSPACE="$HOME/go/workspace"
-export GOPATH=$GOPATH_PACKAGES:$GOPATH_WORKSPACE
-if [ -d "$GOPATH_PACKAGES" -a -d "$GOPATH_WORKSPACE" ]; then
-  path=(
-        $GOPATH_PACKAGES/bin(N-/)
-        $GOPATH_WORKSPACE/bin(N-/)
-        $BREW_PREFIX/libexec(N-/)
-        $path
-        )
-  export GO15VENDOREXPERIMENT=1
-  export PROJECT_HOME=$REPOSITORIES_HOME
-fi
-
-# nodebrew
-# https://github.com/hokaccha/nodebrew
-# export NODEBREW_ROOT="$HOME/.nodebrew"
-if [ -d "$NODEBREW_ROOT" ]; then
-  path=(
-        $NODEBREW_ROOT/current/bin(N-/)
-        $path
-        )
 fi
 
 # direnv
