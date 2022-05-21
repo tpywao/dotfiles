@@ -5,16 +5,12 @@ if [ -d "$PYENV_ROOT" ]; then
         $PYENV_ROOT/shims(N-/)
         $path
         )
+  eval "`pip completion --zsh`"
 
   pyenv () {
     unfunction "$0"
     source <$(pyenv init --no-rehash -)
-    PYENV_INSTALLED_DIR=$(brew --prefix pyenv)
-    source $PYENV_INSTALLED_DIR/completions/pyenv.zsh
-    # . $PYENV_ROOT/completions/pyenv.zsh
-    if type pip > /dev/null 2>&1; then
-      source <$(pip completion --zsh)
-    fi
+    source $PYENV_ROOT/completions/pyenv.zsh
     $0 "$@"
   }
   # export CLOUDSDK_PYTHON=~/.pyenv/shims/python3
