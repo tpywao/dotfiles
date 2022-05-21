@@ -66,6 +66,13 @@ source $LANGS_ROOT/python.zsh;
 # source $LANGS_ROOT/go.zsh;
 # source $LANGS_ROOT/node.zsh;
 
+# asdf
+if [ -d "$ASDF_DIR" ]; then
+  . $ASDF_DIR/asdf.sh
+  fpath=(
+    ${ASDF_DIR}/completions(N-/)
+    $fpath
+    )
 fi
 
 # direnv
