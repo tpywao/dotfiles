@@ -27,8 +27,6 @@
 	renames = true
 [color]
 	ui = auto
-[core]
-	excludesfile = /Users/ke-ichi/.gitignore
 [pager]
 	log = type diff-highlight >/dev/null 2>&1 && diff-highlight | less || less
 	show = type diff-highlight >/dev/null 2>&1 && diff-highlight | less || less
@@ -47,16 +45,9 @@
 	process = git-lfs filter-process
 	required = true
 	clean = git-lfs clean -- %f
-[difftool "sourcetree"]
-	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-[mergetool "sourcetree"]
-	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-	trustExitCode = true
-[commit]
-	template = /Users/ke-ichi/.stCommitMsg
 [ghq]
 	root = /Volumes/extssd/src
-	root = /Users/ke-ichi/local/src/repositories
+	root = ~/.local/src/repositories
 [pull]
 	ff = only
 [fetch]

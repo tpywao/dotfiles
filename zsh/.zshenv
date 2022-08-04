@@ -2,9 +2,8 @@
 export LANG=ja_JP.UTF-8
 
 # local
-LOCAL_ROOT=$HOME/local
+LOCAL_ROOT=$HOME/.local
 export EDITOR=vim
-# golang etc.
 export REPOSITORIES_HOME="$LOCAL_ROOT/src/repositories"
 # path to dotfiles dir
 export DOTFILES=$HOME/.dotfiles
@@ -44,9 +43,9 @@ source $LANGS_ROOT/rust.zsh;
 # source $LANGS_ROOT/node.zsh;
 
 # direnv
-if type direnv > /dev/null 2>&1; then
-  eval "$(direnv hook zsh)"
-fi
+# if type direnv > /dev/null 2>&1; then
+#   eval "$(direnv hook zsh)"
+# fi
 
 # Android Studio
 export ANDROID_SDK_HOME=/Volumes/extssd/Android

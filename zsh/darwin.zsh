@@ -36,7 +36,7 @@ export PKG_CONFIG_PATH="$OPENSSL_HOME/lib/pkgconfig:$ZLIB_HOME/lib/pkgconfig"
 ASDF_PATH=$BREW_PREFIX/opt/asdf
 ASDF_ROOT=$HOME/.asdf
 if [ -d "$ASDF_PATH" -a -d "$ASDF_PATH" ]; then
-  . $ASDF_PATH/asdf.sh
+  source $ASDF_PATH/libexec/asdf.sh
   path=(
     $ASDF_ROOT/shims(N-/)
     $path
