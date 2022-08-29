@@ -27,13 +27,10 @@ fpath=(
        $fpath
        )
 
-case $OSTYPE in
-  darwin*)
+source $ZDOTDIR/utils.zsh
+if is_mac; then
     source $ZDOTDIR/darwin.zsh
-    ;;
-  linux*)
-    ;;
-esac
+fi
 
 LANGS_ROOT=$ZDOTDIR/langs;
 source $LANGS_ROOT/rust.zsh;
@@ -43,9 +40,9 @@ source $LANGS_ROOT/rust.zsh;
 # source $LANGS_ROOT/node.zsh;
 
 # direnv
-# if type direnv > /dev/null 2>&1; then
-#   eval "$(direnv hook zsh)"
-# fi
+if is_cmd_exists direnv; then
+  eval "$(direnv hook zsh)"
+fi
 
 # Android Studio
 export ANDROID_SDK_HOME=/Volumes/extssd/Android

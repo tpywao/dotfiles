@@ -27,11 +27,9 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 # iterm2(Mac Only)
 # https://iterm2.com/documentation-shell-integration.html
-case $OSTYPE in
-  darwin*)
-    . ~/.iterm2_shell_integration.zsh
-    ;;
-esac
+if is_mac; then
+  source ~/.iterm2_shell_integration.zsh
+fi
 
 # pipenv
 # # .zshenv に書いても動かないが...こっちに書くとなぜかちゃんと動く...
@@ -131,17 +129,18 @@ function cd () {
 }
 # type hub >/dev/null 2>&1  && eval "$(hub alias -s)"
 
-case $OSTYPE in
-  darwin*)
-    ;;
-  linux*)
-    alias pbcopy="xsel --clipboard --input"
-    alias pbpaste="xsel --clipboard --output"
-    ;;
-esac
+if is_wsl; then
+  alias pbcopy="clip.exe"
+  # pasteはだいぶ面倒なコマンドだったのでパス
+elif is_linux; then
+  alias pbcopy="xsel --clipboard --input"
+  alias pbpaste="xsel --clipboard --output"
+fi
+
 ## global
 alias -g L=' | less'
 alias -g G=' | grep'
+alias -g TF=' && echo t || echo f'
 alias -g F=' | fzf --reverse --select-1 --exit-0'
 alias -g C=' | pbcopy'
 alias -g CC=' | (v=$(cat); echo -n $v) | pbcopy'
@@ -203,25 +202,8 @@ if type gcloud > /dev/null 2>&1; then
   fi
 fi
 
-### Added by Zinit's installer
-if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
-    print -P "%F{33} %F{220}Installing %F{33}ZDHARMA-CONTINUUM%F{220} Initiative Plugin Manager (%F{33}zdharma-continuum/zinit%F{220})…%f"
-    command mkdir -p "$HOME/.local/share/zinit" && command chmod g-rwX "$HOME/.local/share/zinit"
-    command git clone https://github.com/zdharma-continuum/zinit "$HOME/.local/share/zinit/zinit.git" && \
-        print -P "%F{33} %F{34}Installation successful.%f%b" || \
-        print -P "%F{160} The clone has failed.%f%b"
-fi
+# zinit
+source $ZDOTDIR/zinit.zsh
 
-source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
-autoload -Uz _zinit
-(( ${+_comps} )) && _comps[zinit]=_zinit
-
-# Load a few important annexes, without Turbo
-# (this is currently required for annexes)
-zinit light-mode for \
-    zdharma-continuum/zinit-annex-as-monitor \
-    zdharma-continuum/zinit-annex-bin-gem-node \
-    zdharma-continuum/zinit-annex-patch-dl \
-    zdharma-continuum/zinit-annex-rust
-
-### End of Zinit's installer chunk
+zinit ice as"completion"
+zinit snippet https://github.com/docker/cli/blob/master/contrib/completion/zsh/_docker

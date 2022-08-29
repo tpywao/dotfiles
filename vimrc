@@ -8,6 +8,7 @@ set ruler
 set showmatch
 set list
 set listchars=eol:\ ,tab:\>-,trail:-
+set encoding=utf-8
 set clipboard+=unnamed
 "" tab setting
 set expandtab
