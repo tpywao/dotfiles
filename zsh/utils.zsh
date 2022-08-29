@@ -5,12 +5,12 @@ string_contain() {
   }
 }
 is_cmd_exists() {
-  type $1 > /dev/null 2>&1
+  command -v $1 > /dev/null 2>&1
 }
 
 # os
 is_wsl() {
-  [ -n "$(which wslpath)" ]
+  is_cmd_exists wslpath
 }
 is_mac() {
   string_contain $OSTYPE darwin
