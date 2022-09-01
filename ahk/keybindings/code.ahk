@@ -1,0 +1,21 @@
+; vscode
+#IfWinActive, ahk_exe Code.exe
+    ; simple
+    #[::Send, ^[
+    #]::Send, ^]
+    #+o::Send, ^+o
+    #+n::Send, ^+n
+    #+t::Send, ^+t
+    ; complex
+    #+e::Send, ^!+e
+    #n::Send, ^!n
+    #p::Send, ^!p
+    #+p::Send, ^!+p
+    #a::Send, ^!a
+    #f::Send, ^!f
+    #+f::Send, ^!+f
+    #d::Send, ^!d
+    #b::Send, ^!b
+    #k::Send, !+k
+    #Enter::Send, ^!{Enter}
+    #+Enter::Send, ^!+{Enter}
