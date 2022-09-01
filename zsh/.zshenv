@@ -29,7 +29,9 @@ fpath=(
 
 source $ZDOTDIR/utils.zsh
 if is_mac; then
-    source $ZDOTDIR/darwin.zsh
+  source $ZDOTDIR/mac.zsh
+elif is_wsl; then
+  source $ZDOTDIR/wsl.zsh
 fi
 
 LANGS_ROOT=$ZDOTDIR/langs;
