@@ -130,8 +130,9 @@ function cd () {
 # type hub >/dev/null 2>&1  && eval "$(hub alias -s)"
 
 if is_wsl; then
+  # https://zenn.dev/kondounagi/scraps/184c884b5804a4
   alias pbcopy="clip.exe"
-  # pasteはだいぶ面倒なコマンドだったのでパス
+  alias pbpaste="powershell.exe -Command Get-Clipboard"
 elif is_linux; then
   alias pbcopy="xsel --clipboard --input"
   alias pbpaste="xsel --clipboard --output"
