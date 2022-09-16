@@ -1,36 +1,53 @@
 ; super
-; Ref: https://note.com/optim/n/nd5e88bb722a2
 ~LWin::Send {Blind}{vkE8}
 ~RWin::Send {Blind}{vkE8}
 
-#w::Send, ^w
-#t::Send, ^t
-#+t::Send, ^+t
-#r::Send, ^r
-#o::Send, ^o
+F13 & q::
+If (A_PriorHotkey <> "F13 & q" or A_TimeSincePriorHotkey > 400) {
+    KeyWait, q
+    return
+}
+MsgBox You double-pressed the F13 & q key. %A_PriorHotkey%
+; Send, !{F4}
+return
+F13 & w::Send, ^w
+F13 & t::
+    if GetKeyState("Shift") {
+        Send ^+t
+        return
+    }
+    Send, ^t
+return
+F13 & r::Send, ^r
+F13 & o::Send, ^o
 
-#a::Send, ^a
-#s::Send, ^s
-#d::Send, ^d
-#f::Send, ^f
+F13 & a::Send, ^a
+F13 & s::Send, ^s
+F13 & d::Send, ^d
+F13 & f::Send, ^f
 
-#z::Send, ^z
-#+z::Send, ^+z
-#x::Send, ^x
-#c::Send, ^c
-#v::Send, ^v
-#n::Send, ^n
+F13 & z::
+    if GetKeyState("Shift") {
+        Send ^+t
+        return
+    }
+    Send, ^z
+return
+F13 & x::Send, ^x
+F13 & c::Send, ^c
+F13 & v::Send, ^v
+F13 & n::Send, ^n
 
-#/::Send, ^/
+F13 & /::Send, ^/
 
-#Space::
+F13 & Space::
     If IME_GET() = 0
         IME_SET(1)
     Else
         IME_SET(0)
 return
 
-#Backspace::Send, {ShiftDown}{Home}{ShiftUp}{Backspace}
+F13 & Backspace::Send, {ShiftDown}{Home}{ShiftUp}{Backspace}
 
 ; ctrl
 ; ^h::Send, {Backspace}
@@ -44,16 +61,24 @@ return
 ; ^k::Send, {Shift down}{End}{Shift up}^x
 ; ^L::Send, {Home}+{End}
 
-; history manage
-#[::Send, !{Left}
-#]::Send, !{Right}
-
-; tab switcher
-#+[::Send, ^+{Tab}
-#+]::Send, ^{Tab}
+; history manage & tab switcher
+F13 & [::
+    if GetKeyState("Shift") {
+        Send ^+{Tab}
+        return
+    }
+    Send, !{Left}
+return
+F13 & ]::
+    if GetKeyState("Shift") {
+        Send ^{Tab}
+        return
+    }
+    Send, !{Right}
+return
 
 ; terminal
-#@::
+F13 & @::
     terminalApp := "alacritty.exe"
     terminalAppKey := "ahk_exe " . terminalApp
     exists := WinExist(terminalAppKey)

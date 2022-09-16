@@ -1,11 +1,5 @@
 ; window switcher
-global isWindowSwitcherActive
-
-; FIXME: たまにflagがtrueのままになるため、初期化用コマンド
-LWin & RWin::
-    isWindowSwitcherActive := false
-    Send, {Alt Up}
-Return
+isWindowSwitcherActive := False
 
 ; debug key
 ; #+a::MsgBox, %isWindowSwitcherActive%
@@ -13,21 +7,28 @@ Return
 ; #付きのif文じゃないとhotkeyの上書きができない
 ; https://www.autohotkey.com/docs/commands/_If.htm
 #If !isWindowSwitcherActive
-LWin & Tab::
-isWindowSwitcherActive := true
-If GetKeyState("Shift", "P") {
-    Send, {Alt Down}{Shift Down}{Tab}{ShiftUp}
-} Else {
-    Send, {Alt Down}{Tab}
-}
+; ~(イベントスルー)重要
+~F13 & Tab::
+    isWindowSwitcherActive := true
+    If GetKeyState("Shift", "P") {
+        Send, {Alt Down}+{Tab}
+    } Else {
+        Send, {Alt Down}{Tab}
+    }
 Return
 
 #If isWindowSwitcherActive
-    Esc::
-    isWindowSwitcherActive := false
-    Send, {Esc}{Alt Up}
+*Esc::
+isWindowSwitcherActive := false
+Send, {Esc}{Alt Up}
 Return
-LWin up::
+*F13 up::
+    isWindowSwitcherActive := false
+    Send, {Alt Up}
+Return
+; FIXME: たまにflagがtrueのままになるため、初期化用コマンド
+LAlt & RAlt::
+    ; MsgBox You double-pressed the F13 & q key. %A_PriorHotkey%
     isWindowSwitcherActive := false
     Send, {Alt Up}
 Return

@@ -8,6 +8,6 @@ InitAutoReload()
 ; おそらく、Auto-Execute Sectionの領域外となってしまうため。
 ; https://www.autohotkey.com/docs/Scripts.htm#auto
 #Include, keybindings/main.ahk
+#Include, WindowSwitcher.ahk
 #Include, keybindings/code.ahk
 #Include, keybindings/alacritty.ahk
-#Include, WindowSwitcher.ahk
