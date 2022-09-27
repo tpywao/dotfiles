@@ -27,6 +27,8 @@
 	renames = true
 [color]
 	ui = auto
+[gui]
+	encoding = utf-8
 [pager]
 	log = type diff-highlight >/dev/null 2>&1 && diff-highlight | less || less
 	show = type diff-highlight >/dev/null 2>&1 && diff-highlight | less || less
