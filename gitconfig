@@ -23,7 +23,7 @@
 	cpush = !git push -u origin `git rev-parse --abbrev-ref HEAD`
 	sw = switch
 	pclone = clone --depth 1 --filter=blob:none --sparse
-	brprune = git branch -d $(git branch -v | grep gone | awk '{print $1}')
+	brprune = !git branch -d $(git for-each-ref --format '%(if)%(upstream:track)%(then)%(refname:short)%(end)')
 [diff]
 	renames = true
 [color]
