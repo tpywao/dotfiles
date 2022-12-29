@@ -25,12 +25,6 @@ setopt auto_list
 setopt auto_menu
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
-# iterm2(Mac Only)
-# https://iterm2.com/documentation-shell-integration.html
-if is_mac; then
-  source ~/.iterm2_shell_integration.zsh
-fi
-
 # pipenv
 # # .zshenv に書いても動かないが...こっちに書くとなぜかちゃんと動く...
 # if type pipenv > /dev/null 2>&1; then
@@ -205,6 +199,3 @@ fi
 
 # zinit
 source $ZDOTDIR/zinit.zsh
-
-zinit ice as"completion"
-zinit snippet https://github.com/docker/cli/blob/master/contrib/completion/zsh/_docker

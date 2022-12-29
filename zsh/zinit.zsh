@@ -20,3 +20,11 @@ zinit light-mode for \
     zdharma-continuum/zinit-annex-rust
 
 ### End of Zinit's installer chunk
+
+
+# plugins
+zi light zsh-users/zsh-autosuggestions
+
+zi ice as"completion" blockf
+zi snippet https://github.com/docker/cli/blob/master/contrib/completion/zsh/_docker
+zi light zsh-users/zsh-completions

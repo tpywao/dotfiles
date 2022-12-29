@@ -1,5 +1,5 @@
 # use brew formula(ex. keg-only)
-HOMEBREW_NO_INSTALL_CLEANUP=1
+# export HOMEBREW_NO_INSTALL_CLEANUP=1
 BREW_PREFIX=$(brew --prefix)
 AVR_GCC_HOME=$BREW_PREFIX/opt/avr-gcc@8
 LLVM_HOME=$BREW_PREFIX/opt/llvm
@@ -8,11 +8,6 @@ ZLIB_HOME=$BREW_PREFIX/opt/zlib
 BZIP2_HOME=$BREW_PREFIX/opt/bzip2
 BISON_HOME=$BREW_PREFIX/opt/bison
 # POSTGRES12_HOME=$BREW_PREFIX/opt/postgresql@12
-
-fpath=(
-       $BREW_PREFIX/share/zsh-completions(N-/)
-       $fpath
-       )
 
 path=(
       $BREW_PREFIX/opt/mysql@5.7/bin(N-/)
@@ -31,6 +26,10 @@ export LD_LIBRARY_PATH="/usr/local/lib:$OPENSSL_HOME/lib"
 # export CPATH="-I$OPENSSL_HOME/include:$CPATH"
 export LDFLAGS="-L$AVR_GCC_HOME/lib -L$OPENSSL_HOME/lib -L$LLVM_HOME/lib -L$ZLIB_HOME/lib -L$BZIP2_HOME/lib -L$BISON_HOME/lib $LDFLAGS"
 export PKG_CONFIG_PATH="$OPENSSL_HOME/lib/pkgconfig:$ZLIB_HOME/lib/pkgconfig"
+
+# iterm2
+# https://iterm2.com/documentation-shell-integration.html
+source ~/.iterm2_shell_integration.zsh
 
 # asdf
 ASDF_PATH=$BREW_PREFIX/opt/asdf
