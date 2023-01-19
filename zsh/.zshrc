@@ -8,6 +8,18 @@ setopt prompt_subst
 setopt no_tify
 setopt noflow_control
 
+# zinit
+source $ZDOTDIR/zinit.zsh
+
+# programming languages
+LANGS_ROOT=$ZDOTDIR/langs;
+source $LANGS_ROOT/rust.zsh;
+# source $LANGS_ROOT/ruby.zsh;
+# source $LANGS_ROOT/python.zsh;
+# source $LANGS_ROOT/go.zsh;
+# source $LANGS_ROOT/node.zsh;
+
+
 # history
 HISTFILE=$HOME/.zsh_history
 HISTSIZE=20000
@@ -86,7 +98,7 @@ PROMPT+="%# "
 
 # alias
 ## ls
-alias ls='ls -F'
+alias ls='exa -F'
 alias ll='ls -l'
 alias la='ls -a'
 alias lh='ls -d .*'
@@ -121,7 +133,6 @@ function cd () {
   # echo $args -- $dir
   builtin cd $args -- $dir
 }
-# type hub >/dev/null 2>&1  && eval "$(hub alias -s)"
 
 if is_wsl; then
   # https://zenn.dev/kondounagi/scraps/184c884b5804a4
@@ -165,10 +176,13 @@ bindkey "^[[Z" reverse-menu-complete
 autoload -Uz history-search-end
 zle -N history-beginning-search-backward-end history-search-end
 zle -N history-beginning-search-forward-end history-search-end
+# https://github.com/zsh-users/zsh-autosuggestions/issues/678
+ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(history-beginning-search-backward-end history-beginning-search-forward-end)
 bindkey "^P" history-beginning-search-backward-end
 bindkey "^N" history-beginning-search-forward-end
-bindkey "^R" history-incremental-pattern-search-backward
-bindkey "^S" history-incremental-pattern-search-forward
+# fzfのコマンド
+# bindkey "^R" history-incremental-pattern-search-backward
+# bindkey "^S" history-incremental-pattern-search-forward
 ##
 bindkey "^L" clear-screen
 
@@ -176,9 +190,8 @@ bindkey "^L" clear-screen
 add-zsh-hook precmd vcs_info
 
 # fzf
-if [ -d $HOME/.fzf ]; then
-  [ -f $HOME/.fzf/.fzf.zsh ] && source $HOME/.fzf/.fzf.zsh
-  [ -f $HOME/.fzf/fzf.functions.zsh ] && source $HOME/.fzf/fzf.functions.zsh
+if is_cmd_exists fzf; then
+  source $HOME/.fzf/fzf.functions.zsh
 fi
 
 # Google Cloud SDK
@@ -196,6 +209,3 @@ if type gcloud > /dev/null 2>&1; then
     source "$GOOGLE_CLOUD_SDK_COMPLETION"
   fi
 fi
-
-# zinit
-source $ZDOTDIR/zinit.zsh

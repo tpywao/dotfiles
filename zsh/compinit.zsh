@@ -17,6 +17,11 @@ setopt auto_list
 setopt auto_menu
 setopt extendedglob
 
+function cpdump() {
+  compinit -d $_ZCOMPDUMP
+  compdump
+}
+
 _ZCOMPDUMP=${ZDOTDIR}/.zcompdump
 if [[ -n $_ZCOMPDUMP(#qN.mh+24) ]]; then
   compinit -d $_ZCOMPDUMP

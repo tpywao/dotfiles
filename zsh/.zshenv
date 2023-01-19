@@ -3,7 +3,7 @@ export LANG=ja_JP.UTF-8
 export LESSCHARSET=utf-8
 
 # local
-LOCAL_ROOT=$HOME/.local
+export LOCAL_ROOT=$HOME/.local
 export EDITOR=vim
 export REPOSITORIES_HOME="$LOCAL_ROOT/src/repositories"
 # path to dotfiles dir
@@ -15,7 +15,6 @@ export ZDOTDIR=$DOTFILES/zsh
 typeset -U path PATH cdpath fpath manpath
 setopt no_global_rcs
 path=(
-      # local
       $LOCAL_ROOT/bin(N-/)
       /usr/local/bin(N-/)
       /usr/bin(N-/)
@@ -35,20 +34,7 @@ elif is_wsl; then
   source $ZDOTDIR/wsl.zsh
 fi
 
-LANGS_ROOT=$ZDOTDIR/langs;
-source $LANGS_ROOT/rust.zsh;
-# source $LANGS_ROOT/ruby.zsh;
-# source $LANGS_ROOT/python.zsh;
-# source $LANGS_ROOT/go.zsh;
-# source $LANGS_ROOT/node.zsh;
-
 # direnv
 if is_cmd_exists direnv; then
   eval "$(direnv hook zsh)"
 fi
-
-# Android Studio
-export ANDROID_SDK_HOME=/Volumes/extssd/Android
-export ANDROID_SDK_ROOT=/Volumes/extssd/Android/sdk
-export ANDROID_EMULATOR_HOME=/Volumes/extssd/Android/Emulator
-export ANDROID_AVD_HOME=/Volumes/extssd/Android/Emulator/avd

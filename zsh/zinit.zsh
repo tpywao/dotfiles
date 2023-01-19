@@ -21,10 +21,43 @@ zinit light-mode for \
 
 ### End of Zinit's installer chunk
 
+path=(
+      $ZPFX/bin(N-/)
+      $path
+      )
 
 # plugins
-zi light zsh-users/zsh-autosuggestions
+zi wait lucid light-mode for \
+  atload"_zsh_autosuggest_start" \
+    zsh-users/zsh-autosuggestions
 
-zi ice as"completion" blockf
-zi snippet https://github.com/docker/cli/blob/master/contrib/completion/zsh/_docker
-zi light zsh-users/zsh-completions
+# rust
+zi for \
+  id-as"rust" \
+  wait"0" \
+  as"null" \
+  lucid \
+  rustup \
+  sbin"bin/*" \
+  atload'[[ ! -f ${ZINIT[COMPLETIONS_DIR]}/_rustup ]] && rustup completions zsh > ${ZINIT[COMPLETIONS_DIR]}/_rustup' \
+  atload'[[ ! -f ${ZINIT[COMPLETIONS_DIR]}/_cargo ]] && zi creinstall rust' \
+  atload'export CARGO_HOME=$PWD RUSTUP_HOME=$PWD/rustup' \
+    zdharma-continuum/null
+zi for \
+  wait='[[ -v CARGO_HOME && -v RUSTUP_HOME ]]' \
+  lucid \
+  id-as'rust-cargo-make' \
+  cargo'!cargo-make' \
+    zdharma-continuum/null
+
+# completions
+zi wait lucid as"completion" blockf light-mode for \
+  https://github.com/docker/cli/blob/master/contrib/completion/zsh/_docker \
+  https://github.com/sagiegurari/cargo-make/raw/master/extra/shell/makers-completion.bash
+zi wait lucid as"completion" blockf light-mode for \
+    zsh-users/zsh-completions
+# なんかうまく動かん
+# zi as-id"_git_bash" wait silent atclone"zstyle ':completion:*:*:git:*' script git-completion.bash" atpull"%atclone" for \
+#    https://raw.github.com/git/git/master/contrib/completion/git-completion.bash
+# zi as-id"_git" wait lucid as"completion" blockf mv"git-completion.zsh -> _git" pick"_git" for \
+#   https://raw.github.com/git/git/master/contrib/completion/git-completion.zsh
