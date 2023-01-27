@@ -12,20 +12,14 @@ export DOTFILES=$HOME/.dotfiles
 export ZDOTDIR=$DOTFILES/zsh
 
 # path
-typeset -U path PATH cdpath fpath manpath
+typeset -U path PATH fpath FPATH cdpath manpath
 setopt no_global_rcs
 path=(
-      $LOCAL_ROOT/bin(N-/)
-      /usr/local/bin(N-/)
-      /usr/bin(N-/)
-      /bin(N-/)
-      $path
-      )
-fpath=(
-       $HOME/.completions(N-/)
-       $ZDOTDIR/completions(N-/)
-       $fpath
-       )
+  /usr/local/bin(N-/)
+  /usr/bin(N-/)
+  /bin(N-/)
+  $path
+)
 
 source $ZDOTDIR/utils.zsh
 if is_mac; then

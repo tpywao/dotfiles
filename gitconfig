@@ -40,9 +40,6 @@
 	path = ~/.gitconfig.local
 [rebase]
 	autosquash = true
-[user]
-	name = tpywao
-	email = tpywao@gmail.com
 [filter "lfs"]
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process

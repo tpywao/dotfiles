@@ -11,21 +11,23 @@
 # - '.' matches "regular files"
 # - 'mh+24' matches files (or directories or whatever) that are older than 24 hours.
 autoload -Uz compinit
+autoload -Uz +X bashcompinit
 setopt correct
 setopt no_beep
 setopt auto_list
 setopt auto_menu
 setopt extendedglob
 
-function cpdump() {
+function dump() {
   compinit -d $_ZCOMPDUMP
+  bashcompinit
   compdump
 }
 
 _ZCOMPDUMP=${ZDOTDIR}/.zcompdump
 if [[ -n $_ZCOMPDUMP(#qN.mh+24) ]]; then
-  compinit -d $_ZCOMPDUMP
-  compdump
+  dump
 else
   compinit -C -d $_ZCOMPDUMP
+  bashcompinit
 fi

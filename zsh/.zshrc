@@ -8,8 +8,17 @@ setopt prompt_subst
 setopt no_tify
 setopt noflow_control
 
-# zinit
-source $ZDOTDIR/zinit.zsh
+# zi
+source $ZDOTDIR/zi/main.zsh
+path=(
+  $LOCAL_ROOT/bin(N-/)
+  $path
+)
+
+fpath=(
+  $HOME/.completions(N-/)
+  $fpath
+)
 
 # programming languages
 LANGS_ROOT=$ZDOTDIR/langs;
@@ -36,18 +45,6 @@ setopt no_beep
 setopt auto_list
 setopt auto_menu
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
-
-# pipenv
-# # .zshenv に書いても動かないが...こっちに書くとなぜかちゃんと動く...
-# if type pipenv > /dev/null 2>&1; then
-#   export PIPENV_VENV_IN_PROJECT=true
-#   # pipenv --completion
-#   _pipenv() {
-#     eval $(env COMMANDLINE="${words[1,$CURRENT]}" _PIPENV_COMPLETE=complete-zsh  pipenv)
-#   }
-#   compdef _pipenv pipenv
-#   export PIPENV_VENV_IN_PROJECT=true
-# fi
 
 # cd
 setopt auto_cd
@@ -98,7 +95,9 @@ PROMPT+="%# "
 
 # alias
 ## ls
-alias ls='exa -F'
+if is_cmd_exists exa; then
+  alias ls='exa -F'
+fi
 alias ll='ls -l'
 alias la='ls -a'
 alias lh='ls -d .*'

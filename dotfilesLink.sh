@@ -20,7 +20,7 @@ case $shell in
 esac
 
 # EditorConfig
-ln -si $DOTFILES/editorconfig ~/.editorconfig
+ln -si $DOTFILES/.editorconfig ~/.editorconfig
 
 # vim
 # ln -sin $DOTFILES/.vim ~/.vim
