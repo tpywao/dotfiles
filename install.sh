@@ -20,7 +20,7 @@ case $shell in
     ;;
   *bash )
     symlink $DOTFILES/bashrc ~/.bashrc
-    symlink $DOTFILES/aliases.bashrc ~/.aliases.bashrc
+    symlink $DOTFILES/aliases.bash ~/.aliases.bash
     ;;
 esac
 

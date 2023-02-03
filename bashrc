@@ -1,3 +1,5 @@
+export DOTFILES=${BASH_SOURCE%/*}
+
 # history setting
 HISTCONTROL=ignoreboth
 HISTSIZE=1000
@@ -5,12 +7,12 @@ HISTFILESIZE=2000
 HISTIGNORE='ls:ll:la:lla:cls:fg:fg :bg:bg :srcbash:man :irb'
 
 # alias setting
-if [ -f ~/.bashrc.aliases ]; then
-    . ~/.bashrc.aliases
+if [ -f ~/.aliases.bash ]; then
+  . ~/.aliases.bash
 fi
 
 # local setting
-export PATH="$HOME/local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 # rbenv setting
 if [ -d ~/.rbenv ]; then
