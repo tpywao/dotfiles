@@ -50,3 +50,11 @@ zi for \
   as"command" \
   pick"bin/rg" \
     z-shell/0
+zi for \
+  id-as'rust-git-delta' \
+  wait='[[ -v CARGO_HOME && -v RUSTUP_HOME ]]' \
+  lucid \
+  cargo'!git-delta' \
+  as"command" \
+  pick"bin/delta" \
+    z-shell/0

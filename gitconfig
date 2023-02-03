@@ -1,58 +1,64 @@
 [alias]
-	co = checkout
-	# checkout to previous branch
-	cop = checkout @{-1}
-	ci = commit
-	st = status --short --branch
-	br = branch
-	hist = log --graph --date=short --decorate --oneline
-	adl = add -v --all
-	adt = add -v .
-	adm = add -v --update
-	adp = add --patch
-	ls = ls-files
-	reci = commit --amend
-	sb = show-branch
-	dfw = diff --ignore-all-space
-	dfs = diff --staged
-	dfh = diff HEAD
-	# pcd = !git diff -U0 HEAD | grep -E -e "^\+ *# " -e '^diff' | grep -v 'TODO'
-# Print New Commented line (python)
-	pnc = !git diff --unified=0 HEAD | grep -E -e "\"^\\+ *#\"" -e '^diff' | grep -v -e TODO: -e FIXME: -e OPTIMEZE: -e WIP:
-	todo = grep --heading --line-number -e TODO: -e FIXME: -e OPTIMEZE: -e WIP:
-	cpush = !git push -u origin `git rev-parse --abbrev-ref HEAD`
-	sw = switch
-	pclone = clone --depth 1 --filter=blob:none --sparse
-	brprune = !git branch -d $(git for-each-ref --format '%(if)%(upstream:track)%(then)%(refname:short)%(end)')
+  co = checkout
+  ci = commit
+  st = status --short --branch
+  br = branch
+  sw = switch
+  hist = log --graph --date=short --decorate --oneline
+  adl = add -v --all
+  adt = add -v .
+  adm = add -v --update
+  adp = add --patch
+  ls = ls-files
+  reci = commit --amend
+  wip = !git commit --allow-empty -m 'wip'
+  sb = show-branch
+  dfw = diff --ignore-all-space
+  dfs = diff --staged
+  dfh = diff HEAD
+  # pcd = !git diff -U0 HEAD | grep -E -e "^\+ *# " -e '^diff' | grep -v 'TODO'
+  # Print New Commented line (python)
+  pnc = !git diff --unified=0 HEAD | grep -E -e "\"^\\+ *#\"" -e '^diff' | grep -v -e TODO: -e FIXME: -e OPTIMEZE: -e WIP:
+  todo = grep --heading --line-number -e TODO: -e FIXME: -e OPTIMEZE: -e WIP:
+  cpush = !git push -u origin `git branch --show-current`
+  pclone = clone --depth 1 --filter=blob:none --sparse
+  brprune = !git branch -d $(git for-each-ref --format '%(if)%(upstream:track)%(then)%(refname:short)%(end)')
 [diff]
-	renames = true
+  renames = true
 [color]
-	ui = auto
+  ui = auto
 [gui]
-	encoding = utf-8
-[pager]
-	log = type diff-highlight >/dev/null 2>&1 && diff-highlight | less || less
-	show = type diff-highlight >/dev/null 2>&1 && diff-highlight | less || less
-	diff = type diff-highlight >/dev/null 2>&1 && diff-highlight | less || less
+  encoding = utf-8
+[core]
+  pager = delta
+[interactive]
+  diffFilter = delta --color-only
+[merge]
+  conflictstyle = diff3
+[diff]
+  colorMoved = default
 [push]
-	default = simple
+  default = simple
 [include]
-	path = ~/.gitconfig.local
+  path = ~/.gitconfig.local
 [rebase]
-	autosquash = true
+  autosquash = true
 [filter "lfs"]
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
-	clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
+  clean = git-lfs clean -- %f
 [ghq]
-	root = /Volumes/extssd/src
-	root = ~/.local/src/repositories
+  root = /Volumes/extssd/src
+  root = ~/.local/src/repositories
 [pull]
-	ff = only
+  ff = only
 [fetch]
-	prune = true
+  prune = true
 [init]
-	defaultBranch = main
-[credential]
-	helper = osxkeychain
+  defaultBranch = main
+[delta]
+  navigate = true
+  light = false
+  side-by-side = true
+  line-numbers = true

@@ -1,7 +1,8 @@
 zi id-as"auto" wait lucid as"completion" blockf light-mode for \
   https://raw.githubusercontent.com/docker/cli/master/contrib/completion/zsh/_docker \
   https://raw.githubusercontent.com/sharkdp/fd/master/contrib/completion/_fd \
-  https://raw.githubusercontent.com/BurntSushi/ripgrep/master/complete/_rg
+  https://raw.githubusercontent.com/BurntSushi/ripgrep/master/complete/_rg \
+  id-as"_delta" https://raw.githubusercontent.com/dandavison/delta/master/etc/completion/completion.zsh
 
 zi id-as"auto" wait lucid light-mode for \
   https://raw.githubusercontent.com/sagiegurari/cargo-make/master/extra/shell/makers-completion.bash
