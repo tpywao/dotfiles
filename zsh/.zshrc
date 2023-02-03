@@ -10,14 +10,11 @@ setopt noflow_control
 
 # zi
 source $ZDOTDIR/zi/main.zsh
+
+# local
 path=(
   $LOCAL_ROOT/bin(N-/)
   $path
-)
-
-fpath=(
-  $HOME/.completions(N-/)
-  $fpath
 )
 
 # programming languages
@@ -39,6 +36,10 @@ setopt hist_reduce_blanks
 setopt hist_no_store
 
 # auto complete
+fpath=(
+  $HOME/.completions(N-/)
+  $fpath
+)
 source $ZDOTDIR/compinit.zsh
 setopt correct
 setopt no_beep
@@ -179,7 +180,7 @@ zle -N history-beginning-search-forward-end history-search-end
 ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(history-beginning-search-backward-end history-beginning-search-forward-end)
 bindkey "^P" history-beginning-search-backward-end
 bindkey "^N" history-beginning-search-forward-end
-# fzfのコマンド
+# fzfのコマンドで上書きされるためコメントアウト
 # bindkey "^R" history-incremental-pattern-search-backward
 # bindkey "^S" history-incremental-pattern-search-forward
 ##
@@ -194,7 +195,7 @@ if is_cmd_exists fzf; then
 fi
 
 # Google Cloud SDK
-if type gcloud > /dev/null 2>&1; then
+if is_cmd_exists gcloud; then
   GOOGLE_CLOUD_SDK_ROOT=$(gcloud info --format='value(installation.sdk_root)')
   # The next line updates PATH for the Google Cloud SDK.
   GOOGLE_CLOUD_SDK_PATH=$GOOGLE_CLOUD_SDK_ROOT/path.zsh.inc

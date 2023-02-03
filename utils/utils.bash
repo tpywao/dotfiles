@@ -1,4 +1,4 @@
-# utils
+#!/bin/bash
 string_contain() {
   [ -z "$1" ] || {
     [ -z "${1##*$2*}" ] && [ -n "$1" ]
