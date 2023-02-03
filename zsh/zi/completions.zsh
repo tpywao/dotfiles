@@ -8,7 +8,8 @@ zi id-as"auto" wait lucid light-mode for \
   https://raw.githubusercontent.com/sagiegurari/cargo-make/master/extra/shell/makers-completion.bash
 
 zi wait lucid blockf light-mode for \
-  zsh-users/zsh-completions
+  atpull"zinit creinstall -q ." \
+    zsh-users/zsh-completions
 
 # ref. https://nnsnico.hatenablog.jp/entry/2021/01/30/185939
 zinit id-as"auto" wait silent lucid light-mode for \

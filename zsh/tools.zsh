@@ -2,7 +2,6 @@
 # install tools
 
 # CLI tools
-# exa
 # bat
 # fzf
 # gh
@@ -18,7 +17,7 @@ if is_mac; then
     echo https://docs.brew.sh/Installation
     exit 1
   fi
-  brew install exa bat fzf gh
+  brew install bat fzf gh
   brew install --cask raycast rectangle
 elif is_wsl; then
 elif is_linux; then

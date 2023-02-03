@@ -9,9 +9,23 @@ export ANDROID_SDK_HOME=/Volumes/extssd/Android
 export ANDROID_SDK_ROOT=/Volumes/extssd/Android/sdk
 export ANDROID_EMULATOR_HOME=/Volumes/extssd/Android/Emulator
 export ANDROID_AVD_HOME=/Volumes/extssd/Android/Emulator/avd
-export path=(
+
+paths=(
   $JAVA_HOME/bin(N-/)
   $ANDROID_SDK_ROOT/platform-tools(N-/)
   $ANDROID_SDK_ROOT/tools/bin(N-/)
-  $path
 )
+
+case $shell in
+  *fish )
+    ;;
+  *zsh )
+    export path=(
+      $paths
+      $path
+    )
+    ;;
+  *bash )
+    export PATH="$(IFS=:; echo "$paths[*]:$PATH")"
+    ;;
+esac
