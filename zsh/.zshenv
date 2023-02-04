@@ -4,7 +4,8 @@ export LESSCHARSET=utf-8
 
 export EDITOR=vim
 # path to .zshrc
-export ZDOTDIR=${funcsourcetrace[1]%/*}
+ZSHENV=$(readlink $HOME/.zshenv)
+export ZDOTDIR=${ZSHENV%/*}
 # path to dotfiles dir
 export DOTFILES=${ZDOTDIR%/*}
 # local
