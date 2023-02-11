@@ -1,8 +1,0 @@
-known_hosts
-*known_hosts
-*.pub
-google_compute_engine
-heiwa
-tmp
-config.d/**/*
-!config.d/**/config
