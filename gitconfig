@@ -40,17 +40,14 @@
 [push]
   default = simple
 [include]
-  path = ~/.gitconfig.local
+	path = ~/.local.gitconfig
 [rebase]
   autosquash = true
 [filter "lfs"]
-  smudge = git-lfs smudge -- %f
-  process = git-lfs filter-process
-  required = true
-  clean = git-lfs clean -- %f
-[ghq]
-  root = /Volumes/extssd/src
-  root = ~/.local/src/repositories
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
 [pull]
   ff = only
 [fetch]
