@@ -31,7 +31,7 @@ symlink $DOTFILES/.editorconfig ~/.editorconfig
 symlink $DOTFILES/vimrc ~/.vimrc
 
 # git
-symlink $DOTFILES/gitconfig ~/.gitconfig
+symlink $DOTFILES/git/gitconfig ~/.gitconfig
 
 # docker
 symlink $DOTFILES/docker/config.json ~/.docker/config.json
