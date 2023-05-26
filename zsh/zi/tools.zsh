@@ -56,3 +56,7 @@ zi for \
   as"command" \
   pick"bin/delta" \
     z-shell/0
+
+# CLI
+zi from"gh-r" as"program" mv"direnv* -> direnv" pick"direnv" for \
+  direnv/direnv

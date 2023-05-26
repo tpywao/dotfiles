@@ -23,7 +23,7 @@ zi light-mode for \
   @annexes # <- https://wiki.zshell.dev/ecosystem/category/-annexes
 # examples here -> https://wiki.zshell.dev/community/gallery/collection
 
-source $_PWD/plugins.zsh
+source $_PWD/tools.zsh
 source $_PWD/completions.zsh
 
 zicompinit # <- https://wiki.zshell.dev/docs/guides/commands
