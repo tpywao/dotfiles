@@ -1,0 +1,30 @@
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+SHA1=$3
+
+current_branch=$(git branch --show-current)
+branch_elements=(${current_branch/\// })
+ticket_name=${branch_elements[1]}
+# branch_type=${branch_elements[0]}
+if [ -z "$ticket_name" ]; then
+  exit 0
+fi
+
+string_contain() {
+  [ -z "${1##*$2*}" ]
+}
+is_mac() {
+  string_contain $OSTYPE darwin
+}
+
+first_line=$(head -n1 $COMMIT_MSG_FILE)
+if [ -z "$first_line" ]; then
+  # 一行目が空行であれば（--amendでなければ）以下を実行
+  # 最初の一行の先頭を書き換える
+  if is_mac; then
+    # macは-iがlinuxと違う
+    sed -i "" "1s/^/${ticket_name} /" $COMMIT_MSG_FILE
+  else
+    sed -i "1s/^/${ticket_name} /" $COMMIT_MSG_FILE
+  fi
+fi

@@ -1,0 +1,6 @@
+current_branch=$(git branch --show-current)
+protected_branches='main master develop test'
+if [[ " ${protected_branches[@]} " =~ " $current_branch " ]]; then
+  echo "${current_branch} への直プッシュ禁止"
+  exit 1
+fi

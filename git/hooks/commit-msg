@@ -1,0 +1,45 @@
+#!/bin/bash
+exit_code=0
+
+echo $@
+commit_message=$0
+
+current_branch=$(git branch --show-current)
+# 後方最長一致除去
+branch_type=${current_branch%%/*}
+# 前方最短一致除去
+ticket_name=${current_branch#*/}
+
+function print_error() {
+  error_type=$1
+
+  echo $error_type
+
+  echo -e "\033[31;22mNG"
+  echo -e "================================================================"
+  case error_type in
+  ticket)
+    echo -e "コミットメッセージにチケット番号が含まれていないか、間違っています。"
+    echo -e ""
+    echo -e "Example: APN-1234"
+    ;;
+  esac
+  echo -e "================================================================\033[0m\n"
+}
+
+pattern="$ticket_name .*"
+echo $pattern
+if [[ ! $commit_message =~ $pattern ]]; then
+  print_error ticket
+  exit_code=1
+fi
+
+if [ ${exit_code} -eq 0 ]; then
+  echo ""
+  echo -e "\033[32;1m✨ALL PASS!!\033[0m\n\n"
+else
+  echo ""
+  echo -e "\033[31;1mGit Hooks: commit-msg: NG\033[0m\n\n"
+fi
+
+exit $exit_code
