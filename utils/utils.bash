@@ -1,11 +1,15 @@
 #!/bin/bash
 string_contain() {
-  [ -z "$1" ] || {
-    [ -z "${1##*$2*}" ] && [ -n "$1" ]
+  string=$1
+  pattern=$2
+  # -z 空文字
+  [ -z "$string" ] || {
+    # ${target##*}
+    [ -z "${string##*$pattern*}" ] && [ -n "$string" ]
   }
 }
 is_cmd_exists() {
-  command -v $1 > /dev/null 2>&1
+  command -v $1 >/dev/null 2>&1
 }
 
 # os
