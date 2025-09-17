@@ -2,9 +2,10 @@
 string_contain() {
   string=$1
   pattern=$2
-  # -z 空文字
+  # -z 文字列長が 0 ならば真
   [ -z "$string" ] || {
-    # ${target##*}
+    # 前方最長一致除去
+    # 文字列長が 1 以上ならば真
     [ -z "${string##*$pattern*}" ] && [ -n "$string" ]
   }
 }
