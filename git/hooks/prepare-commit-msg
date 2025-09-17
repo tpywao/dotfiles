@@ -1,17 +1,24 @@
+#!/bin/bash
+# WIP: pythonで書いたら良くね？
 COMMIT_MSG_FILE=$1
 COMMIT_SOURCE=$2
 SHA1=$3
 
 current_branch=$(git branch --show-current)
-branch_elements=(${current_branch/\// })
-ticket_name=${branch_elements[1]}
-# branch_type=${branch_elements[0]}
+# # 後方最長一致除去
+# branch_type=${current_branch%%/*}
+# 前方最短一致除去
+ticket_name=${current_branch#*/}
 if [ -z "$ticket_name" ]; then
   exit 0
 fi
 
 string_contain() {
-  [ -z "${1##*$2*}" ]
+  string=$1
+  pattern=$2
+  # 前方最長一致除去した結果、
+  # -z 文字列長が 0 ならば真
+  [ -z "${string##*$pattern*}" ]
 }
 is_mac() {
   string_contain $OSTYPE darwin
@@ -25,6 +32,7 @@ if [ -z "$first_line" ]; then
     # macは-iがlinuxと違う
     sed -i "" "1s/^/${ticket_name} /" $COMMIT_MSG_FILE
   else
+    # TODO: linux は未検証！！
     sed -i "1s/^/${ticket_name} /" $COMMIT_MSG_FILE
   fi
 fi

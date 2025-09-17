@@ -1,14 +1,13 @@
 #!/bin/bash
 exit_code=0
 
-echo $@
 commit_message=$0
 
 current_branch=$(git branch --show-current)
-# 後方最長一致除去
-branch_type=${current_branch%%/*}
-# 前方最短一致除去
-ticket_name=${current_branch#*/}
+# '/' を ' 'に置き換え、()で囲うことでarrayに変換
+branch_elements=(${current_branch/\// })
+ticket_name=${branch_elements[1]}
+# branch_type=${branch_elements[0]}
 
 function print_error() {
   error_type=$1
