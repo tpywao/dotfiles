@@ -28,8 +28,3 @@ if is_mac; then
 elif is_wsl; then
   source $ZDOTDIR/wsl.zsh
 fi
-
-# direnv
-if is_cmd_exists direnv; then
-  eval "$(direnv hook zsh)"
-fi

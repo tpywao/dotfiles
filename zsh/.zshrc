@@ -1,15 +1,22 @@
 # Setting
-# autoload
-# -U unalias, -z type zsh
-autoload -Uz colors; colors
-autoload -Uz add-zsh-hook
 setopt print_eight_bit
 setopt prompt_subst
 setopt no_tify
 setopt noflow_control
+# autoload
+# -U unalias, -z type zsh
+autoload -Uz colors; colors
+autoload -Uz add-zsh-hook
+autoload -Uz select-word-style
+select-word-style bash
 
 # zi
 source $ZDOTDIR/zi/main.zsh
+
+# direnv
+if is_cmd_exists direnv; then
+  eval "$(direnv hook zsh)"
+fi
 
 # local
 path=(
@@ -154,3 +161,8 @@ if is_cmd_exists gcloud; then
     source "$GOOGLE_CLOUD_SDK_COMPLETION"
   fi
 fi
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=(/Users/ogiso/.docker/completions $fpath)
+autoload -Uz compinit
+compinit
+# End of Docker CLI completions

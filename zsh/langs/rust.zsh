@@ -5,8 +5,10 @@ if [[ -v RUSTUP_HOME && -v CARGO_HOME ]]; then
   #       $CARGO_ROOT/bin(N-/)
   #       $path
   #       )
-  SCCACHE_PATH=$(which sccache)
-  if [ -f $SCCACHE_PATH ]; then
-    export RUST_WRAPPER=$SCCACHE_PATH
-  fi
+  # ziでsccacheをインストールするときにRUST_WRAPPERを設定する
+  # SCCACHE_PATH=$(which sccache)
+  # echo sccache_path: $SCCACHE_PATH
+  # if [ -f $SCCACHE_PATH ]; then
+  #   export RUST_WRAPPER=$SCCACHE_PATH
+  # fi
 fi
