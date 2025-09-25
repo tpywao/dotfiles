@@ -47,7 +47,7 @@ fpath=(
   $HOME/.completions(N-/)
   $fpath
 )
-source $ZDOTDIR/compinit.zsh
+source $ZDOTDIR/completion.zsh
 setopt correct
 setopt no_beep
 setopt auto_list
