@@ -103,6 +103,9 @@ PROMPT+="%# "
 
 source $ZDOTDIR/aliases.zsh
 
+# tokens
+[[ -f "$HOME/.tokens" ]] && source "$HOME/.tokens"
+
 # keybind
 bindkey -e
 # ^ ctrl, ^[ alt, ^[[Z shift+tab
