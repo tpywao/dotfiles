@@ -32,6 +32,14 @@ symlink $DOTFILES/vimrc ~/.vimrc
 
 # git
 symlink $DOTFILES/git/gitconfig ~/.gitconfig
+if [ ! -e "$HOME/.gitconfig.local" ]; then
+  echo ""
+  echo "📝 Note: Consider creating ~/.gitconfig.local for machine-specific settings"
+  echo "   Example:"
+  echo "   git config --file ~/.gitconfig.local user.name \"Your Name\""
+  echo "   git config --file ~/.gitconfig.local user.email \"your.email@example.com\""
+  echo ""
+fi
 
 # docker
 symlink $DOTFILES/docker/config.json ~/.docker/config.json
