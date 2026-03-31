@@ -31,6 +31,7 @@
   encoding = utf-8
 [core]
   pager = delta
+	quotepath = false
 [interactive]
   diffFilter = delta --color-only
 [merge]
@@ -59,6 +60,3 @@
   light = false
   side-by-side = true
   line-numbers = true
-[user]
-	name = wao3299
-	email = wao3299.fa@gmail.com
