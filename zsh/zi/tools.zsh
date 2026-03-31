@@ -1,8 +1,7 @@
 zi wait lucid light-mode for \
-  atload"_zsh_autosuggest_start" \
-  zsh-users/zsh-autosuggestions \
   atinit"zicompinit; zicdreplay" \
-  zdharma-continuum/fast-syntax-highlighting
+  zdharma-continuum/fast-syntax-highlighting \
+  marlonrichert/zsh-autocomplete
 
 # rust
 zi for \

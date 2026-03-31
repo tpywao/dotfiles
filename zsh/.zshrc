@@ -47,7 +47,6 @@ fpath=(
   $HOME/.completions(N-/)
   $fpath
 )
-source $ZDOTDIR/completion.zsh
 setopt correct
 setopt no_beep
 setopt auto_list
@@ -131,8 +130,6 @@ bindkey "^[[Z" reverse-menu-complete
 autoload -Uz history-search-end
 zle -N history-beginning-search-backward-end history-search-end
 zle -N history-beginning-search-forward-end history-search-end
-# https://github.com/zsh-users/zsh-autosuggestions/issues/678
-ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(history-beginning-search-backward-end history-beginning-search-forward-end)
 bindkey "^P" history-beginning-search-backward-end
 bindkey "^N" history-beginning-search-forward-end
 # fzfのコマンドで上書きされるためコメントアウト
@@ -164,8 +161,9 @@ if is_cmd_exists gcloud; then
     source "$GOOGLE_CLOUD_SDK_COMPLETION"
   fi
 fi
-# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+
+# Docker
 fpath=(/Users/ogiso/.docker/completions $fpath)
-autoload -Uz compinit
-compinit
-# End of Docker CLI completions
+
+
+source $ZDOTDIR/completion.zsh
