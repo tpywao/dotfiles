@@ -1,3 +1,4 @@
+# uvがいいかも
 export PYENV_ROOT="$HOME/.pyenv"
 if [ -d "$PYENV_ROOT" ]; then
   path=(
