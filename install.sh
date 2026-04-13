@@ -106,4 +106,18 @@ if command -v brew > /dev/null 2>&1; then
   fi
 fi
 
+# Claude Code
+if ! command -v claude > /dev/null 2>&1; then
+  CLAUDE_INSTALL_CMD="curl -fsSL https://claude.ai/install.sh | bash"
+  echo "Claude Code is not installed."
+  echo "  $CLAUDE_INSTALL_CMD"
+  printf "Install now? [y/N] "
+  read answer
+  if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+    eval "$CLAUDE_INSTALL_CMD"
+  else
+    echo "Skipping Claude Code installation."
+  fi
+fi
+
 exec $SHELL
