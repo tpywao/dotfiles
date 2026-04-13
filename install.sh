@@ -56,4 +56,54 @@ symlink $DOTFILES/sqliterc ~/.sqliterc
 # direnv
 symlink $DOTFILES/direnvrc ~/.direnvrc
 
+# Nix + home-manager
+if ! command -v nix > /dev/null 2>&1; then
+  NIX_INSTALL_CMD="curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install"
+  echo "Nix is not installed."
+  echo "  $NIX_INSTALL_CMD"
+  printf "Install now? [y/N] "
+  read answer
+  if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+    eval "$NIX_INSTALL_CMD"
+    # Load Nix into the current shell session after installation
+    NIX_PROFILE="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
+    [ -f "$NIX_PROFILE" ] && . "$NIX_PROFILE"
+  else
+    echo "Skipping Nix installation."
+  fi
+fi
+
+if command -v nix > /dev/null 2>&1; then
+  if ! command -v home-manager > /dev/null 2>&1; then
+    echo "-----> Applying home-manager for the first time"
+    nix run home-manager -- switch --flake "$DOTFILES#$(whoami)" --impure
+  else
+    echo "-----> Switching home-manager"
+    home-manager switch --flake "$DOTFILES#$(whoami)" --impure
+  fi
+fi
+
+# Homebrew casks
+if ! command -v brew > /dev/null 2>&1; then
+  BREW_INSTALL_CMD='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+  echo "Homebrew is not installed."
+  echo "  $BREW_INSTALL_CMD"
+  printf "Install now? [y/N] "
+  read answer
+  if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+    eval "$BREW_INSTALL_CMD"
+    # Load brew into the current shell session after installation
+    [ -f /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+  else
+    echo "Skipping Homebrew installation."
+  fi
+fi
+
+if command -v brew > /dev/null 2>&1; then
+  if [ -f "$DOTFILES/Brewfile" ]; then
+    echo "-----> Installing casks from Brewfile"
+    brew bundle --file="$DOTFILES/Brewfile"
+  fi
+fi
+
 exec $SHELL
