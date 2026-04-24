@@ -30,10 +30,10 @@
 [gui]
   encoding = utf-8
 [core]
-  pager = delta
+	pager = "if command -v delta >/dev/null 2>&1; then delta; else less -FRX; fi"
 	quotepath = false
 [interactive]
-  diffFilter = delta --color-only
+	diffFilter = "if command -v delta >/dev/null 2>&1; then delta --color-only; else cat; fi"
 [merge]
   conflictstyle = diff3
 [diff]
