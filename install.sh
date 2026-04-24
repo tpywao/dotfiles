@@ -5,7 +5,9 @@ shell=${1:-$SHELL}
 symlink() {
   file=$1
   link=$2
-  if [ ! -e "$link" ]; then
+  if [ -L "$link" ]; then
+    printf "\033[0;36m[linked]\033[0m %s\n" "$link"
+  elif [ ! -e "$link" ]; then
     echo "-----> Symlinking your new $link"
     ln -si $file $link
   fi
