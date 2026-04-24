@@ -12,6 +12,7 @@ pkgs: with pkgs; [
   jd-diff-patch
   jq
   nmap
+  ripgrep
   sheldon
   tig
   tree
