@@ -109,6 +109,9 @@ if command -v brew > /dev/null 2>&1; then
 fi
 
 # Claude Code
+mkdir -p "$HOME/.claude"
+symlink $DOTFILES/claude/CLAUDE.md ~/.claude/CLAUDE.md
+
 if ! command -v claude > /dev/null 2>&1; then
   CLAUDE_INSTALL_CMD="curl -fsSL https://claude.ai/install.sh | bash"
   echo "Claude Code is not installed."
