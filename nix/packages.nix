@@ -2,21 +2,29 @@ pkgs: with pkgs; [
   # CLI tools
   awscli2
   # ngrok
-  bat
+  bat        # cat
+  bottom     # top/htop
+  du-dust    # du
+  eza        # ls
+  fd         # find
   fzf
   gh
   ghq
   git
   gnused
   htop
+  hyperfine  # time
   jd-diff-patch
   jq
   nmap
-  ripgrep
+  procs      # ps
+  ripgrep    # grep
   sheldon
   tig
+  tokei      # cloc
   tree
   wget
+  zoxide     # cd
 
   # Build tools
   pkg-config
