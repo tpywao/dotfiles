@@ -5,16 +5,21 @@
 # インストール: brew bundle
 # 差分確認:    brew bundle check
 
+# development
 # cask "alacritty"
 # cask "figma"
-# cask "floorp"
-cask "google-chrome"
 # cask "inkscape"
-cask "keyclu"
 # cask "kiro"
 # cask "postman"
+# cask "session-manager-plugin"
+
+# brower
+# cask "floorp"
+# cask "sigmaos"
+cask "google-chrome"
+
+# utils
+cask "keyclu"
 cask "raycast"
 cask "rectangle"
-# cask "session-manager-plugin"
-# cask "sigmaos"
 # cask "slack-cli"
