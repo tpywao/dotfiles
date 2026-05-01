@@ -30,7 +30,7 @@
 [gui]
   encoding = utf-8
 [core]
-	pager = "if command -v delta >/dev/null 2>&1; then delta; else less -FRX; fi"
+	pager = "if command -v delta >/dev/null 2>&1; then delta; else cat; fi"
 	quotepath = false
 [interactive]
 	diffFilter = "if command -v delta >/dev/null 2>&1; then delta --color-only; else cat; fi"
