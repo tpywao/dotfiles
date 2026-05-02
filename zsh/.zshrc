@@ -103,10 +103,6 @@ PROMPT+="%# "
 # RPROMPT="[%~]"
 
 source $ZDOTDIR/aliases.zsh
-
-# tokens
-[[ -f "$HOME/.tokens" ]] && source "$HOME/.tokens"
-
 source $ZDOTDIR/keybinds.zsh
 
 # hook
