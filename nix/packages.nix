@@ -4,7 +4,7 @@ pkgs: with pkgs; [
   # ngrok
   bat        # cat
   bottom     # top/htop
-  du-dust    # du
+  dust    # du
   eza        # ls
   fd         # find
   fzf
