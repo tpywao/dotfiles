@@ -10,8 +10,10 @@ autoload -Uz add-zsh-hook
 autoload -Uz select-word-style
 select-word-style bash
 
-# zi
-source $ZDOTDIR/zi/main.zsh
+# sheldon
+if is_cmd_exists sheldon; then
+  eval "$(sheldon source)"
+fi
 
 # direnv
 if is_cmd_exists direnv; then
