@@ -15,6 +15,11 @@ export REPOSITORIES_HOME="$LOCAL_ROOT/src/repositories"
 # path
 typeset -U path PATH fpath FPATH cdpath manpath
 setopt no_global_rcs
+fpath=(
+  $HOME/.nix-profile/share/zsh/site-functions(N-/)
+  /nix/var/nix/profiles/default/share/zsh/site-functions(N-/)
+  $fpath
+)
 path=(
   $HOME/.nix-profile/bin(N-/)
   /nix/var/nix/profiles/default/bin(N-/)
