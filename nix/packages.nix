@@ -3,6 +3,7 @@ pkgs: with pkgs; [
   awscli2
   # ngrok
   bat        # cat
+  docker
   bottom     # top/htop
   dust    # du
   eza        # ls
@@ -32,7 +33,6 @@ pkgs: with pkgs; [
 
   # Node.js ecosystem
   devcontainer
-  docker
 
   # Python ecosystem
   # pipx
