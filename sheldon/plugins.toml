@@ -11,14 +11,6 @@ apply = ["fpath"]
 remote = "https://raw.githubusercontent.com/docker/cli/master/contrib/completion/zsh/_docker"
 apply = ["fpath"]
 
-[plugins.fd-completion]
-remote = "https://raw.githubusercontent.com/sharkdp/fd/master/contrib/completion/_fd"
-apply = ["fpath"]
-
-[plugins.delta-completion]
-remote = "https://raw.githubusercontent.com/dandavison/delta/master/etc/completion/completion.zsh"
-apply = ["fpath"]
-
 [plugins.git-completion-bash]
 remote = "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash"
 apply = ["source"]
