@@ -1,0 +1,35 @@
+shell = "zsh"
+
+[plugins]
+
+# Completions (must be in fpath before compinit)
+[plugins.zsh-completions]
+github = "zsh-users/zsh-completions"
+apply = ["fpath"]
+
+[plugins.docker-completion]
+remote = "https://raw.githubusercontent.com/docker/cli/master/contrib/completion/zsh/_docker"
+apply = ["fpath"]
+
+[plugins.fd-completion]
+remote = "https://raw.githubusercontent.com/sharkdp/fd/master/contrib/completion/_fd"
+apply = ["fpath"]
+
+[plugins.delta-completion]
+remote = "https://raw.githubusercontent.com/dandavison/delta/master/etc/completion/completion.zsh"
+apply = ["fpath"]
+
+[plugins.git-completion-bash]
+remote = "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash"
+apply = ["source"]
+
+[plugins.git-completion]
+remote = "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.zsh"
+apply = ["fpath"]
+
+# Plugins (load after completions)
+[plugins.fast-syntax-highlighting]
+github = "zdharma-continuum/fast-syntax-highlighting"
+
+[plugins.zsh-autocomplete]
+github = "marlonrichert/zsh-autocomplete"
