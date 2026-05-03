@@ -16,6 +16,8 @@ export REPOSITORIES_HOME="$LOCAL_ROOT/src/repositories"
 typeset -U path PATH fpath FPATH cdpath manpath
 setopt no_global_rcs
 path=(
+  $HOME/.nix-profile/bin(N-/)
+  /nix/var/nix/profiles/default/bin(N-/)
   /usr/local/bin(N-/)
   /usr/bin(N-/)
   /bin(N-/)
