@@ -3,7 +3,6 @@ pkgs: with pkgs; [
   awscli2
   # ngrok
   bat        # cat
-  docker
   bottom     # top/htop
   dust    # du
   eza        # ls
