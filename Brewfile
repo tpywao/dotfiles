@@ -6,6 +6,7 @@
 # 差分確認:    brew bundle check
 
 # development
+cask "docker"
 # cask "alacritty"
 # cask "figma"
 # cask "inkscape"
