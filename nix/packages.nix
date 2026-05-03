@@ -32,6 +32,7 @@ pkgs: with pkgs; [
 
   # Node.js ecosystem
   devcontainer
+  docker
 
   # Python ecosystem
   # pipx
