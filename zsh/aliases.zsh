@@ -1,6 +1,6 @@
 # ls
-if is_cmd_exists exa; then
-  alias ls='exa -F'
+if is_cmd_exists eza; then
+  alias ls='eza -F'
 else
   alias ls='ls -F'
 fi
