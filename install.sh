@@ -58,6 +58,9 @@ symlink $DOTFILES/sqliterc ~/.sqliterc
 # direnv
 symlink $DOTFILES/direnvrc ~/.direnvrc
 
+# fzf
+symlink $DOTFILES/fzf ~/.fzf
+
 # sheldon
 mkdir -p "$HOME/.config/sheldon"
 symlink $DOTFILES/sheldon/plugins.toml ~/.config/sheldon/plugins.toml
