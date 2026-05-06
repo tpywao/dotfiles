@@ -11,10 +11,6 @@ apply = ["fpath"]
 remote = "https://raw.githubusercontent.com/docker/cli/master/contrib/completion/zsh/_docker"
 apply = ["fpath"]
 
-[plugins.git-completion-bash]
-remote = "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash"
-apply = ["source"]
-
 [plugins.git-completion]
 remote = "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.zsh"
 apply = ["fpath"]
