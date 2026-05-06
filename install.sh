@@ -62,6 +62,10 @@ symlink $DOTFILES/direnvrc ~/.direnvrc
 mkdir -p "$HOME/.config/sheldon"
 symlink $DOTFILES/sheldon/plugins.toml ~/.config/sheldon/plugins.toml
 
+# Nix config
+mkdir -p "$HOME/.config/nix"
+symlink $DOTFILES/nix/nix.conf ~/.config/nix/nix.conf
+
 # Nix + home-manager
 if ! command -v nix > /dev/null 2>&1; then
   NIX_INSTALL_CMD="curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install"
