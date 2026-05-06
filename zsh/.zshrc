@@ -32,7 +32,6 @@ source $LANGS_ROOT/rust.zsh;
 # source $LANGS_ROOT/ruby.zsh;
 # source $LANGS_ROOT/python.zsh;
 # source $LANGS_ROOT/go.zsh;
-# source $LANGS_ROOT/node.zsh;
 
 
 # history

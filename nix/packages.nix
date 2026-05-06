@@ -31,6 +31,7 @@ pkgs: with pkgs; [
   openldap
 
   # Node.js ecosystem
+  nodejs
   devcontainer
 
   # Python ecosystem
