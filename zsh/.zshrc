@@ -114,6 +114,11 @@ if is_cmd_exists fzf; then
   source $HOME/.fzf/fzf.functions.zsh
 fi
 
+# zoxide
+if is_cmd_exists zoxide; then
+  eval "$(zoxide init zsh)"
+fi
+
 # Google Cloud SDK
 if is_cmd_exists gcloud; then
   GOOGLE_CLOUD_SDK_ROOT=$(gcloud info --format='value(installation.sdk_root)')
