@@ -55,6 +55,7 @@ setopt no_beep
 setopt auto_list
 setopt auto_menu
 setopt magic_equal_subst
+setopt extendedglob
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 # cd
@@ -103,9 +104,6 @@ PROMPT+="%# "
 # commented because: https://github.com/Guake/guake/issues/823
 # RPROMPT="[%~]"
 
-source $ZDOTDIR/aliases.zsh
-source $ZDOTDIR/keybinds.zsh
-
 # hook
 add-zsh-hook precmd vcs_info
 
@@ -138,5 +136,5 @@ fi
 # Docker
 fpath=(/Users/ogiso/.docker/completions $fpath)
 
-
-source $ZDOTDIR/completion.zsh
+source $ZDOTDIR/aliases.zsh
+source $ZDOTDIR/keybinds.zsh
