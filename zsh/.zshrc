@@ -58,7 +58,6 @@ setopt magic_equal_subst
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 # cd
-setopt auto_cd
 setopt auto_pushd
 setopt pushd_ignore_dups
 
