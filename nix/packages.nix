@@ -3,6 +3,7 @@ pkgs: with pkgs; [
   awscli2
   # ngrok
   bat        # cat
+  direnv
   bottom     # top/htop
   dust    # du
   eza        # ls
