@@ -10,8 +10,12 @@ autoload -Uz add-zsh-hook
 autoload -Uz select-word-style
 select-word-style bash
 
+# zsh-abbr
+ABBR_USER_ABBREVIATIONS_FILE=$ZDOTDIR/abbr.zsh
+
 # sheldon
 if is_cmd_exists sheldon; then
+  echo "sheldon: loading plugins..."
   eval "$(sheldon source)"
 fi
 

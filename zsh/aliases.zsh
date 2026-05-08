@@ -4,11 +4,6 @@ if is_cmd_exists eza; then
 else
   alias ls='ls -F'
 fi
-alias ll='ls -l'
-alias la='ls -a'
-alias lh='ls -d .*'
-alias lla='ls -la'
-alias llh='ls -ld .*'
 # variables
 if is_cmd_exists bat; then
   alias less='bat'

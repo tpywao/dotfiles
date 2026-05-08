@@ -21,3 +21,6 @@ github = "zdharma-continuum/fast-syntax-highlighting"
 
 [plugins.zsh-autocomplete]
 github = "marlonrichert/zsh-autocomplete"
+
+[plugins.zsh-abbr]
+github = "olets/zsh-abbr"

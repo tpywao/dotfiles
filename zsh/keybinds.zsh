@@ -27,3 +27,7 @@ bindkey "^L" clear-screen
 ## completion
 zmodload zsh/complist
 bindkey "^I" menu-select
+bindkey "$terminfo[kcbt]" menu-select
+## zsh-abbr
+bindkey " " abbr-expand-and-insert
+bindkey "^M" abbr-expand-and-accept
