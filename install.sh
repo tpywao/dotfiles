@@ -2,6 +2,17 @@
 DOTFILES=`cd $(dirname $0) && pwd -P`
 shell=${1:-$SHELL}
 
+hardlink() {
+  file=$1
+  link=$2
+  if [ "$file" -ef "$link" ]; then
+    printf "\033[0;36m[linked]\033[0m %s\n" "$link"
+  elif [ ! -e "$link" ]; then
+    echo "-----> Hardlinking your new $link"
+    ln "$file" "$link"
+  fi
+}
+
 symlink() {
   file=$1
   link=$2
