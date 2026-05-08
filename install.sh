@@ -131,8 +131,10 @@ if command -v brew > /dev/null 2>&1; then
 fi
 
 # Claude Code
-mkdir -p "$HOME/.claude"
-symlink $DOTFILES/claude/CLAUDE.md ~/.claude/CLAUDE.md
+link_claude_md() {
+  mkdir -p "$HOME/.claude"
+  hardlink $DOTFILES/claude/CLAUDE.md ~/.claude/CLAUDE.md
+}
 
 if ! command -v claude > /dev/null 2>&1; then
   CLAUDE_INSTALL_CMD="curl -fsSL https://claude.ai/install.sh | bash"
@@ -142,9 +144,12 @@ if ! command -v claude > /dev/null 2>&1; then
   read answer
   if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
     eval "$CLAUDE_INSTALL_CMD"
+    link_claude_md
   else
     echo "Skipping Claude Code installation."
   fi
+else
+  link_claude_md
 fi
 
 exec $SHELL
