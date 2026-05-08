@@ -142,3 +142,4 @@ fpath=(/Users/ogiso/.docker/completions $fpath)
 
 source $ZDOTDIR/aliases.zsh
 source $ZDOTDIR/keybinds.zsh
+source $ZDOTDIR/check.zsh
