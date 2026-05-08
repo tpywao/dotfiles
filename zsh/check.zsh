@@ -1,38 +1,137 @@
+_dotfiles_days_since() {
+  local f="$1"
+  [[ ! -f "$f" ]] && { echo 999; return; }
+  local epoch
+  epoch=$(date -j -f "%Y-%m-%d" "$(< "$f")" "+%s" 2>/dev/null)
+  [[ -z "$epoch" ]] && { echo 999; return; }
+  echo $(( ($(date +%s) - epoch) / 86400 ))
+}
+
+_dotfiles_check_sheldon_weekly() {
+  local cache_dir="$1" today="$2"
+  local weekly_file="$cache_dir/sheldon-update-date"
+  local plugins_lock="$HOME/.local/share/sheldon/plugins.lock"
+
+  (( $+commands[sheldon] )) || return
+  (( $(_dotfiles_days_since "$weekly_file") >= 7 )) || return
+
+  print -Pn "%F{blue}[dotfiles] sheldon: アップデートチェック中...%f"
+
+  local lock_before lock_after
+  [[ -f "$plugins_lock" ]] && lock_before=$(md5 -q "$plugins_lock" 2>/dev/null)
+  if ! sheldon lock --update &>/dev/null; then
+    print -Pn "\r\033[K"
+    return
+  fi
+
+  [[ -f "$plugins_lock" ]] && lock_after=$(md5 -q "$plugins_lock" 2>/dev/null)
+  print "$today" > "$weekly_file"
+  print -Pn "\r\033[K"
+  [[ "$lock_before" != "$lock_after" ]] || return
+
+  print -P "%F{yellow}[dotfiles] sheldon プラグインが更新されました。exec zsh で反映できます%f"
+}
+
+_dotfiles_check_brew_weekly() {
+  local cache_dir="$1" today="$2"
+  local weekly_file="$cache_dir/brew-update-date"
+
+  (( $+commands[brew] )) || return
+  (( $(_dotfiles_days_since "$weekly_file") >= 7 )) || return
+
+  print -Pn "%F{blue}[dotfiles] brew: アップデートチェック中...%f"
+
+  if ! brew update --quiet &>/dev/null; then
+    print -Pn "\r\033[K"
+    return
+  fi
+
+  local outdated
+  outdated=$(brew outdated --quiet 2>/dev/null)
+  print "$today" > "$weekly_file"
+  print -Pn "\r\033[K"
+  [[ -n "$outdated" ]] || return
+
+  print -P "%F{yellow}[dotfiles] brew に更新があります: brew upgrade%f"
+  while IFS= read -r pkg; do
+    print -P "  %F{cyan}$pkg%f"
+  done <<< "$outdated"
+}
+
+_dotfiles_check_nix_weekly() {
+  local cache_dir="$1" today="$2" dotfiles="$3"
+  local weekly_file="$cache_dir/nix-update-date"
+  local flake_lock="$dotfiles/flake.lock"
+
+  [[ -f "$flake_lock" ]] || return
+  (( $(_dotfiles_days_since "$weekly_file") >= 7 )) || return
+
+  print -Pn "%F{blue}[dotfiles] nix: アップデートチェック中...%f"
+
+  local flake_age=$(( ($(date +%s) - $(stat -f %m "$flake_lock")) / 86400 ))
+  print "$today" > "$weekly_file"
+  print -Pn "\r\033[K"
+  (( flake_age >= 7 )) || return
+
+  print -P "%F{yellow}[dotfiles] nix flake.lock が ${flake_age}日更新されていません。nix flake update を検討してください%f"
+}
+
+_dotfiles_check_nix_daily() {
+  local dotfiles="$1"
+  local flake_lock="$dotfiles/flake.lock"
+  local hm_profile="/nix/var/nix/profiles/per-user/$USER/home-manager"
+
+  [[ -f "$flake_lock" && -e "$hm_profile" ]] || return
+
+  zmodload zsh/stat
+  local flake_mtime hm_mtime
+  flake_mtime=$(stat -f %m "$flake_lock")
+  hm_mtime=$(zstat -L +mtime "$hm_profile" 2>/dev/null)
+  [[ -n "$hm_mtime" ]] && (( flake_mtime > hm_mtime )) || return
+
+  echo 'nix     → nix run home-manager -- switch --flake "$HOME/.dotfiles#$(whoami)" --impure --no-update-lock-file'
+}
+
+_dotfiles_check_sheldon_daily() {
+  local dotfiles="$1"
+  local plugins_toml="$dotfiles/sheldon/plugins.toml"
+  local plugins_lock="$HOME/.local/share/sheldon/plugins.lock"
+
+  [[ -f "$plugins_toml" && -f "$plugins_lock" && "$plugins_toml" -nt "$plugins_lock" ]] || return
+
+  echo "sheldon → sheldon lock --update"
+}
+
+_dotfiles_check_brew_daily() {
+  local dotfiles="$1"
+
+  [[ -f "$dotfiles/Brewfile" ]] && (( $+commands[brew] )) || return
+  brew bundle check --file="$dotfiles/Brewfile" --no-upgrade &>/dev/null && return
+
+  echo "brew    → brew bundle install --file=$dotfiles/Brewfile"
+}
+
 _dotfiles_check() {
   local cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}"
   local cache_file="$cache_dir/dotfiles-check-date"
+  local dotfiles="$HOME/.dotfiles"
   local today
   today=$(date +%Y-%m-%d)
+
+  mkdir -p "$cache_dir"
+
+  _dotfiles_check_sheldon_weekly "$cache_dir" "$today"
+  _dotfiles_check_brew_weekly    "$cache_dir" "$today"
+  _dotfiles_check_nix_weekly     "$cache_dir" "$today" "$dotfiles"
+
   [[ -f "$cache_file" && "$(< "$cache_file")" == "$today" ]] && return
 
-  local dotfiles="$HOME/.dotfiles"
   local updates=()
+  local msg
 
-  # nix: flake.lock が home-manager profile より新しければ switch が必要
-  local hm_profile="/nix/var/nix/profiles/per-user/$USER/home-manager"
-  if [[ -f "$dotfiles/flake.lock" && -e "$hm_profile" ]]; then
-    zmodload zsh/stat
-    local flake_mtime hm_mtime
-    flake_mtime=$(stat -f %m "$dotfiles/flake.lock")
-    hm_mtime=$(zstat -L +mtime "$hm_profile" 2>/dev/null)
-    if [[ -n "$hm_mtime" ]] && (( flake_mtime > hm_mtime )); then
-      updates+=('nix     → nix run home-manager -- switch --flake "$HOME/.dotfiles#$(whoami)" --impure --no-update-lock-file')
-    fi
-  fi
-
-  # sheldon: plugins.toml が plugins.lock より新しければ lock が必要
-  local plugins_toml="$dotfiles/sheldon/plugins.toml"
-  local plugins_lock="$HOME/.local/share/sheldon/plugins.lock"
-  if [[ -f "$plugins_toml" && -f "$plugins_lock" && "$plugins_toml" -nt "$plugins_lock" ]]; then
-    updates+=("sheldon → sheldon lock --update")
-  fi
-
-  # brew: Brewfile に未インストールのパッケージがあれば bundle install が必要
-  if [[ -f "$dotfiles/Brewfile" ]] && (( $+commands[brew] )); then
-    if ! brew bundle check --file="$dotfiles/Brewfile" --no-upgrade &>/dev/null; then
-      updates+=("brew    → brew bundle install --file=$dotfiles/Brewfile")
-    fi
-  fi
+  msg=$(_dotfiles_check_nix_daily     "$dotfiles") && [[ -n "$msg" ]] && updates+=("$msg")
+  msg=$(_dotfiles_check_sheldon_daily "$dotfiles") && [[ -n "$msg" ]] && updates+=("$msg")
+  msg=$(_dotfiles_check_brew_daily    "$dotfiles") && [[ -n "$msg" ]] && updates+=("$msg")
 
   if (( ${#updates[@]} > 0 )); then
     print -P "%F{yellow}[dotfiles] 更新が必要:%f"
@@ -41,7 +140,6 @@ _dotfiles_check() {
     done
   fi
 
-  mkdir -p "$cache_dir"
   print "$today" > "$cache_file"
 }
 
