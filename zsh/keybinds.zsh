@@ -17,6 +17,7 @@ bindkey "^U" kill-whole-line
 ## input
 bindkey "^Y" yank
 bindkey "^Z" undo
+bindkey "^[k" accept-line
 ## history
 # fzfのコマンドで上書きされるためコメントアウト
 # bindkey "^R" history-incremental-pattern-search-backward
