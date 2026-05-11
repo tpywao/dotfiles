@@ -134,6 +134,7 @@ fi
 link_claude_md() {
   mkdir -p "$HOME/.claude"
   hardlink $DOTFILES/claude/CLAUDE.md ~/.claude/CLAUDE.md
+  hardlink $DOTFILES/claude/keybindings.json ~/.claude/keybindings.json
 }
 
 if ! command -v claude > /dev/null 2>&1; then
