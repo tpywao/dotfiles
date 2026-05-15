@@ -132,11 +132,14 @@ fi
 
 # Claude Code
 link_claude_md() {
-  mkdir -p "$HOME/.claude/hooks"
+  mkdir -p "$HOME/.claude/hooks" "$HOME/.claude/commands"
   hardlink $DOTFILES/claude/CLAUDE.md ~/.claude/CLAUDE.md
   hardlink $DOTFILES/claude/keybindings.json ~/.claude/keybindings.json
   symlink $DOTFILES/claude/hooks/block-dangerous.sh ~/.claude/hooks/block-dangerous.sh
   symlink $DOTFILES/claude/hooks/inject-context.sh ~/.claude/hooks/inject-context.sh
+  for cmd in "$DOTFILES"/claude/commands/*.md; do
+    symlink "$cmd" "$HOME/.claude/commands/$(basename "$cmd")"
+  done
 }
 
 if ! command -v claude > /dev/null 2>&1; then
