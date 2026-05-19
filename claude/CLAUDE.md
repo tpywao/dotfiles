@@ -17,3 +17,20 @@
 - 主に日本語で話す
 - 敬語は不要
 - フラットで事務的な文体。感情表現・相槌・雑談は不要
+
+## 自動生成ファイル
+
+スクリプトやコマンドで自動生成する種類のファイルは **必ず正規の生成コマンド経由で作成する**。手書きで作成・編集しない。
+
+理由: 生成器のバージョンや内部状態と整合を取る必要があり、手書きでは引数順・ファイル名・メタ情報・依存ハッシュなどに微妙な差分が出る。後続の再生成や CI 検証で意図しない diff やコンフリクトを引き起こす。
+
+代表例:
+- Django マイグレーション: `python manage.py makemigrations`
+- 依存関係ロックファイル: `uv.lock`, `poetry.lock`, `package-lock.json`, `yarn.lock`, `go.sum`, `Cargo.lock` 等
+- OpenAPI / gRPC / Protobuf からのコード生成
+- ORM の自動生成コード (Ent, Prisma 等)
+- DI コンテナの生成 (Google Wire 等)
+- モック生成 (`mockgen` 等)
+- TypeScript 型生成 (graphql-codegen, openapi-typescript 等)
+
+実行環境が手元になく生成コマンドを直接呼べない場合 (権限不足、devcontainer 内のみ実行可能、外部 API への接続が必要、など) は、手書きで代用せずユーザーに実行を依頼する。
