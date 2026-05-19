@@ -137,7 +137,7 @@ link_claude_md() {
   hardlink $DOTFILES/claude/keybindings.json ~/.claude/keybindings.json
   hardlink $DOTFILES/claude/hooks/block-dangerous.sh ~/.claude/hooks/block-dangerous.sh
   hardlink $DOTFILES/claude/hooks/inject-context.sh ~/.claude/hooks/inject-context.sh
-  hardlink $DOTFILES/claude/hooks/relink-claude-md.sh ~/.claude/hooks/relink-claude-md.sh
+  hardlink $DOTFILES/claude/hooks/relink-claude-files.sh ~/.claude/hooks/relink-claude-files.sh
   for cmd in "$DOTFILES"/claude/commands/*.md; do
     hardlink "$cmd" "$HOME/.claude/commands/$(basename "$cmd")"
   done
