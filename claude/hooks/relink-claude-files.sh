@@ -46,5 +46,6 @@ fi
 
 BACKUP="$DST.relinkbak.$(date +%Y%m%d-%H%M%S)"
 cp -p "$DST" "$BACKUP"
-echo "relink-claude-files: $DST diverged from $SRC; backed up to $BACKUP" >&2
 /bin/rm -- "$DST" && ln "$SRC" "$DST"
+echo "relink-claude-files: $DST と $SRC が divergent でした。$DST の旧内容を $BACKUP に退避し、$SRC で hardlink を再構築しました。ユーザに backup の存在と diff を確認するよう促してください。" >&2
+exit 2
