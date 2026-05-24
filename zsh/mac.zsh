@@ -1,6 +1,8 @@
 # for multi account?
 if [ -d "${HOME}/homebrew" ]; then
   eval "$(~/homebrew/bin/brew shellenv)"
+elif [ -f /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
 # Homebrew (cask管理のために維持)
