@@ -24,3 +24,6 @@ abbr gst='git stash'
 abbr grb='git rebase'
 abbr grs='git restore'
 abbr gcp='git cherry-pick'
+
+# docker
+abbr dc='docker compose -f $DOCKER_COMPOSE_YML -p $DOCKER_COMPOSE_PROJECT'
