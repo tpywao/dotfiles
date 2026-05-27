@@ -58,24 +58,6 @@ _dotfiles_check_brew_weekly() {
   done <<< "$outdated"
 }
 
-_dotfiles_check_nix_weekly() {
-  local cache_dir="$1" today="$2" dotfiles="$3"
-  local weekly_file="$cache_dir/nix-update-date"
-  local flake_lock="$dotfiles/flake.lock"
-
-  [[ -f "$flake_lock" ]] || return
-  (( $(_dotfiles_days_since "$weekly_file") >= 7 )) || return
-
-  print -Pn "%F{blue}[dotfiles] nix: アップデートチェック中...%f"
-
-  local flake_age=$(( ($(date +%s) - $(stat -f %m "$flake_lock")) / 86400 ))
-  print "$today" > "$weekly_file"
-  print -Pn "\r\033[K"
-  (( flake_age >= 7 )) || return
-
-  print -P "%F{yellow}[dotfiles] nix flake.lock が ${flake_age}日更新されていません。nix flake update を検討してください%f"
-}
-
 _dotfiles_check_nix_daily() {
   local dotfiles="$1"
   local flake_lock="$dotfiles/flake.lock"
@@ -90,6 +72,27 @@ _dotfiles_check_nix_daily() {
   [[ -n "$hm_mtime" ]] && (( flake_mtime > hm_mtime )) || return
 
   echo 'nix     → nix run home-manager -- switch --flake "$HOME/.dotfiles#$(whoami)" --impure --no-update-lock-file'
+}
+
+_dotfiles_check_nix_upstream_daily() {
+  local dotfiles="$1"
+  local flake_lock="$dotfiles/flake.lock"
+
+  [[ -f "$flake_lock" ]] || return
+  (( $+commands[jq] && $+commands[git] )) || return
+
+  local has_update=0
+  local name owner repo ref locked remote url
+  while IFS=$'\t' read -r name owner repo ref locked; do
+    [[ -n "$owner" && -n "$repo" && -n "$locked" ]] || continue
+    url="https://github.com/$owner/$repo.git"
+    remote=$(GIT_TERMINAL_PROMPT=0 GIT_HTTP_LOW_SPEED_LIMIT=1000 GIT_HTTP_LOW_SPEED_TIME=5 \
+      git ls-remote "$url" "${ref:-HEAD}" 2>/dev/null | awk 'NR==1{print $1}')
+    [[ -n "$remote" ]] || continue
+    [[ "$remote" != "$locked" ]] && has_update=1
+  done < <(jq -r '.nodes | to_entries[] | .value.locked as $l | select($l.type=="github") | [.key, $l.owner, $l.repo, (.value.original.ref // ""), $l.rev] | @tsv' "$flake_lock")
+
+  (( has_update )) && echo "nix     → nix flake update  (上流に新しいコミットあり)"
 }
 
 _dotfiles_check_sheldon_daily() {
@@ -122,14 +125,14 @@ _dotfiles_check() {
 
   _dotfiles_check_sheldon_weekly "$cache_dir" "$today"
   _dotfiles_check_brew_weekly    "$cache_dir" "$today"
-  _dotfiles_check_nix_weekly     "$cache_dir" "$today" "$dotfiles"
 
   [[ -f "$cache_file" && "$(< "$cache_file")" == "$today" ]] && return
 
   local updates=()
   local msg
 
-  msg=$(_dotfiles_check_nix_daily     "$dotfiles") && [[ -n "$msg" ]] && updates+=("$msg")
+  msg=$(_dotfiles_check_nix_daily          "$dotfiles") && [[ -n "$msg" ]] && updates+=("$msg")
+  msg=$(_dotfiles_check_nix_upstream_daily "$dotfiles") && [[ -n "$msg" ]] && updates+=("$msg")
   msg=$(_dotfiles_check_sheldon_daily "$dotfiles") && [[ -n "$msg" ]] && updates+=("$msg")
   msg=$(_dotfiles_check_brew_daily    "$dotfiles") && [[ -n "$msg" ]] && updates+=("$msg")
 
