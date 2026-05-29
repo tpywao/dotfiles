@@ -1,6 +1,6 @@
 #!/bin/bash
 # PostToolUse hook (Edit|Write): re-hardlink any ~/.claude/<path> file that has a
-# counterpart at ~/.dotfiles/claude/<path>. Claude's Edit/Write use atomic save
+# counterpart at $DOTFILES/claude/<path>. Claude's Edit/Write use atomic save
 # (tmpfile + rename), which breaks hardlinks on every edit; this script restores
 # the link.
 #
@@ -9,16 +9,24 @@
 #   before overwriting it, so no edit is silently lost.
 set -u
 
+# This script is hardlinked into ~/.claude/hooks, so it can't resolve its own
+# repo location. Derive the dotfiles dir from $DOTFILES if set, otherwise from
+# the ~/.zshenv symlink target (mirrors zsh/.zshenv).
+if [ -z "${DOTFILES:-}" ]; then
+  ZSHENV=$(readlink "$HOME/.zshenv" 2>/dev/null)
+  DOTFILES="${ZSHENV%/*/*}"
+fi
+
 EDITED=$(jq -r '.tool_input.file_path // .tool_input.notebook_path // empty' 2>/dev/null < /dev/stdin)
 [ -z "$EDITED" ] && exit 0
 
 case "$EDITED" in
   "$HOME/.claude/"*)
     rest="${EDITED#$HOME/.claude/}"
-    OTHER="$HOME/.dotfiles/claude/$rest"
+    OTHER="$DOTFILES/claude/$rest"
     ;;
-  "$HOME/.dotfiles/claude/"*)
-    rest="${EDITED#$HOME/.dotfiles/claude/}"
+  "$DOTFILES/claude/"*)
+    rest="${EDITED#$DOTFILES/claude/}"
     OTHER="$HOME/.claude/$rest"
     ;;
   *)

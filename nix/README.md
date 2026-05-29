@@ -30,7 +30,7 @@ $ nix build ".#homeConfigurations.$USER.activationPackage" --no-link --impure
 4. 適用
 
 ```sh
-$ hms   # abbr: nix run home-manager -- switch --flake "$HOME/.dotfiles#$(whoami)" --impure
+$ hms   # abbr: nix run home-manager -- switch --flake "$DOTFILES#$(whoami)" --impure
 ```
 
 5. コミット

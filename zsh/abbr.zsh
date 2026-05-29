@@ -6,7 +6,7 @@ abbr lla='ls -la'
 abbr llh='ls -ld .*'
 
 # home-manager
-abbr hms='nix run home-manager -- switch --flake "$HOME/.dotfiles#$(whoami)" --impure'
+abbr hms='nix run home-manager -- switch --flake "$DOTFILES#$(whoami)" --impure'
 
 # git
 abbr g='git'

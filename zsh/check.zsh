@@ -71,7 +71,7 @@ _dotfiles_check_nix_daily() {
   hm_mtime=$(zstat -L +mtime "$hm_profile" 2>/dev/null)
   [[ -n "$hm_mtime" ]] && (( flake_mtime > hm_mtime )) || return
 
-  echo 'nix     → nix run home-manager -- switch --flake "$HOME/.dotfiles#$(whoami)" --impure --no-update-lock-file'
+  echo 'nix     → nix run home-manager -- switch --flake "$DOTFILES#$(whoami)" --impure --no-update-lock-file'
 }
 
 _dotfiles_check_nix_upstream_daily() {
@@ -117,7 +117,7 @@ _dotfiles_check_brew_daily() {
 _dotfiles_check() {
   local cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}"
   local cache_file="$cache_dir/dotfiles-check-date"
-  local dotfiles="$HOME/.dotfiles"
+  local dotfiles="${DOTFILES:-$HOME/.dotfiles}"
   local today
   today=$(date +%Y-%m-%d)
 
