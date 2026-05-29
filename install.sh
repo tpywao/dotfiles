@@ -134,6 +134,7 @@ fi
 link_claude_md() {
   mkdir -p "$HOME/.claude/hooks" "$HOME/.claude/commands"
   hardlink $DOTFILES/claude/CLAUDE.md ~/.claude/CLAUDE.md
+  hardlink $DOTFILES/claude/settings.json ~/.claude/settings.json
   hardlink $DOTFILES/claude/keybindings.json ~/.claude/keybindings.json
   hardlink $DOTFILES/claude/hooks/block-dangerous.sh ~/.claude/hooks/block-dangerous.sh
   hardlink $DOTFILES/claude/hooks/inject-context.sh ~/.claude/hooks/inject-context.sh
