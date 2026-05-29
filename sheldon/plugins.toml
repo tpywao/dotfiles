@@ -19,8 +19,13 @@ apply = ["fpath"]
 [plugins.fast-syntax-highlighting]
 github = "zdharma-continuum/fast-syntax-highlighting"
 
+# NOTE: 20f6c34 "Fix fd handling" で fd 変数名のタイポ (clear() の判定だけ
+# _autocomplete__async_fd / 実体は _autocomplete_async_fd) が入り、非同期 fd が
+# クリーンアップされず "write error: bad file descriptor" が多発する。
+# 上流 main も未修正のため、直前の一貫版コミットにピンする。修正されたら解除。
 [plugins.zsh-autocomplete]
 github = "marlonrichert/zsh-autocomplete"
+rev = "fe6c658"
 
 [plugins.zsh-abbr]
 github = "olets/zsh-abbr"

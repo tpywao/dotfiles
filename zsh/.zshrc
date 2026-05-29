@@ -16,9 +16,6 @@ ABBR_USER_ABBREVIATIONS_FILE=$ZDOTDIR/abbr.zsh
 # sheldon
 if is_cmd_exists sheldon; then
   echo "sheldon: loading plugins..."
-  # macOS の process substitution + zsh-abbr の accept-line ラップによる
-  # ".autocomplete:async:wait:N: write error: bad file descriptor" 回避
-  zstyle ':autocomplete:*' async false
   eval "$(sheldon source)"
 fi
 
