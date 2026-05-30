@@ -9,4 +9,3 @@
 # CLI (nixpkgs 未収録のため例外的に brew で管理)
 brew "mcp-toolbox" # MCP server for databases (googleapis/genai-toolbox)
 # brew "slack-cli"
-# brew "session-manager-plugin"

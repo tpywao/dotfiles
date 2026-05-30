@@ -1,6 +1,7 @@
 pkgs: with pkgs; [
   # CLI tools
   awscli2
+  ssm-session-manager-plugin
   # ngrok
   bat        # cat
   cargo-make # make
