@@ -132,15 +132,11 @@ fi
 
 # Claude Code
 link_claude_md() {
-  mkdir -p "$HOME/.claude/hooks" "$HOME/.claude/commands"
-  hardlink $DOTFILES/claude/CLAUDE.md ~/.claude/CLAUDE.md
-  hardlink $DOTFILES/claude/settings.json ~/.claude/settings.json
-  hardlink $DOTFILES/claude/keybindings.json ~/.claude/keybindings.json
-  hardlink $DOTFILES/claude/hooks/block-dangerous.sh ~/.claude/hooks/block-dangerous.sh
-  hardlink $DOTFILES/claude/hooks/inject-context.sh ~/.claude/hooks/inject-context.sh
-  hardlink $DOTFILES/claude/hooks/relink-claude-files.sh ~/.claude/hooks/relink-claude-files.sh
-  for cmd in "$DOTFILES"/claude/commands/*.md; do
-    hardlink "$cmd" "$HOME/.claude/commands/$(basename "$cmd")"
+  find "$DOTFILES/claude" -type f | while read -r src; do
+    rel="${src#$DOTFILES/claude/}"
+    dst="$HOME/.claude/$rel"
+    mkdir -p "$(dirname "$dst")"
+    hardlink "$src" "$dst"
   done
 }
 
