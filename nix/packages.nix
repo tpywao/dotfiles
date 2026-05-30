@@ -2,6 +2,7 @@ pkgs: with pkgs; [
   # CLI tools
   awscli2
   ssm-session-manager-plugin
+  oci-cli
   # ngrok
   bat        # cat
   cargo-make # make
@@ -29,6 +30,20 @@ pkgs: with pkgs; [
   wget
   zoxide     # cd
 
+  # Media
+  # ffmpeg
+
+  # Dev tools
+  clang-tools
+  git-lfs
+  vim
+
+  # Misc CLI
+  cargo-binstall
+  dos2unix
+  exiftool
+  # pipx  # nixpkgs 1.8.0 build failure
+
   # Build tools
   pkg-config
   openldap
@@ -36,9 +51,6 @@ pkgs: with pkgs; [
   # Node.js ecosystem
   nodejs
   devcontainer
-
-  # Python ecosystem
-  # pipx
 
   # Go
   # go
