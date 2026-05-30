@@ -1,0 +1,26 @@
+# Brewfile.gui (常用GUIアプリ)
+# GUI環境で常に使用する cask を管理
+# 用途限定のオプションアプリは Brewfile.gui.opt で管理
+#
+# インストール: brew bundle --file=Brewfile.gui
+# 差分確認:    brew bundle check --file=Brewfile.gui
+
+# development
+cask "docker"
+# cask "alacritty"
+# cask "figma"
+# cask "inkscape"
+# cask "kiro"
+# cask "postman"
+# cask "session-manager-plugin"
+
+# brower
+# cask "floorp"
+# cask "sigmaos"
+cask "google-chrome"
+
+# utils
+cask "keyclu"
+cask "raycast"
+cask "rectangle"
+# cask "slack-cli"
