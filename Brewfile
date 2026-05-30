@@ -18,6 +18,9 @@ cask "docker"
 # cask "postman"
 # cask "session-manager-plugin"
 
+# design
+cask "freecad"
+
 # brower
 # cask "floorp"
 # cask "sigmaos"
