@@ -12,7 +12,6 @@ cask "docker"
 # cask "inkscape"
 # cask "kiro"
 # cask "postman"
-# cask "session-manager-plugin"
 
 # brower
 # cask "floorp"
