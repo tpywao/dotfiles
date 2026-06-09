@@ -5,6 +5,9 @@ abbr lh='ls -d .*'
 abbr lla='ls -la'
 abbr llh='ls -ld .*'
 
+# nix
+abbr nfu='nix flake update --flake "$DOTFILES"'
+
 # home-manager
 abbr hms='nix run home-manager -- switch --flake "$DOTFILES#$(whoami)" --impure'
 
