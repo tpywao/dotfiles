@@ -8,11 +8,15 @@ ZSHENV=$(readlink $HOME/.zshenv)
 export ZDOTDIR=${ZSHENV%/*}
 # path to dotfiles dir
 export DOTFILES=${ZDOTDIR%/*}
+
+# load logging helpers
+source $ZDOTDIR/load-log.zsh
 # local
 export LOCAL_ROOT=$HOME/.local
 export REPOSITORIES_HOME="$LOCAL_ROOT/src/repositories"
 
 # path
+_load_begin nix
 typeset -U path PATH fpath FPATH cdpath manpath
 setopt no_global_rcs
 fpath=(
@@ -28,6 +32,7 @@ path=(
   /bin(N-/)
   $path
 )
+_load_end
 
 source $DOTFILES/utils/utils.bash
 if is_mac; then

@@ -15,13 +15,16 @@ ABBR_USER_ABBREVIATIONS_FILE=$ZDOTDIR/abbr.zsh
 
 # sheldon
 if is_cmd_exists sheldon; then
-  echo "sheldon: loading plugins..."
+  _load_begin sheldon
   eval "$(sheldon source)"
+  _load_end
 fi
 
 # direnv
 if is_cmd_exists direnv; then
+  _load_begin direnv
   eval "$(direnv hook zsh)"
+  _load_end
 fi
 
 # local
@@ -31,11 +34,13 @@ path=(
 )
 
 # programming languages
+_load_begin langs
 LANGS_ROOT=$ZDOTDIR/langs;
 source $LANGS_ROOT/rust.zsh;
 # source $LANGS_ROOT/ruby.zsh;
 # source $LANGS_ROOT/python.zsh;
 # source $LANGS_ROOT/go.zsh;
+_load_end
 
 
 # history
@@ -113,16 +118,21 @@ add-zsh-hook precmd vcs_info
 
 # fzf
 if is_cmd_exists fzf; then
+  _load_begin fzf
   source $HOME/.fzf/fzf.functions.zsh
+  _load_end
 fi
 
 # zoxide
 if is_cmd_exists zoxide; then
+  _load_begin zoxide
   eval "$(zoxide init zsh)"
+  _load_end
 fi
 
 # Google Cloud SDK
 if is_cmd_exists gcloud; then
+  _load_begin gcloud
   GOOGLE_CLOUD_SDK_ROOT=$(gcloud info --format='value(installation.sdk_root)')
   # The next line updates PATH for the Google Cloud SDK.
   GOOGLE_CLOUD_SDK_PATH=$GOOGLE_CLOUD_SDK_ROOT/path.zsh.inc
@@ -135,6 +145,7 @@ if is_cmd_exists gcloud; then
   if [ -f "$GOOGLE_CLOUD_SDK_COMPLETION" ]; then
     source "$GOOGLE_CLOUD_SDK_COMPLETION"
   fi
+  _load_end
 fi
 
 # Docker
