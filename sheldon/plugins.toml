@@ -1,5 +1,9 @@
 shell = "zsh"
 
+[templates]
+# zsh-defer で遅延ロード（最初のプロンプト描画後に source）するためのテンプレート
+defer = "{{ hooks?.pre | nl }}{% for file in files %}zsh-defer source \"{{ file }}\"\n{% endfor %}{{ hooks?.post | nl }}"
+
 [plugins]
 
 # Completions (must be in fpath before compinit)
@@ -16,8 +20,14 @@ remote = "https://raw.githubusercontent.com/git/git/master/contrib/completion/gi
 apply = ["fpath"]
 
 # Plugins (load after completions)
+# zsh-defer は defer テンプレートを使うプラグインより前に定義する必要がある
+[plugins.zsh-defer]
+github = "romkatv/zsh-defer"
+
+# 起動を体感即時にするため、最初のプロンプト描画後に遅延ロードする
 [plugins.fast-syntax-highlighting]
 github = "zdharma-continuum/fast-syntax-highlighting"
+apply = ["defer"]
 
 # NOTE: 20f6c34 "Fix fd handling" で fd 変数名のタイポ (clear() の判定だけ
 # _autocomplete__async_fd / 実体は _autocomplete_async_fd) が入り、非同期 fd が
