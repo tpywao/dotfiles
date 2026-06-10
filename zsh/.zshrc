@@ -133,7 +133,9 @@ fi
 # Google Cloud SDK
 if is_cmd_exists gcloud; then
   _load_begin gcloud
-  GOOGLE_CLOUD_SDK_ROOT=$(gcloud info --format='value(installation.sdk_root)')
+  # gcloud バイナリのパスから SDK root を導出する。
+  # `gcloud info` 起動(~1.5s)を避けるため。bin/gcloud の2つ上が sdk_root。
+  GOOGLE_CLOUD_SDK_ROOT=${$(command -v gcloud):A:h:h}
   # The next line updates PATH for the Google Cloud SDK.
   GOOGLE_CLOUD_SDK_PATH=$GOOGLE_CLOUD_SDK_ROOT/path.zsh.inc
   if [ -f "$GOOGLE_CLOUD_SDK_PATH" ]; then
