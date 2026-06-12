@@ -37,5 +37,7 @@ apply = ["defer"]
 github = "marlonrichert/zsh-autocomplete"
 rev = "fe6c658"
 
+# job-queue(uuidgen 等のサブプロセス起動)が起動時に重い(~221ms)ため遅延ロードする
 [plugins.zsh-abbr]
 github = "olets/zsh-abbr"
+apply = ["defer"]
