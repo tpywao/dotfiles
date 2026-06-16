@@ -156,3 +156,8 @@ fpath=(/Users/ogiso/.docker/completions $fpath)
 source $ZDOTDIR/aliases.zsh
 source $ZDOTDIR/keybinds.zsh
 source $ZDOTDIR/check.zsh
+
+# local (このマシン固有・dotfiles 管理外)
+for f in $LOCAL_ROOT/zsh/*.zsh(N-.); do
+  source $f
+done
