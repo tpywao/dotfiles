@@ -2,6 +2,9 @@
 DOTFILES=`cd $(dirname $0) && pwd -P`
 shell=${1:-$SHELL}
 
+# OS 判定関数 (is_mac, is_wsl, is_linux)
+. "$DOTFILES/utils/utils.bash"
+
 hardlink() {
   file=$1
   link=$2
@@ -79,6 +82,12 @@ symlink $DOTFILES/sheldon/plugins.toml ~/.config/sheldon/plugins.toml
 # Nix config
 mkdir -p "$HOME/.config/nix"
 symlink $DOTFILES/nix/nix.conf ~/.config/nix/nix.conf
+
+# Karabiner-Elements (薙刀式 complex modifications) - macOS only
+if is_mac; then
+  mkdir -p "$HOME/.config/karabiner/assets/complex_modifications"
+  symlink $DOTFILES/karabiner/Naginata.json ~/.config/karabiner/assets/complex_modifications/Naginata.json
+fi
 
 # Nix + home-manager
 if ! command -v nix > /dev/null 2>&1; then
