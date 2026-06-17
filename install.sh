@@ -84,7 +84,7 @@ mkdir -p "$HOME/.config/nix"
 symlink $DOTFILES/nix/nix.conf ~/.config/nix/nix.conf
 
 # Karabiner-Elements (薙刀式 complex modifications) - macOS only
-if is_mac; then
+if is_mac && [ "$(uname -s)" = "Darwin" ]; then
   mkdir -p "$HOME/.config/karabiner/assets/complex_modifications"
   symlink $DOTFILES/karabiner/Naginata.json ~/.config/karabiner/assets/complex_modifications/Naginata.json
 fi
