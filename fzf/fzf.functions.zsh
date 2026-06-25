@@ -1,4 +1,4 @@
-function cli-select-src() {
+function fzf-select-src() {
   local repo=$(ghq list | fzf --reverse --query "$LBUFFER")
   if [ -n "$repo" ]; then
     # `ghq look` は新規シェルを開くため、遅いので使わない
@@ -12,20 +12,18 @@ function cli-select-src() {
   fi
   zle redisplay
 }
-zle -N cli-select-src
-bindkey '^@' cli-select-src
+zle -N fzf-select-src
 
 alias -g B='`git branch | fzf --reverse --ansi | sed -e "s/^\*[ ]*//g"`'
 
-function cli-select-history() {
+function fzf-select-history() {
   BUFFER=$(fc -l -r -n 1 | fzf --reverse --query "$LBUFFER")
   CURSOR=$#BUFFER
   zle redisplay
 }
-zle -N cli-select-history
-bindkey '^r' cli-select-history
+zle -N fzf-select-history
 
-function cli-find-file() {
+function fzf-find-file() {
   local source_files
   local selected_files
   echo -n 'searching...'
@@ -42,18 +40,32 @@ function cli-find-file() {
   CURSOR=$#BUFFER
   zle redisplay
 }
-zle -N cli-find-file
-bindkey '^q' cli-find-file
+zle -N fzf-find-file
 
-function cli-select-ps() {
+function fzf-select-abbr() {
+  local selected key
+  # abbr list は `"key"="expansion"` 形式。一覧で展開後も見えるので略語を忘れたとき思い出せる
+  selected=$(abbr list | fzf --reverse --query "$LBUFFER" --prompt "[abbr]: ") || return
+  # キーは "dc" のようにクォートされるので外してから expand に渡す
+  key="${selected%%=*}"
+  key="${key//\"/}"
+  if [ -n "$key" ]; then
+    # 値の parse はせず abbr expand に任せる（クォートやネストも正確に展開される）
+    BUFFER="$(abbr expand "$key")"
+    CURSOR=$#BUFFER
+  fi
+  zle redisplay
+}
+zle -N fzf-select-abbr
+
+function fzf-select-ps() {
   BUFFER=$(ps aux | fzf --reverse | awk '{print $2}')
   CURSOR=$#BUFFER
   zle redisplay
 }
-zle -N cli-select-ps
-bindkey '^^' cli-select-ps
+zle -N fzf-select-ps
 
-function cli-select-tmux-session() {
+function fzf-select-tmux-session() {
   if [ -n "$TMUX" ]; then
     return
   fi
@@ -65,5 +77,4 @@ function cli-select-tmux-session() {
     tmux attach-session -t $res
   fi
 }
-# cli-select-tmux-session
-
+# fzf-select-tmux-session

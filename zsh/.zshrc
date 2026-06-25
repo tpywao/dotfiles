@@ -117,6 +117,7 @@ PROMPT+="%# "
 add-zsh-hook precmd vcs_info
 
 # fzf
+# 関数定義のみ。キーバインドは keybinds.zsh に集約している。
 if is_cmd_exists fzf; then
   _load_begin fzf
   source $HOME/.fzf/fzf.functions.zsh

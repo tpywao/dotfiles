@@ -33,3 +33,9 @@ bindkey "$terminfo[kcbt]" menu-select
 ## zsh-abbr
 bindkey " " abbr-expand-and-insert
 bindkey "^M" abbr-expand-and-accept
+## fzf widgets (関数定義は fzf/fzf.functions.zsh)
+bindkey "^@" fzf-select-src
+bindkey "^R" fzf-select-history
+bindkey "^Q" fzf-find-file
+bindkey "^X^A" fzf-select-abbr
+bindkey "^^" fzf-select-ps
