@@ -8,6 +8,8 @@ bindkey "^A" beginning-of-line
 bindkey "^E" end-of-line
 bindkey "^[f" forward-word
 bindkey "^[b" backward-word
+bindkey "^[[1;3C" forward-word   # Alt+→
+bindkey "^[[1;3D" backward-word  # Alt+←
 ## delete
 bindkey "^H" backward-delete-char
 bindkey "^D" delete-char-or-list
