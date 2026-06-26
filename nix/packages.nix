@@ -52,6 +52,9 @@ pkgs: with pkgs; [
   nodejs
   devcontainer
 
+  # Python
+  python3
+
   # Go
   # go
 ]
