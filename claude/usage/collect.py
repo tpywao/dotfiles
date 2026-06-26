@@ -44,6 +44,7 @@ def _empty_day(date: str) -> dict:
         "by_hour": {str(h): 0 for h in range(24)},
         "messages": 0,
         "sessions": 0,
+        "tools": {},
         "agents": {},
         "skills": {},
         "mcp": {},
@@ -130,26 +131,28 @@ def scan_raw_logs() -> dict[str, dict]:
                     # --- tool 起動回数(同一 id が tool 有無で二重記録されるため別 dedup) ---
                     content = msg.get("content")
                     if isinstance(content, list):
-                        relevant = [
+                        tool_blocks = [
                             b for b in content
                             if isinstance(b, dict) and b.get("type") == "tool_use"
-                            and _tool_bucket(b.get("name")) is not None
                         ]
-                        if relevant and (msg_id is None or msg_id not in seen_tool):
+                        if tool_blocks and (msg_id is None or msg_id not in seen_tool):
                             if msg_id:
                                 seen_tool.add(msg_id)
-                            for b in relevant:
+                            for b in tool_blocks:
                                 name = b.get("name")
                                 inp = b.get("input") or {}
+                                # 全ツール別(mcp__* はまとめて "MCP")
+                                is_mcp = isinstance(name, str) and name.startswith("mcp__")
+                                _bump(day["tools"], "MCP" if is_mcp else (name or "unknown"))
+                                # 詳細バケツ
                                 bucket = _tool_bucket(name)
                                 if bucket == "agents":
-                                    key = inp.get("subagent_type") or "unknown"
+                                    _bump(day["agents"], inp.get("subagent_type") or "unknown")
                                 elif bucket == "skills":
-                                    key = inp.get("skill") or "unknown"
-                                else:  # mcp
+                                    _bump(day["skills"], inp.get("skill") or "unknown")
+                                elif bucket == "mcp":
                                     parts = name.split("__")
-                                    key = parts[1] if len(parts) >= 2 and parts[1] else "unknown"
-                                _bump(day[bucket], key)
+                                    _bump(day["mcp"], parts[1] if len(parts) >= 2 and parts[1] else "unknown")
         except OSError:
             continue
 
@@ -268,6 +271,13 @@ HTML_TEMPLATE = r"""<!doctype html>
   }
   .toc a:hover { background: #2c303a; color: var(--fg); }
   .toc a.active { background: #2c303a; color: var(--fg); border-left-color: #6ea8fe; }
+  .toc .grp { font-size: 10px; color: var(--muted); margin: 12px 0 4px; letter-spacing: .08em; text-transform: uppercase; }
+  .toc .grp:first-of-type { margin-top: 4px; }
+  .cat {
+    font-size: 14px; font-weight: 700; color: var(--fg); letter-spacing: .04em;
+    margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+  .cat:first-of-type { margin-top: 10px; }
   @media (max-width: 920px) {
     .toc { display: none; }
     .main { margin-left: 0; }
@@ -277,13 +287,20 @@ HTML_TEMPLATE = r"""<!doctype html>
 <body>
 <nav class="toc" id="toc">
   <h3>メニュー</h3>
+  <div class="grp">トークン</div>
   <a href="#sec-daily">日別トークン</a>
   <a href="#sec-cache">日別キャッシュ読込</a>
+  <a href="#sec-cumulative">累積トークン</a>
+  <a href="#sec-hour">時間帯別</a>
+  <a href="#sec-weekday">曜日別</a>
+  <div class="grp">活動量</div>
   <a href="#sec-messages">日別メッセージ数</a>
   <a href="#sec-sessions">日別セッション数</a>
+  <div class="grp">内訳</div>
   <a href="#sec-project">プロジェクト別</a>
   <a href="#sec-model">モデル別</a>
-  <a href="#sec-hour">時間帯別</a>
+  <div class="grp">ツール</div>
+  <a href="#sec-tools">全ツール別</a>
   <a href="#sec-agent">サブエージェント</a>
   <a href="#sec-skill">スキル</a>
   <a href="#sec-mcp">MCP ツール</a>
@@ -292,6 +309,8 @@ HTML_TEMPLATE = r"""<!doctype html>
 <h1>Claude Code 利用量ダッシュボード</h1>
 <div class="sub" id="sub"></div>
 <div class="cards" id="cards"></div>
+
+<h2 class="cat">トークン</h2>
 
 <section id="sec-daily">
   <h2>日別トークン推移(入力・出力・キャッシュ作成)</h2>
@@ -305,6 +324,23 @@ HTML_TEMPLATE = r"""<!doctype html>
   <div class="scroll" id="chart-cache"></div>
 </section>
 
+<section id="sec-cumulative">
+  <h2>累積トークン</h2>
+  <div class="scroll" id="chart-cumulative"></div>
+</section>
+
+<section id="sec-hour">
+  <h2>時間帯別(全期間・総トークン)</h2>
+  <div class="scroll" id="chart-hour"></div>
+</section>
+
+<section id="sec-weekday">
+  <h2>曜日別(全期間・総トークン)</h2>
+  <div class="scroll" id="chart-weekday"></div>
+</section>
+
+<h2 class="cat">活動量</h2>
+
 <section id="sec-messages">
   <h2>日別メッセージ数(応答)</h2>
   <div class="scroll" id="chart-messages"></div>
@@ -314,6 +350,8 @@ HTML_TEMPLATE = r"""<!doctype html>
   <h2>日別セッション数</h2>
   <div class="scroll" id="chart-sessions"></div>
 </section>
+
+<h2 class="cat">内訳</h2>
 
 <section id="sec-project">
   <h2>プロジェクト別(総トークン)</h2>
@@ -325,9 +363,11 @@ HTML_TEMPLATE = r"""<!doctype html>
   <div id="chart-model"></div>
 </section>
 
-<section id="sec-hour">
-  <h2>時間帯別(全期間・総トークン)</h2>
-  <div class="scroll" id="chart-hour"></div>
+<h2 class="cat">ツール</h2>
+
+<section id="sec-tools">
+  <h2>全ツール別 利用回数(全期間)</h2>
+  <div id="chart-tools"></div>
 </section>
 
 <section id="sec-agent">
@@ -413,6 +453,9 @@ function renderSummary() {
     { label: "キャッシュ読込", value: fmt(grand.cache_read) },
     { label: "メッセージ数", value: msgs.toLocaleString() },
     { label: "セッション数", value: sess.toLocaleString() },
+    { label: "トークン/セッション", value: sess ? fmt(Math.round(total / sess)) : "-" },
+    { label: "トークン/日", value: fmt(Math.round(total / DATA.length)) },
+    { label: "メッセージ/セッション", value: sess ? (msgs / sess).toFixed(1) : "-" },
   ];
   for (const it of items) {
     const c = document.createElement("div");
@@ -571,16 +614,70 @@ function renderHour() {
   host.appendChild(svg);
 }
 
+// --- 累積トークン折れ線 ---
+function renderCumulative() {
+  const host = document.getElementById("chart-cumulative");
+  if (!DATA.length) { host.innerHTML = '<div class="empty">データなし</div>'; return; }
+  let acc = 0;
+  const pts = DATA.map(d => (acc += recTotal(d.totals), acc));
+  const barW = 22, gap = 8, padL = 64, padR = 16, padT = 10, padB = 64;
+  const h = 250, plotH = h - padT - padB;
+  const step = barW + gap;
+  const w = padL + padR + DATA.length * step;
+  const max = Math.max(1, ...pts);
+  const svg = el("svg", { width: w, height: h, viewBox: `0 0 ${w} ${h}` });
+  drawYGrid(svg, padL, padR, padT, plotH, w, max);
+  const xAt = i => padL + i * step + barW / 2;
+  const yAt = v => padT + plotH - plotH * v / max;
+  const poly = pts.map((v, i) => `${xAt(i)},${yAt(v)}`).join(" ");
+  svg.appendChild(el("polyline", { points: poly, fill: "none", stroke: "#6ea8fe", "stroke-width": 2 }));
+  pts.forEach((v, i) => {
+    const c = el("circle", { cx: xAt(i), cy: yAt(v), r: 2.5, fill: "#6ea8fe" });
+    c.appendChild(el("title", {}, `${DATA[i].date}: 累積 ${v.toLocaleString()}`));
+    svg.appendChild(c);
+  });
+  drawDailyAxis(svg, padL, padT, plotH, barW, gap);
+  host.appendChild(svg);
+}
+
+// --- 曜日別(総トークン) ---
+function renderWeekday() {
+  const host = document.getElementById("chart-weekday");
+  if (!DATA.length) { host.innerHTML = '<div class="empty">データなし</div>'; return; }
+  const wsum = new Array(7).fill(0);
+  for (const d of DATA) wsum[new Date(d.date + "T00:00:00").getDay()] += recTotal(d.totals);
+  const max = Math.max(1, ...wsum);
+  const barW = 40, gap = 16, padL = 64, padR = 16, padT = 10, padB = 28;
+  const h = 200, plotH = h - padT - padB;
+  const w = padL + padR + 7 * (barW + gap);
+  const svg = el("svg", { width: w, height: h, viewBox: `0 0 ${w} ${h}` });
+  drawYGrid(svg, padL, padR, padT, plotH, w, max);
+  wsum.forEach((v, i) => {
+    const x = padL + i * (barW + gap);
+    const bh = plotH * v / max;
+    const y = padT + plotH - bh;
+    const color = (i === 0 || i === 6) ? "#e98ea0" : "#6ea8fe";
+    const r = el("rect", { x, y, width: barW, height: bh, rx: 2, fill: color });
+    r.appendChild(el("title", {}, `${WD[i]}曜: ${v.toLocaleString()}`));
+    svg.appendChild(r);
+    svg.appendChild(el("text", { x: x + barW / 2, y: h - 10, "text-anchor": "middle" }, WD[i]));
+  });
+  host.appendChild(svg);
+}
+
 renderSummary();
 buildLegend("legend-daily", ["input", "output", "cache_creation"]);
 renderDailyChart("chart-daily", ["input", "output", "cache_creation"]);
 buildLegend("legend-cache", ["cache_read"]);
 renderDailyChart("chart-cache", ["cache_read"]);
+renderCumulative();
 renderDailySeries("chart-messages", "messages", COLORS.messages, " 件");
 renderDailySeries("chart-sessions", "sessions", COLORS.sessions, " 件");
 tokenHBars("chart-project", "by_project", "#6ea8fe", false);
 tokenHBars("chart-model", "by_model", null, true);
 renderHour();
+renderWeekday();
+countHBars("chart-tools", "tools", "#7ee0b8");
 countHBars("chart-agent", "agents", COLORS.agent);
 countHBars("chart-skill", "skills", COLORS.skill);
 countHBars("chart-mcp", "mcp", COLORS.mcp);
