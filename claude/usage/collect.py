@@ -372,6 +372,23 @@ function el(name, attrs, text) {
 function recTotal(tok) { return KINDS.reduce((s, k) => s + (tok[k] || 0), 0); }
 function sum(arr) { return arr.reduce((s, v) => s + v, 0); }
 
+// 日別時系列用: 最初の日〜最後の日を埋めて、利用が無い日も 0 として並べる。
+function densifyDaily(data) {
+  if (!data.length) return [];
+  const byDate = {};
+  for (const d of data) byDate[d.date] = d;
+  const toDate = s => { const p = s.split("-").map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2])); };
+  const iso = dt => dt.toISOString().slice(0, 10);
+  const out = [];
+  const end = toDate(data[data.length - 1].date);
+  for (let cur = toDate(data[0].date); cur <= end; cur.setUTCDate(cur.getUTCDate() + 1)) {
+    const key = iso(cur);
+    out.push(byDate[key] || { date: key, totals: {}, messages: 0, sessions: 0 });
+  }
+  return out;
+}
+const DAILY = densifyDaily(DATA);
+
 // --- サマリ ---
 function renderSummary() {
   const sub = document.getElementById("sub");
@@ -407,7 +424,7 @@ function renderSummary() {
 
 // --- 日別グラフ共通: X 軸(日付 + 曜日)を描く ---
 function drawDailyAxis(svg, padL, plotTop, plotH, barW, gap) {
-  DATA.forEach((d, i) => {
+  DAILY.forEach((d, i) => {
     const cx = padL + i * (barW + gap) + barW / 2;
     const ly = plotTop + plotH + 14;
     const wd = WD[new Date(d.date + "T00:00:00").getDay()];
@@ -438,15 +455,15 @@ function buildLegend(hostId, kinds) {
 }
 function renderDailyChart(hostId, kinds) {
   const host = document.getElementById(hostId);
-  if (!DATA.length) { host.innerHTML = '<div class="empty">データなし</div>'; return; }
+  if (!DAILY.length) { host.innerHTML = '<div class="empty">データなし</div>'; return; }
   const dayTotal = d => kinds.reduce((s, k) => s + (d.totals[k] || 0), 0);
   const barW = 22, gap = 8, padL = 64, padR = 16, padT = 10, padB = 64;
   const h = 250, plotH = h - padT - padB;
-  const w = padL + padR + DATA.length * (barW + gap);
-  const max = Math.max(1, ...DATA.map(dayTotal));
+  const w = padL + padR + DAILY.length * (barW + gap);
+  const max = Math.max(1, ...DAILY.map(dayTotal));
   const svg = el("svg", { width: w, height: h, viewBox: `0 0 ${w} ${h}` });
   drawYGrid(svg, padL, padR, padT, plotH, w, max);
-  DATA.forEach((d, i) => {
+  DAILY.forEach((d, i) => {
     const x = padL + i * (barW + gap);
     let y = padT + plotH;
     for (const k of kinds) {
@@ -466,14 +483,14 @@ function renderDailyChart(hostId, kinds) {
 // --- 日別単一系列棒(messages / sessions など scalar) ---
 function renderDailySeries(hostId, key, color, unit) {
   const host = document.getElementById(hostId);
-  if (!DATA.length) { host.innerHTML = '<div class="empty">データなし</div>'; return; }
+  if (!DAILY.length) { host.innerHTML = '<div class="empty">データなし</div>'; return; }
   const barW = 22, gap = 8, padL = 56, padR = 16, padT = 10, padB = 64;
   const h = 220, plotH = h - padT - padB;
-  const w = padL + padR + DATA.length * (barW + gap);
-  const max = Math.max(1, ...DATA.map(d => d[key] || 0));
+  const w = padL + padR + DAILY.length * (barW + gap);
+  const max = Math.max(1, ...DAILY.map(d => d[key] || 0));
   const svg = el("svg", { width: w, height: h, viewBox: `0 0 ${w} ${h}` });
   drawYGrid(svg, padL, padR, padT, plotH, w, max);
-  DATA.forEach((d, i) => {
+  DAILY.forEach((d, i) => {
     const v = d[key] || 0;
     const x = padL + i * (barW + gap);
     const bh = plotH * v / max;
