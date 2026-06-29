@@ -20,7 +20,7 @@ function print_error() {
   ticket)
     echo -e "コミットメッセージにチケット番号が含まれていないか、間違っています。"
     echo -e ""
-    echo -e "Example: APN-1234"
+    echo -e "Example: PROJ-1234"
     ;;
   esac
   echo -e "================================================================\033[0m\n"

@@ -7,7 +7,7 @@ Backlog にチケットを起票する。
 ### 1. 元ネタ取得
 
 - md ファイルパスが渡されたら Read で読む
-- チケット番号 (例 `APN-1234`) なら `mcp__backlog__get_issue` で取得して参照する
+- チケット番号 (例 `PROJ-1234`) なら `mcp__backlog__get_issue` で取得して参照する
 - 自由記述ならそのまま使う
 
 ### 2. ドラフト作成
@@ -19,7 +19,7 @@ Backlog にチケットを起票する。
 
 ### 3. プロジェクト・カテゴリ確認
 
-- プロジェクトキーは `AskUserQuestion` で確認（過去実績: `APN`）
+- プロジェクトキーは `AskUserQuestion` で確認（例: `PROJ`）
 - 必要なら `mcp__backlog__get_custom_fields` でカスタムフィールド一覧を取得
 - 担当者・優先度・カテゴリは指定がない限り未設定で起票
 

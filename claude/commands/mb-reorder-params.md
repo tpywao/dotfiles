@@ -9,7 +9,7 @@ Metabase カードのパラメータ並び順を変更してください。
    - MCP tool の結果がファイルに保存された場合、Read ツール出力には行番号プレフィックス（`1→`）がつく
    - `sed 's/^[[:space:]]*[0-9]*→//' <file> | jq -r '.[0].text' 2>/dev/null | jq '...' 2>/dev/null` のように2ステップで処理する
 5. 適用後の順番をプレビュー表示してユーザーに確認を取る
-6. 確認が取れたら `/Users/ogiso/apn/metabase/.env` から `METABASE_URL` と `METABASE_API_KEY` を読み込み、curl で `PUT /api/card/<card_id>` を実行する
+6. 確認が取れたら `METABASE_URL` と `METABASE_API_KEY` を用意し（環境変数にあればそれを使い、なければ Metabase プロジェクトの `.env` から読み込む。パスが不明なら `AskUserQuestion` で確認する）、curl で `PUT /api/card/<card_id>` を実行する
 
 ## curl コマンド（更新時のみ使用）
 
