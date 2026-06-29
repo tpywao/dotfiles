@@ -617,13 +617,13 @@ function renderHour() {
 // --- 累積トークン折れ線 ---
 function renderCumulative() {
   const host = document.getElementById("chart-cumulative");
-  if (!DATA.length) { host.innerHTML = '<div class="empty">データなし</div>'; return; }
+  if (!DAILY.length) { host.innerHTML = '<div class="empty">データなし</div>'; return; }
   let acc = 0;
-  const pts = DATA.map(d => (acc += recTotal(d.totals), acc));
+  const pts = DAILY.map(d => (acc += recTotal(d.totals), acc));
   const barW = 22, gap = 8, padL = 64, padR = 16, padT = 10, padB = 64;
   const h = 250, plotH = h - padT - padB;
   const step = barW + gap;
-  const w = padL + padR + DATA.length * step;
+  const w = padL + padR + DAILY.length * step;
   const max = Math.max(1, ...pts);
   const svg = el("svg", { width: w, height: h, viewBox: `0 0 ${w} ${h}` });
   drawYGrid(svg, padL, padR, padT, plotH, w, max);
@@ -633,7 +633,7 @@ function renderCumulative() {
   svg.appendChild(el("polyline", { points: poly, fill: "none", stroke: "#6ea8fe", "stroke-width": 2 }));
   pts.forEach((v, i) => {
     const c = el("circle", { cx: xAt(i), cy: yAt(v), r: 2.5, fill: "#6ea8fe" });
-    c.appendChild(el("title", {}, `${DATA[i].date}: 累積 ${v.toLocaleString()}`));
+    c.appendChild(el("title", {}, `${DAILY[i].date}: 累積 ${v.toLocaleString()}`));
     svg.appendChild(c);
   });
   drawDailyAxis(svg, padL, padT, plotH, barW, gap);
