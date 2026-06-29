@@ -42,6 +42,7 @@ pkgs: with pkgs; [
   cargo-binstall
   dos2unix
   exiftool
+  terminal-notifier  # macOS 通知（Claude Code Stop フックで使用）
   # pipx  # nixpkgs 1.8.0 build failure
 
   # Build tools
