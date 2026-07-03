@@ -254,6 +254,16 @@ HTML_TEMPLATE = r"""<!doctype html>
   svg text { fill: var(--muted); font-size: 11px; }
   .bar-label { fill: var(--fg); }
 
+  .range { display: flex; align-items: center; gap: 6px; margin-bottom: 18px; }
+  .range .range-cap { color: var(--muted); font-size: 12px; margin-right: 4px; }
+  .range button {
+    background: var(--panel); color: var(--muted);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 14px; font-size: 13px; cursor: pointer; font-family: inherit;
+  }
+  .range button:hover { color: var(--fg); }
+  .range button.active { color: var(--fg); border-color: #6ea8fe; background: #2c303a; }
+
   html { scroll-behavior: smooth; }
   .main { margin-left: 220px; }
   section { scroll-margin-top: 16px; }
@@ -308,6 +318,12 @@ HTML_TEMPLATE = r"""<!doctype html>
 <div class="main">
 <h1>Claude Code 利用量ダッシュボード</h1>
 <div class="sub" id="sub"></div>
+<div class="range" id="range">
+  <span class="range-cap">チャートの期間:</span>
+  <button data-range="7d">直近7日</button>
+  <button data-range="30d">直近1ヶ月</button>
+  <button data-range="all">全期間</button>
+</div>
 <div class="cards" id="cards"></div>
 
 <h2 class="cat">トークン</h2>
@@ -387,7 +403,8 @@ HTML_TEMPLATE = r"""<!doctype html>
 </div>
 
 <script>
-const DATA = /*__DATA__*/;
+const ALL_DATA = /*__DATA__*/;
+let DATA = ALL_DATA;  // 選択期間で絞った表示用データ。renderAll() が差し替える。
 const KINDS = ["input", "output", "cache_creation", "cache_read"];
 const KIND_LABEL = { input: "入力", output: "出力", cache_creation: "キャッシュ作成", cache_read: "キャッシュ読込" };
 const COLORS = {
@@ -412,22 +429,25 @@ function el(name, attrs, text) {
 function recTotal(tok) { return KINDS.reduce((s, k) => s + (tok[k] || 0), 0); }
 function sum(arr) { return arr.reduce((s, v) => s + v, 0); }
 
-// 日別時系列用: 最初の日〜最後の日を埋めて、利用が無い日も 0 として並べる。
-function densifyDaily(data) {
-  if (!data.length) return [];
+// 日別時系列用: 開始日〜終了日を埋めて、利用が無い日も 0 として並べる。
+// startStr/endStr 省略時はデータの最初/最後の日。
+function densifyDaily(data, startStr, endStr) {
+  const start = startStr || (data.length ? data[0].date : null);
+  const end0 = endStr || (data.length ? data[data.length - 1].date : null);
+  if (!start || !end0) return [];
   const byDate = {};
   for (const d of data) byDate[d.date] = d;
   const toDate = s => { const p = s.split("-").map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2])); };
   const iso = dt => dt.toISOString().slice(0, 10);
   const out = [];
-  const end = toDate(data[data.length - 1].date);
-  for (let cur = toDate(data[0].date); cur <= end; cur.setUTCDate(cur.getUTCDate() + 1)) {
+  const end = toDate(end0);
+  for (let cur = toDate(start); cur <= end; cur.setUTCDate(cur.getUTCDate() + 1)) {
     const key = iso(cur);
     out.push(byDate[key] || { date: key, totals: {}, messages: 0, sessions: 0 });
   }
   return out;
 }
-const DAILY = densifyDaily(DATA);
+let DAILY = densifyDaily(DATA);
 
 // --- サマリ ---
 function renderSummary() {
@@ -665,22 +685,67 @@ function renderWeekday() {
   host.appendChild(svg);
 }
 
-renderSummary();
-buildLegend("legend-daily", ["input", "output", "cache_creation"]);
-renderDailyChart("chart-daily", ["input", "output", "cache_creation"]);
-buildLegend("legend-cache", ["cache_read"]);
-renderDailyChart("chart-cache", ["cache_read"]);
-renderCumulative();
-renderDailySeries("chart-messages", "messages", COLORS.messages, " 件");
-renderDailySeries("chart-sessions", "sessions", COLORS.sessions, " 件");
-tokenHBars("chart-project", "by_project", "#6ea8fe", false);
-tokenHBars("chart-model", "by_model", null, true);
-renderHour();
-renderWeekday();
-countHBars("chart-tools", "tools", "#7ee0b8");
-countHBars("chart-agent", "agents", COLORS.agent);
-countHBars("chart-skill", "skills", COLORS.skill);
-countHBars("chart-mcp", "mcp", COLORS.mcp);
+const RANGE_LABEL = { "7d": "直近7日", "30d": "直近1ヶ月", "all": "全期間" };
+// 期間フィルタで再描画するチャートの host。"cards"(サマリー)は全期間固定なので含めない。
+const HOST_IDS = [
+  "legend-daily", "chart-daily", "legend-cache", "chart-cache",
+  "chart-cumulative", "chart-hour", "chart-weekday",
+  "chart-messages", "chart-sessions", "chart-project", "chart-model",
+  "chart-tools", "chart-agent", "chart-skill", "chart-mcp",
+];
+let currentRange = "7d";
+
+// 選択期間の開始日 "YYYY-MM-DD" を返す。基準は「データ最終日」。range="all" やデータなしは null。
+function rangeStart(all, range) {
+  if (range === "all" || !all.length) return null;
+  const days = range === "7d" ? 7 : 30;
+  const p = all[all.length - 1].date.split("-").map(Number);
+  const lo = new Date(Date.UTC(p[0], p[1] - 1, p[2]));
+  lo.setUTCDate(lo.getUTCDate() - (days - 1));  // 最終日を含めて N 日分
+  return lo.toISOString().slice(0, 10);
+}
+
+function updateHeadings() {
+  const label = RANGE_LABEL[currentRange];
+  for (const s of document.querySelectorAll(".rangelabel")) s.textContent = label;
+}
+
+// サマリーカード以外の全チャートを選択期間で再描画する。
+function renderAll() {
+  const lo = rangeStart(ALL_DATA, currentRange);            // "all" は null
+  DATA = lo ? ALL_DATA.filter(d => d.date >= lo) : ALL_DATA; // "YYYY-MM-DD" の辞書順比較
+  // 期間先頭から埋めて、利用ゼロの日も 0 の棒として描画する。終端はデータ最終日。
+  DAILY = densifyDaily(DATA, lo, ALL_DATA.length ? ALL_DATA[ALL_DATA.length - 1].date : null);
+  for (const id of HOST_IDS) { const e = document.getElementById(id); if (e) e.innerHTML = ""; }
+  updateHeadings();
+  buildLegend("legend-daily", ["input", "output", "cache_creation"]);
+  renderDailyChart("chart-daily", ["input", "output", "cache_creation"]);
+  buildLegend("legend-cache", ["cache_read"]);
+  renderDailyChart("chart-cache", ["cache_read"]);
+  renderCumulative();
+  renderDailySeries("chart-messages", "messages", COLORS.messages, " 件");
+  renderDailySeries("chart-sessions", "sessions", COLORS.sessions, " 件");
+  tokenHBars("chart-project", "by_project", "#6ea8fe", false);
+  tokenHBars("chart-model", "by_model", null, true);
+  renderHour();
+  renderWeekday();
+  countHBars("chart-tools", "tools", "#7ee0b8");
+  countHBars("chart-agent", "agents", COLORS.agent);
+  countHBars("chart-skill", "skills", COLORS.skill);
+  countHBars("chart-mcp", "mcp", COLORS.mcp);
+}
+
+function setRange(range) {
+  currentRange = range;
+  for (const b of document.querySelectorAll("#range button"))
+    b.classList.toggle("active", b.dataset.range === range);
+  renderAll();
+}
+for (const b of document.querySelectorAll("#range button"))
+  b.addEventListener("click", () => setRange(b.dataset.range));
+
+renderSummary();   // 全期間のサマリーカード + sub。初回に 1 回だけ。
+setRange("7d");    // 初期チャートは直近 7 日(active 付与 + renderAll)。
 
 // --- サイドメニュー: スクロール位置に応じてアクティブ表示 ---
 (function () {
