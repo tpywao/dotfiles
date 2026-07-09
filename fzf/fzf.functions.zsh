@@ -78,3 +78,20 @@ function fzf-select-tmux-session() {
   fi
 }
 # fzf-select-tmux-session
+
+function fzf-change-worktree() {
+  [[ -n "$BUFFER" ]] && return
+
+  local worktree
+  worktree=$(git worktree list | fzf --reverse --preview 'ls -la {}' | awk '{print $1}')
+
+  if [[ -z "$worktree" ]]; then
+    zle redisplay
+    return
+  fi
+
+  cd "$worktree"
+  vcs_info
+  zle reset-prompt
+}
+zle -N fzf-change-worktree

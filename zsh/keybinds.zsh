@@ -39,3 +39,4 @@ bindkey "^R" fzf-select-history
 bindkey "^Q" fzf-find-file
 bindkey "^X^A" fzf-select-abbr
 bindkey "^^" fzf-select-ps
+bindkey "^T" fzf-change-worktree
