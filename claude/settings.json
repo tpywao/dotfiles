@@ -5,9 +5,25 @@
       "Bash(uv run ruff check)",
       "mcp__playwright__browser_take_screenshot",
       "mcp__playwright__browser_snapshot",
-      "mcp__backlog__get_issue"
+      "mcp__backlog__get_issue",
+      "Bash(gh pr *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(gh issue *)",
+      "Bash(rg *)",
+      "Bash(git show *)",
+      "Bash(grep *)",
+      "Bash(gh run *)",
+      "Bash(find *)",
+      "Bash(npm run lint)",
+      "Bash(npm run test)",
+      "Bash(jq *)",
+      "Bash(npm list *)",
+      "Bash(docker ps *)",
+      "Bash(git worktree list)"
     ]
   },
+  "model": "claude-fable-5",
   "enabledMcpjsonServers": [
     "playwright",
     "context7"
@@ -62,7 +78,8 @@
     ]
   },
   "enabledPlugins": {
-    "commit-commands@claude-plugins-official": true
+    "commit-commands@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
@@ -72,7 +89,8 @@
       }
     }
   },
+  "language": "japanese",
+  "skipWorkflowUsageWarning": true,
   "theme": "dark",
-  "verbose": false,
-  "language": "japanese"
+  "verbose": false
 }
