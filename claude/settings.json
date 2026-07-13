@@ -23,7 +23,7 @@
       "Bash(git worktree list)"
     ]
   },
-  "model": "claude-fable-5",
+  "model": "claude-fable-5[1m]",
   "enabledMcpjsonServers": [
     "playwright",
     "context7"
