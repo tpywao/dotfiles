@@ -1,3 +1,8 @@
+---
+name: mb-reorder-params
+description: Metabase カードのパラメータ並び順を変更する。Metabase のカード・フィルタのパラメータの順番を並び替えたいと言われたときに使う。
+---
+
 Metabase カードのパラメータ並び順を変更してください。
 
 ## 手順

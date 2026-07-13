@@ -1,3 +1,8 @@
+---
+name: create-ticket
+description: Backlog にチケットを起票する。チケットを作って・起票して・Backlog に登録してと言われたときに使う。
+---
+
 Backlog にチケットを起票する。
 
 引数 `$ARGUMENTS` には参考にする md ファイルパス、既存チケット番号、または起票内容の自由記述が渡される。引数なしなら `AskUserQuestion` で起票元（既存 md / 直近の調査結果 / 自由記述）を確認する。
