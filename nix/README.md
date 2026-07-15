@@ -14,7 +14,7 @@ $ git status --short          # 作業中の変更がないか
 2. ロックファイル更新
 
 ```sh
-$ nix flake update
+$ nfu   # nix flake update --flake "$DOTFILES"
 ```
 
 home-manager / nixpkgs の更新差分（旧 rev → 新 rev）が表示される。
