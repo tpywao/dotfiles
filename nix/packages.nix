@@ -8,7 +8,7 @@ pkgs: with pkgs; [
   cargo-make # make
   direnv
   bottom     # top/htop
-  dust    # du
+  dust       # du
   eza        # ls
   fd         # find
   fzf
