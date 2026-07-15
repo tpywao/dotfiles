@@ -26,7 +26,8 @@
 - `flake.lock`: Nix flake の依存関係ロック（自動生成）
   - **編集禁止**: 手書き編集しないでください
   - 更新方法: `nix flake update` コマンド
-- `nix flake check` で構文確認可
+- `nix flake check --impure` で構文確認可
+  - `--impure` 必須: flake.nix が `builtins.getEnv "USER"` でユーザー名を取得しているため、pure 評価では `Username could not be determined` で失敗する
 
 ### Brewfile 管理
 - `Brewfile`: macOS Homebrew パッケージリスト
@@ -123,8 +124,8 @@ codegraph status
 # Nix 環境の更新
 nix flake update
 
-# Nix 環境のチェック
-nix flake check
+# Nix 環境のチェック（--impure 必須: getEnv "USER" のため）
+nix flake check --impure
 
 # Brewfile の更新
 brew bundle dump --file=Brewfile --force
