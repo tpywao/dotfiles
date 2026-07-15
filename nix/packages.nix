@@ -54,7 +54,7 @@ pkgs: with pkgs; [
   devcontainer
 
   # Python
-  python3
+  uv  # Python ランタイム・パッケージ管理（python3 は uv python install で導入）
 
   # Go
   # go
