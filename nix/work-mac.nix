@@ -7,7 +7,7 @@
   ];
 
   # マシン固有: aarch64-darwin への ai-tools 統合
-  home.packages = [
+  home.packages = (import ./packages.nix pkgs) ++ [
     ai-tools.packages.aarch64-darwin.codegraph
     ai-tools.packages.aarch64-darwin.ccusage
     ai-tools.packages.aarch64-darwin.repomix
