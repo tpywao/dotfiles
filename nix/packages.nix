@@ -6,7 +6,7 @@ pkgs: with pkgs; [
   # ngrok
   bat        # cat
   cargo-make # make
-  direnv
+  # direnv は common.nix の programs.direnv.enable で導入
   bottom     # top/htop
   dust       # du
   eza        # ls
@@ -24,6 +24,7 @@ pkgs: with pkgs; [
   procs      # ps
   ripgrep    # grep
   sheldon
+  shellcheck # シェルスクリプト検証（bash/sh のみ、zsh 非対応）
   tig
   tokei      # cloc
   tree

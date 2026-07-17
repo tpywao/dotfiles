@@ -16,6 +16,12 @@
 
 ## 作業時の注意事項
 
+### 固有文言の禁止
+- このリポジトリに追加するファイル（skills, hooks, 設定, ドキュメント等）には、**マシン・個人・勤務先プロジェクトに固有の文言を書かない**
+  - 対象: ユーザー名、ホスト名、勤務先の社名・プロジェクト名・リポジトリ名、社内 URL など
+  - 例示が必要な場合はプレースホルダや汎用名を使う（`<user>`, `~/dev/myrepo` など）。ホームディレクトリは `~` / `$HOME` で表記する
+- 理由: このリポジトリは複数マシンで共用し、公開しても支障ない状態を保つため
+
 ### 重要: zsh 設定
 - **重要**: ~/.zshrc は読まれません。$ZDOTDIR 配下（.dotfiles/zsh/）の設定を編集してください
 - 設定値: $ZDOTDIR=~/.dotfiles/zsh, no_global_rcs
@@ -29,6 +35,9 @@
 - `nix flake check --impure` で構文確認可
   - `--impure` 必須: flake.nix が `builtins.getEnv "USER"` でユーザー名を取得しているため、pure 評価では `Username could not be determined` で失敗する
   - `flake check` だけでなく `nix build` / `home-manager switch --flake .#$(whoami) --impure` など評価を伴うコマンドすべてに `--impure` が要る
+- **モジュール構成**: `nix/` は `common.nix`（全マシン共通）← `work-mac.nix`（マシン固有・ai-tools 統合）← `home.nix`（root）の import チェーン
+  - `home.packages` はリスト型オプションで、複数モジュールの定義は自動的に concat（マージ）される（後勝ち上書きではない）。マシン固有パッケージは `work-mac.nix` に追加分だけ列挙する（`packages.nix` を再 import すると二重登録になる）
+  - 共通パッケージは `nix/packages.nix`、マシン固有は `nix/work-mac.nix` に書く
 
 ### Brewfile 管理
 - `Brewfile`: macOS Homebrew パッケージリスト
@@ -52,6 +61,10 @@
 - **ディレクトリ**: `ai-tools/`（dotfiles で管理）
 - **シンボリックリンク**: `~/.local/ai-tools` → `~/.dotfiles/ai-tools`
 - **flake.nix**: Node.js + 3つの開発ツール（ccusage, repomix, codegraph）を定義
+- **常設**: ai-tools は home-manager に統合済み。`home-manager switch` すると codegraph/ccusage/repomix が `~/.nix-profile/bin` に入り**常に PATH 上**にある（`cd ~/.local/ai-tools` や `nix develop` は不要）
+- **パッケージング方式**: `ai-tools/flake.nix` は `writeShellScriptBin` + `npx --yes <pkg>` でツールを提供（実行時ダウンロード・バージョン非固定）
+  - **`runCommand`+`npm install` に戻さないこと**: Nix ビルドサンドボックスはネットワーク不可で、空の derivation を「成功」として生成してしまう（失敗が握りつぶされる）
+  - `--yes` は必須: 付けないと非TTY（Claude Code フック実行など）で `Ok to proceed?` プロンプトが出てハングする
 - **使用方法**: 下記「AI ツール（ccusage, repomix, codegraph）」セクションを参照
 
 ## AI ツール（ccusage, repomix, codegraph）
@@ -60,14 +73,9 @@
 
 ### セットアップ
 
-初回のみ以下を実行：
+home-manager に統合済みのため、通常は追加セットアップ不要。`home-manager switch --flake .#$(whoami) --impure` で 3 ツールが `~/.nix-profile/bin` に入り、以降どのシェルでもそのまま使える。
 
-```bash
-cd ~/.local/ai-tools
-direnv allow  # 既に実行済みの場合はスキップ
-```
-
-以降、`~/.local/ai-tools` に `cd` するか、`nix develop ~/.local/ai-tools` で自動的に環境が有効化されます。
+（`ai-tools/flake.nix` には dev shell も残っているが、ツールを使うだけなら `cd` や `nix develop` は不要）
 
 ### 各ツールの使用方法
 
@@ -113,9 +121,9 @@ codegraph init            # プロジェクトの .codegraph/ を初期化
 
 ```bash
 # init 後は自動で Claude Code がグラフを活用
-# 手動リビルド（コード大幅変更時）:
-codegraph rebuild
-codegraph status
+codegraph sync      # 差分同期（通常はこれ）
+codegraph index     # フル再構築（コード大幅変更時。rebuild というサブコマンドは無い）
+codegraph status    # インデックス状態の確認
 ```
 
 効果: Claude Code が関数の呼び出し元検索などを可能に。トークン消費削減（全コード送信不要）

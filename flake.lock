@@ -2,6 +2,7 @@
   "nodes": {
     "ai-tools": {
       "inputs": {
+        "ax": "ax",
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs"
       },
@@ -14,6 +15,31 @@
         "type": "path"
       },
       "parent": []
+    },
+    "ax": {
+      "inputs": {
+        "flake-utils": [
+          "ai-tools",
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "ai-tools",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1784247364,
+        "narHash": "sha256-lTNGjtu8BvX9jkOTUEnPvy+QUU4OYn4KbSIqwzFCZe0=",
+        "owner": "yusukebe",
+        "repo": "ax",
+        "rev": "420bbc437c389ae75301e0cd6622f0f75d1ed0b5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "yusukebe",
+        "repo": "ax",
+        "type": "github"
+      }
     },
     "dwt": {
       "inputs": {
