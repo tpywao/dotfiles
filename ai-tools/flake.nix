@@ -26,6 +26,9 @@
           repomix = pkgs.writeShellScriptBin "repomix" ''
             exec ${pkgs.nodejs}/bin/npx --yes repomix "$@"
           '';
+
+          # npm ツールではないため nixpkgs のパッケージをそのまま提供
+          actionlint = pkgs.actionlint;
         };
 
         devShells.default = pkgs.mkShell {

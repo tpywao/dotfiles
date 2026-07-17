@@ -24,6 +24,7 @@ pkgs: with pkgs; [
   procs      # ps
   ripgrep    # grep
   sheldon
+  shellcheck # シェルスクリプト検証（bash/sh のみ、zsh 非対応）
   tig
   tokei      # cloc
   tree

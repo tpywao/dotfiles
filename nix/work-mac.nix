@@ -12,5 +12,6 @@
     ai-tools-pkgs.codegraph
     ai-tools-pkgs.ccusage
     ai-tools-pkgs.repomix
+    ai-tools-pkgs.actionlint
   ];
 }
