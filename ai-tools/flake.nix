@@ -34,6 +34,9 @@
 
           # npm 配布ではないため npx ラッパーでなく flake input から取得
           ax = ax.packages.${system}.ax;
+
+          # npm ツールではないため nixpkgs のパッケージをそのまま提供
+          actionlint = pkgs.actionlint;
         };
 
         devShells.default = pkgs.mkShell {
