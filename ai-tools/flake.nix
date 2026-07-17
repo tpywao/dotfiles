@@ -13,48 +13,17 @@
       in
       {
         packages = {
-          # npm packages を runCommand で Nix derivation にラップ
-          codegraph = pkgs.runCommand "codegraph-wrapper" {
-            buildInputs = [ pkgs.nodejs ];
-            preferLocalBuild = true;
-            allowSubstitutes = false;
-          } ''
-            mkdir -p $out/bin
-            export npm_config_prefix="$out"
-            npm install -g @colbymchenry/codegraph 2>/dev/null || true
-            # シンボリックリンク作成（bin/codegraph を $out/bin にコピー）
-            if [ -f "$out/lib/node_modules/.bin/codegraph" ]; then
-              cp "$out/lib/node_modules/.bin/codegraph" $out/bin/codegraph
-              chmod +x $out/bin/codegraph
-            fi
+          # npx ラッパースクリプトでツール実行
+          codegraph = pkgs.writeShellScriptBin "codegraph" ''
+            exec ${pkgs.nodejs}/bin/npx @colbymchenry/codegraph "$@"
           '';
 
-          ccusage = pkgs.runCommand "ccusage-wrapper" {
-            buildInputs = [ pkgs.nodejs ];
-            preferLocalBuild = true;
-            allowSubstitutes = false;
-          } ''
-            mkdir -p $out/bin
-            export npm_config_prefix="$out"
-            npm install -g ccusage 2>/dev/null || true
-            if [ -f "$out/lib/node_modules/.bin/ccusage" ]; then
-              cp "$out/lib/node_modules/.bin/ccusage" $out/bin/ccusage
-              chmod +x $out/bin/ccusage
-            fi
+          ccusage = pkgs.writeShellScriptBin "ccusage" ''
+            exec ${pkgs.nodejs}/bin/npx ccusage "$@"
           '';
 
-          repomix = pkgs.runCommand "repomix-wrapper" {
-            buildInputs = [ pkgs.nodejs ];
-            preferLocalBuild = true;
-            allowSubstitutes = false;
-          } ''
-            mkdir -p $out/bin
-            export npm_config_prefix="$out"
-            npm install -g repomix 2>/dev/null || true
-            if [ -f "$out/lib/node_modules/.bin/repomix" ]; then
-              cp "$out/lib/node_modules/.bin/repomix" $out/bin/repomix
-              chmod +x $out/bin/repomix
-            fi
+          repomix = pkgs.writeShellScriptBin "repomix" ''
+            exec ${pkgs.nodejs}/bin/npx repomix "$@"
           '';
         };
 

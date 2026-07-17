@@ -6,14 +6,14 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "narHash": "sha256-mDAzwJJALNKgPESFGlUJ2gx4KDfUST2juZVqu1dDZJ4=",
-        "path": "/Users/ogiso/.local/ai-tools",
+        "path": "./ai-tools",
         "type": "path"
       },
       "original": {
-        "path": "/Users/ogiso/.local/ai-tools",
+        "path": "./ai-tools",
         "type": "path"
-      }
+      },
+      "parent": []
     },
     "flake-utils": {
       "inputs": {
@@ -72,11 +72,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1784025883,
-        "narHash": "sha256-9ukpzADj9YEkb0aC51864JxxUg+RJhxakBDTgnHIGr4=",
+        "lastModified": 1784182977,
+        "narHash": "sha256-Hy8zg2HEcsk4WqowQK3UKRXz1fdQM7Z2un3nSyLbJaQ=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "3860155d3bdb870027d96373fa8d7a423b8809de",
+        "rev": "29c22b7761070f37c4c2b0dd6a8777f0bd43e268",
         "type": "github"
       },
       "original": {

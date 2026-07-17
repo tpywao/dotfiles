@@ -1,4 +1,4 @@
-{ config, pkgs, ai-tools, ... }:
+{ config, pkgs, ai-tools-pkgs, ... }:
 
 let
   username = builtins.getEnv "USER";

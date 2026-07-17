@@ -8,7 +8,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     ai-tools = {
-      url = "path:/Users/ogiso/.local/ai-tools";
+      url = "path:./ai-tools";
     };
   };
 
@@ -17,10 +17,11 @@
       system = "aarch64-darwin";
       pkgs = nixpkgs.legacyPackages.${system};
       username = builtins.getEnv "USER";
+      ai-tools-pkgs = ai-tools.packages.${system};
     in {
       homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = { inherit ai-tools; };
+        extraSpecialArgs = { inherit ai-tools-pkgs; };
         modules = [ ./nix/home.nix ];
       };
     };

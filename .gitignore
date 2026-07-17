@@ -1,3 +1,6 @@
 .DS_Store
 __pycache__/
 .claude/settings.local.json
+# nix build / npm 実行時の残骸
+result
+.npm/
