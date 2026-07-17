@@ -28,6 +28,7 @@
   - 更新方法: `nix flake update` コマンド
 - `nix flake check --impure` で構文確認可
   - `--impure` 必須: flake.nix が `builtins.getEnv "USER"` でユーザー名を取得しているため、pure 評価では `Username could not be determined` で失敗する
+  - `flake check` だけでなく `nix build` / `home-manager switch --flake .#$(whoami) --impure` など評価を伴うコマンドすべてに `--impure` が要る
 
 ### Brewfile 管理
 - `Brewfile`: macOS Homebrew パッケージリスト
