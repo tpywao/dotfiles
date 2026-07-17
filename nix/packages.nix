@@ -6,7 +6,7 @@ pkgs: with pkgs; [
   # ngrok
   bat        # cat
   cargo-make # make
-  direnv
+  # direnv は common.nix の programs.direnv.enable で導入
   bottom     # top/htop
   dust       # du
   eza        # ls
