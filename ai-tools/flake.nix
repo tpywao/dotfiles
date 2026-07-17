@@ -4,9 +4,14 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-26.05-darwin";
     flake-utils.url = "github:numtide/flake-utils";
+    ax = {
+      url = "github:yusukebe/ax";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, ax }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -26,6 +31,9 @@
           repomix = pkgs.writeShellScriptBin "repomix" ''
             exec ${pkgs.nodejs}/bin/npx --yes repomix "$@"
           '';
+
+          # npm 配布ではないため npx ラッパーでなく flake input から取得
+          ax = ax.packages.${system}.ax;
 
           # npm ツールではないため nixpkgs のパッケージをそのまま提供
           actionlint = pkgs.actionlint;
