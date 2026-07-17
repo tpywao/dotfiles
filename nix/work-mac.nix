@@ -1,5 +1,5 @@
 # ~/.dotfiles/nix/work-mac.nix
-{ config, pkgs, ai-tools-pkgs, ... }:
+{ config, pkgs, ai-tools-pkgs, dwt-pkgs, ... }:
 
 {
   imports = [
@@ -12,5 +12,7 @@
     ai-tools-pkgs.codegraph
     ai-tools-pkgs.ccusage
     ai-tools-pkgs.repomix
+    # worktree コンテナへの docker exec ラッパー。設定は利用先の .envrc で注入する
+    dwt-pkgs.default
   ];
 }
