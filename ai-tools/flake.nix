@@ -14,16 +14,17 @@
       {
         packages = {
           # npx ラッパースクリプトでツール実行
+          # --yes: 非TTY(Claude Code フック等)で「Ok to proceed?」プロンプトを出さない
           codegraph = pkgs.writeShellScriptBin "codegraph" ''
-            exec ${pkgs.nodejs}/bin/npx @colbymchenry/codegraph "$@"
+            exec ${pkgs.nodejs}/bin/npx --yes @colbymchenry/codegraph "$@"
           '';
 
           ccusage = pkgs.writeShellScriptBin "ccusage" ''
-            exec ${pkgs.nodejs}/bin/npx ccusage "$@"
+            exec ${pkgs.nodejs}/bin/npx --yes ccusage "$@"
           '';
 
           repomix = pkgs.writeShellScriptBin "repomix" ''
-            exec ${pkgs.nodejs}/bin/npx repomix "$@"
+            exec ${pkgs.nodejs}/bin/npx --yes repomix "$@"
           '';
         };
 
