@@ -5,7 +5,9 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-26.05-darwin";
     flake-utils.url = "github:numtide/flake-utils";
     ax = {
-      url = "github:yusukebe/ax";
+      # リリースタグに固定（nix flake update で勝手に main へ動かないように）
+      # 更新時はタグを書き換えてから: nix flake update ax
+      url = "github:yusukebe/ax/v0.1.17";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
