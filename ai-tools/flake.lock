@@ -10,15 +10,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1784247364,
-        "narHash": "sha256-lTNGjtu8BvX9jkOTUEnPvy+QUU4OYn4KbSIqwzFCZe0=",
+        "lastModified": 1784328256,
+        "narHash": "sha256-PwzLK92AXd+NEYOSEURPhV5letvIk3yrwWvrJQOKcgE=",
         "owner": "yusukebe",
         "repo": "ax",
-        "rev": "420bbc437c389ae75301e0cd6622f0f75d1ed0b5",
+        "rev": "f72bf6d6034c1482c96a0c9133f4b00765378217",
         "type": "github"
       },
       "original": {
         "owner": "yusukebe",
+        "ref": "v0.1.17",
         "repo": "ax",
         "type": "github"
       }
