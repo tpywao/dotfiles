@@ -10,18 +10,23 @@
     ai-tools = {
       url = "path:./ai-tools";
     };
+    dwt = {
+      url = "github:wao3299/dwt";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { nixpkgs, home-manager, ai-tools, ... }:
+  outputs = { nixpkgs, home-manager, ai-tools, dwt, ... }:
     let
       system = "aarch64-darwin";
       pkgs = nixpkgs.legacyPackages.${system};
       username = builtins.getEnv "USER";
       ai-tools-pkgs = ai-tools.packages.${system};
+      dwt-pkgs = dwt.packages.${system};
     in {
       homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = { inherit ai-tools-pkgs; };
+        extraSpecialArgs = { inherit ai-tools-pkgs dwt-pkgs; };
         modules = [ ./nix/home.nix ];
       };
     };
