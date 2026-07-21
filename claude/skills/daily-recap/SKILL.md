@@ -7,7 +7,7 @@ description: Use when 「今日何してた？」「昨日の作業まとめて�
 
 ## 概要
 
-git ログ・Claude Code セッション履歴・ccusage の3情報源から、指定日に何をしていたかをプロジェクト別にまとめる。
+git ログ・Claude Code セッション履歴・ccusage・Slack 送信ログの4情報源から、指定日に何をしていたかをプロジェクト別にまとめる。
 
 対象日を `DATE`（YYYY-MM-DD）とする。省略時は今日。
 
@@ -63,10 +63,23 @@ git -C <repo> log --all --since="$DATE 00:00" --until="$DATE 23:59" \
 - `--all` でブランチ横断（feature ブランチの作業を拾う）
 - `-workspaces-*` プロジェクトは devcontainer 内パスなのでホストから git 参照不可。セッションログのみで判断する
 
+### 5. Slack の送信ログを取得（Slack MCP 接続時のみ）
+
+`slack_search_public_and_private` ツールで自分の送信メッセージを検索する。自分の user_id はツールの説明文に記載されている（"Current logged in user's user_id is ..."）。
+
+```
+query: from:<@<自分のuser_id>> on:<DATE>
+sort: timestamp / sort_dir: asc / include_context: false / response_format: concise
+```
+
+- 対象は public / private / DM / グループ DM のすべて（`channel_types` のデフォルト）
+- Slack MCP が未接続のセッションではこの手順をスキップし、他の情報源のみでまとめる
+
 ## 出力形式
 
 - **プロジェクト別にグルーピング**し、時間帯順に並べる
 - コミットは時刻・チケット ID 付きで列挙。相談・調査系セッションはコミットと区別して書く
+- Slack の送信メッセージは時刻・チャンネル付きの表で別セクションにまとめる
 - 最後に ccusage の当日合計（トークン数・コスト）を1行添える
 
 ## 注意
