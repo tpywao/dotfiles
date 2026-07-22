@@ -4,3 +4,4 @@ __pycache__/
 # nix build / npm 実行時の残骸
 result
 .npm/
+node_modules/
