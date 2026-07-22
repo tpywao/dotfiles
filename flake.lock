@@ -49,11 +49,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784279537,
-        "narHash": "sha256-uyaM2RoVKmHJmjVPI7RSi7kfO9teiio08OzVhH2US5o=",
+        "lastModified": 1784695652,
+        "narHash": "sha256-UZPs7Hedmfn5EbsKJ5T/7jREF/DcsQ2OJrzk+xK/I98=",
         "owner": "wao3299",
         "repo": "dwt",
-        "rev": "dfb14d28fbc690715be6ee1ac476c930d872880c",
+        "rev": "fc0306eae895033ca1ef14b8c7903fda3725122f",
         "type": "github"
       },
       "original": {
