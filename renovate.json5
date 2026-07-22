@@ -1,0 +1,51 @@
+// Renovate 設定(#21)
+// 依存更新の自動 PR 化。CVE 対策(更新追従)とサプライチェーン対策
+// (minimumReleaseAge による熟成期間)を両立させる。
+//
+// 対象:
+//   - nix: flake.lock(root / ai-tools)の input 更新
+//   - npm: ai-tools/package-lock.json の更新追従
+//   - github-actions: workflow 追加時に自動で対象になる(config:recommended に含まれる)
+//
+// 注意:
+//   - update-flake-lock workflow は導入しない(nix マネージャーと PR が二重になるため)
+//   - ai-tools の npm 更新 PR は、マージ前に flake.nix の npmDepsHash 再計算が必要
+//     (手順は .claude/CLAUDE.md の「AI ツール環境」セクションを参照)
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
+    ':timezone(Asia/Tokyo)',
+  ],
+
+  // 更新 PR は必ず手動レビュー・手動マージ(lockfile diff のレビュー機会を確保する)
+  automerge: false,
+
+  // nix マネージャーはデフォルト無効のため明示的に有効化
+  nix: {
+    enabled: true,
+  },
+
+  // flake.lock / package-lock.json の定期的な一括更新
+  // (npm では semver レンジ内の推移的依存の更新もここで取り込まれる)
+  lockFileMaintenance: {
+    enabled: true,
+  },
+
+  packageRules: [
+    {
+      // サプライチェーン対策: 公開から 7 日未満の npm バージョンは取り込まない。
+      // 侵害パッケージの大半は公開から数日以内に検出・unpublish されるため、
+      // 熟成期間を置くだけで不正版を即時取り込む窓を閉じられる
+      matchDatasources: ['npm'],
+      minimumReleaseAge: '7 days',
+    },
+    {
+      // npmDepsHash の再計算を PR 本文で毎回リマインドする
+      matchFileNames: ['ai-tools/**'],
+      prBodyNotes: [
+        '⚠️ マージ前に `ai-tools/flake.nix` の `npmDepsHash` の再計算が必要(`.claude/CLAUDE.md` の更新手順を参照)',
+      ],
+    },
+  ],
+}
