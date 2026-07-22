@@ -58,6 +58,7 @@
       },
       "original": {
         "owner": "wao3299",
+        "ref": "v0.2.0",
         "repo": "dwt",
         "type": "github"
       }
