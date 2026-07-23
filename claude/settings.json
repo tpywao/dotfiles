@@ -20,7 +20,8 @@
       "Bash(jq *)",
       "Bash(npm list *)",
       "Bash(docker ps *)",
-      "Bash(git worktree list)"
+      "Bash(git worktree list)",
+      "Bash(dwt:*)"
     ]
   },
   "model": "claude-fable-5[1m]",
@@ -75,11 +76,22 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "codegraph prompt-hook"
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {
     "commit-commands@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true
+    "superpowers@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
