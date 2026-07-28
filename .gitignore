@@ -5,3 +5,5 @@ __pycache__/
 result
 .npm/
 node_modules/
+# codegraph のローカルインデックス（codegraph init で再生成可能）
+.codegraph/
