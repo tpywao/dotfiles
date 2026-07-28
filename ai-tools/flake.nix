@@ -20,7 +20,9 @@
         # - 依存取得は fetchNpmDeps(fixed-output derivation)による hash 検証つきオフラインビルド
         # - --ignore-scripts: install スクリプト(npm マルウェアの主要経路)を実行しない
         # - 更新手順: package.json のバージョンを上げ npm install --ignore-scripts で
-        #   lockfile を再生成し、npmDepsHash を prefetch-npm-deps で再計算する
+        #   lockfile を再生成し、npmDepsHash をいったん lib.fakeHash にして nix build、
+        #   hash mismatch エラーの got: の値を転記する
+        #   (prefetch-npm-deps は npmDepsFetcherVersion = 2 と hash 形式が合わず使えない)
         ai-tools-npm = pkgs.buildNpmPackage {
           pname = "ai-tools";
           version = "1.0.0";
@@ -50,6 +52,11 @@
 
             mkdir -p $out/lib
             cp -r node_modules $out/lib/node_modules
+
+            # ccusage の native バイナリは tarball に実行ビットが無く bin 宣言も無い
+            # (本体ランチャーが実行時に chmod する設計)。read-only store では
+            # 実行時 chmod が EPERM になるため、ビルド時に付与する
+            chmod +x $out/lib/node_modules/@ccusage/ccusage-*/bin/*
 
             for tool in ccusage repomix codegraph; do
               makeWrapper "$out/lib/node_modules/.bin/$tool" "$out/bin/$tool" \
