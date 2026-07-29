@@ -109,10 +109,10 @@ fi
 if command -v nix > /dev/null 2>&1; then
   if ! command -v home-manager > /dev/null 2>&1; then
     echo "-----> Applying home-manager for the first time"
-    nix run home-manager -- switch --flake "$DOTFILES#$(whoami)" --impure
+    nix run home-manager -- switch --flake "$DOTFILES#${DOTFILES_MACHINE:-work-mac}" --impure
   else
     echo "-----> Switching home-manager"
-    home-manager switch --flake "$DOTFILES#$(whoami)" --impure
+    home-manager switch --flake "$DOTFILES#${DOTFILES_MACHINE:-work-mac}" --impure
   fi
 fi
 

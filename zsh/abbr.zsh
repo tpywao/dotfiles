@@ -9,7 +9,7 @@ abbr llh='ls -ld .*'
 abbr nfu='nix flake update --flake "$DOTFILES"'
 
 # home-manager
-abbr hms='nix run home-manager -- switch --flake "$DOTFILES#$(whoami)" --impure'
+abbr hms='nix run home-manager -- switch --flake "$DOTFILES#${DOTFILES_MACHINE:-work-mac}" --impure'
 
 # git
 abbr g='git'

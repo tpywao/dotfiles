@@ -22,14 +22,17 @@
     let
       system = "aarch64-darwin";
       pkgs = nixpkgs.legacyPackages.${system};
-      username = builtins.getEnv "USER";
       ai-tools-pkgs = ai-tools.packages.${system};
       dwt-pkgs = dwt.packages.${system};
-    in {
-      homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
+      mkHome = machineModule: home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         extraSpecialArgs = { inherit ai-tools-pkgs dwt-pkgs; };
-        modules = [ ./nix/home.nix ];
+        modules = [ ./nix/home.nix machineModule ];
+      };
+    in {
+      # マシン追加手順は nix/README.md を参照
+      homeConfigurations = {
+        work-mac = mkHome ./nix/work-mac.nix;
       };
     };
 }

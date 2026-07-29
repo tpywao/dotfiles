@@ -33,9 +33,9 @@
   - **編集禁止**: 手書き編集しないでください
   - 更新方法: `nix flake update` コマンド
 - `nix flake check --impure` で構文確認可
-  - `--impure` 必須: flake.nix が `builtins.getEnv "USER"` でユーザー名を取得しているため、pure 評価では `Username could not be determined` で失敗する
-  - `flake check` だけでなく `nix build` / `home-manager switch --flake .#$(whoami) --impure` など評価を伴うコマンドすべてに `--impure` が要る
-- **モジュール構成**: `nix/` は `common.nix`（全マシン共通）← `work-mac.nix`（マシン固有・ai-tools 統合）← `home.nix`（root）の import チェーン
+  - `--impure` 必須: `nix/home.nix` が `builtins.getEnv "USER"` でユーザー名を取得しているため、pure 評価では `Username could not be determined` で失敗する
+  - `flake check` だけでなく `nix build` / `home-manager switch --flake .#${DOTFILES_MACHINE:-work-mac} --impure` など評価を伴うコマンドすべてに `--impure` が要る
+- **マシンごとの構成**: `homeConfigurations` はマシンごとにエントリを持ち（例: `work-mac`）、共通の `home.nix` ＋マシン固有モジュール（例: `work-mac.nix`、`common.nix` を imports）を組み合わせる。適用先は環境変数 `DOTFILES_MACHINE`（未設定時 `work-mac`）で選択し、dotfiles 管理外の `~/.local/zsh/*.zsh` で export する。マシン追加手順は `nix/README.md` を参照
   - `home.packages` はリスト型オプションで、複数モジュールの定義は自動的に concat（マージ）される（後勝ち上書きではない）。マシン固有パッケージは `work-mac.nix` に追加分だけ列挙する（`packages.nix` を再 import すると二重登録になる）
   - 共通パッケージは `nix/packages.nix`、マシン固有は `nix/work-mac.nix` に書く
 
@@ -75,7 +75,7 @@
 
 ### セットアップ
 
-home-manager に統合済みのため、通常は追加セットアップ不要。`home-manager switch --flake .#$(whoami) --impure` で 3 ツールが `~/.nix-profile/bin` に入り、以降どのシェルでもそのまま使える。
+home-manager に統合済みのため、通常は追加セットアップ不要。`home-manager switch --flake .#${DOTFILES_MACHINE:-work-mac} --impure` で 3 ツールが `~/.nix-profile/bin` に入り、以降どのシェルでもそのまま使える。
 
 （`ai-tools/flake.nix` には dev shell も残っているが、ツールを使うだけなら `cd` や `nix develop` は不要）
 

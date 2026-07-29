@@ -4,9 +4,7 @@ let
   username = builtins.getEnv "USER";
 in
 {
-  imports = [
-    ./work-mac.nix  # マシン固有設定（common.nix も imports）
-  ];
+  # マシン固有モジュールは flake.nix の homeConfigurations から注入される
 
   home.username = username;
   home.homeDirectory = "/Users/${username}";
