@@ -68,6 +68,18 @@
 
 ただし専用ツール（Grep / Glob / Read / WebFetch）が使える場面ではそちらが最優先。これは Bash に降りる場合の選択規則。
 
+## 破壊的コマンド
+
+以下の破壊的コマンドは実行しない。フラグの別表記や言い換えによる回避もしない（大半は PreToolUse hook（block-dangerous.sh）でもブロックされる）:
+
+- `rm -rf`（フラグの順序・大文字違いも同様）
+- `git push --force` / `-f` → `--force-with-lease` を使う
+- `git reset --hard` → `git stash` / `git restore` で代替する
+- `git clean -f`
+- `git branch -D` / `--delete --force`（未マージ強制削除）→ `git branch -d` を使う
+
+代替手段がなく本当に必要な場合は、自分で実行せず理由を添えてユーザーに実行を依頼する。
+
 <!-- CODEGRAPH_START -->
 ## CodeGraph
 
