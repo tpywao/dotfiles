@@ -4,7 +4,7 @@
 
 `flake.nix` の `homeConfigurations` はマシンごとにエントリを持つ。各エントリは共通の `nix/home.nix` に加えてマシン固有モジュール（例: `nix/work-mac.nix`）を読み込む。
 
-適用先のマシン名は環境変数 `DOTFILES_MACHINE` で指定する（未設定時は `work-mac`）。マシン固有の設定なので dotfiles 管理外の `~/.local/zsh/*.zsh` で export する。
+適用先のマシン名は環境変数 `DOTFILES_MACHINE` で指定する。**未設定時はフォールバックせずエラーになる**（設定し忘れたマシンに別マシンの構成が黙って当たるのを防ぐため）。マシン固有の設定なので dotfiles 管理外の `~/.local/zsh/*.zsh` で export する。
 
 ```sh
 # ~/.local/zsh/machine.zsh（例）
@@ -39,7 +39,7 @@ home-manager / nixpkgs の更新差分（旧 rev → 新 rev）が表示され�
 3. ビルド検証（switch する前に通るか確認）
 
 ```sh
-$ nix build ".#homeConfigurations.${DOTFILES_MACHINE:-work-mac}.activationPackage" --no-link --impure
+$ nix build ".#homeConfigurations.$DOTFILES_MACHINE.activationPackage" --no-link --impure
 ```
 
 `--impure` は必須。`home.nix` が `builtins.getEnv "USER"` を使うため、付けないと Username could not be determined で落ちる。
@@ -47,7 +47,7 @@ $ nix build ".#homeConfigurations.${DOTFILES_MACHINE:-work-mac}.activationPackag
 4. 適用
 
 ```sh
-$ hms   # abbr: nix run home-manager -- switch --flake "$DOTFILES#${DOTFILES_MACHINE:-work-mac}" --impure
+$ hms   # abbr: nix run home-manager -- switch --flake "$DOTFILES#${DOTFILES_MACHINE:?see nix/README.md}" --impure
 ```
 
 5. コミット

@@ -107,12 +107,17 @@ if ! command -v nix > /dev/null 2>&1; then
 fi
 
 if command -v nix > /dev/null 2>&1; then
+  if [ -z "${DOTFILES_MACHINE:-}" ]; then
+    echo "Error: DOTFILES_MACHINE is not set." >&2
+    echo "  export DOTFILES_MACHINE=<machine> (flake.nix の homeConfigurations のエントリ名。詳細は nix/README.md)" >&2
+    exit 1
+  fi
   if ! command -v home-manager > /dev/null 2>&1; then
     echo "-----> Applying home-manager for the first time"
-    nix run home-manager -- switch --flake "$DOTFILES#${DOTFILES_MACHINE:-work-mac}" --impure
+    nix run home-manager -- switch --flake "$DOTFILES#$DOTFILES_MACHINE" --impure
   else
     echo "-----> Switching home-manager"
-    home-manager switch --flake "$DOTFILES#${DOTFILES_MACHINE:-work-mac}" --impure
+    home-manager switch --flake "$DOTFILES#$DOTFILES_MACHINE" --impure
   fi
 fi
 
