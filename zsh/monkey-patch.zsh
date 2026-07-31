@@ -5,10 +5,10 @@
 # `[[ -t $fd ]]` ゲート付きにしたが、async fd はパイプで -t が常に偽のため fd が
 # 閉じられず "write error: bad file descriptor" が多発する (上流 main も未修正)。
 # plugins.toml は ~/.local/src/zsh-autocomplete を local 参照しており、その clone を更新する。
-# パッチ詳細: ~/.dotfiles/sheldon/patches/zsh-autocomplete-fd.patch
+# パッチ詳細: $DOTFILES/sheldon/patches/zsh-autocomplete-fd.patch
 function zac-update () {
   local dir=~/.local/src/zsh-autocomplete
-  local patch=~/.dotfiles/sheldon/patches/zsh-autocomplete-fd.patch
+  local patch=$DOTFILES/sheldon/patches/zsh-autocomplete-fd.patch
   [[ -d $dir/.git ]] || git clone https://github.com/marlonrichert/zsh-autocomplete.git $dir || return
   git -C $dir fetch origin || return
   git -C $dir reset --hard origin/main || return          # 最新の clean 状態に戻す
