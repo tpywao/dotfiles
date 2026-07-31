@@ -1,4 +1,6 @@
-if [ -f /opt/homebrew/bin/brew ]; then
+# HOMEBREW_PREFIX は brew shellenv 自身が export するので、
+# 設定済みならネストしたシェルでは brew の外部プロセス起動を省略できる
+if [[ -z $HOMEBREW_PREFIX && -f /opt/homebrew/bin/brew ]]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
