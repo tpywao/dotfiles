@@ -36,7 +36,7 @@
             ];
           };
 
-          npmDepsHash = "sha256-NZ9xi50PAaE5giKpA3NM1AyMTRU5w/ojPANiHnGJDdQ=";
+          npmDepsHash = "sha256-z9L11eszmhKAIRBkE8YlRX2TyfeMFWKh4u7NwgkMlh8=";
           # fetcher 形式を明示(lockfile 更新時は npmDepsHash と合わせて再計算)
           npmDepsFetcherVersion = 2;
 
@@ -58,7 +58,7 @@
             # 実行時 chmod が EPERM になるため、ビルド時に付与する
             chmod +x $out/lib/node_modules/@ccusage/ccusage-*/bin/*
 
-            for tool in ccusage repomix codegraph; do
+            for tool in ccusage codegraph; do
               makeWrapper "$out/lib/node_modules/.bin/$tool" "$out/bin/$tool" \
                 --prefix PATH : "${pkgs.nodejs}/bin"
             done
@@ -69,7 +69,7 @@
       in
       {
         packages = {
-          # ccusage / repomix / codegraph は同一 derivation から提供
+          # ccusage / codegraph は同一 derivation から提供
           ai-tools = ai-tools-npm;
           default = ai-tools-npm;
 
