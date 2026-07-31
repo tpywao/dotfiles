@@ -7,7 +7,7 @@ description: Use when 「今日何してた？」「昨日の作業まとめて�
 
 ## 概要
 
-git ログ・Claude Code セッション履歴・ccusage・Slack 送信ログの4情報源から、指定日に何をしていたかをプロジェクト別にまとめる。
+git ログ・Claude Code セッション履歴・ccusage・Slack 送信ログ・Obsidian Daily Notes の5情報源から、指定日に何をしていたかをプロジェクト別にまとめる。
 
 対象日を `DATE`（YYYY-MM-DD）とする。省略時は今日。
 
@@ -74,6 +74,23 @@ sort: timestamp / sort_dir: asc / include_context: false / response_format: conc
 
 - 対象は public / private / DM / グループ DM のすべて（`channel_types` のデフォルト）
 - Slack MCP が未接続のセッションではこの手順をスキップし、他の情報源のみでまとめる
+
+### 6. Obsidian Daily Note を読む
+
+vault パスは Obsidian の設定から動的に解決する（マシンごとに vault の場所・名前が異なるため、パスをハードコードしない）。デイリーノートのフォルダは vault 内の `.obsidian/daily-notes.json` の `folder`、ファイル名は `format` 未設定なら `YYYY-MM-DD.md`。
+
+```bash
+jq -r '.vaults[].path' ~/Library/"Application Support"/obsidian/obsidian.json | while read -r vault; do
+  folder=$(jq -r '.folder // empty' "$vault/.obsidian/daily-notes.json" 2>/dev/null)
+  f="$vault/${folder:+$folder/}$DATE.md"
+  [ -f "$f" ] && echo "$f"
+done
+```
+
+見つかったノートを Read で読む。出勤・退勤セクションの勤務時間と着手チケット、TODO・起きたことなどの手書きメモを拾う。
+
+- ノートが存在しない日（休日など）や Obsidian 未導入のマシンではスキップし、他の情報源のみでまとめる
+- Linux では `~/.config/obsidian/obsidian.json` を参照する
 
 ## 出力形式
 
