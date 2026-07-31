@@ -8,6 +8,7 @@ pkgs: with pkgs; [
   cargo-make # make
   # direnv は common.nix の programs.direnv.enable で導入
   bottom     # top/htop
+  delta      # git diff/grep 等の pager (git-delta)
   dust       # du
   eza        # ls
   fd         # find
