@@ -60,22 +60,22 @@
 ### AI ツール環境（ai-tools）
 - **ディレクトリ**: `ai-tools/`（dotfiles で管理）
 - **シンボリックリンク**: `~/.local/ai-tools` → `~/.dotfiles/ai-tools`
-- **flake.nix**: Node.js + 3つの開発ツール（ccusage, repomix, codegraph）を定義
-- **常設**: ai-tools は home-manager に統合済み。`home-manager switch` すると codegraph/ccusage/repomix が `~/.nix-profile/bin` に入り**常に PATH 上**にある（`cd ~/.local/ai-tools` や `nix develop` は不要）
-- **パッケージング方式**: `ai-tools/flake.nix` は `buildNpmPackage` + `package-lock.json` で 3 ツールを単一 derivation として提供（lockfile ベースの固定・オフラインビルド。#15/#20 でサプライチェーン対策として npx 方式から移行）
+- **flake.nix**: Node.js + 2つの開発ツール（ccusage, codegraph）を定義
+- **常設**: ai-tools は home-manager に統合済み。`home-manager switch` すると codegraph/ccusage が `~/.nix-profile/bin` に入り**常に PATH 上**にある（`cd ~/.local/ai-tools` や `nix develop` は不要）
+- **パッケージング方式**: `ai-tools/flake.nix` は `buildNpmPackage` + `package-lock.json` で 2 ツールを単一 derivation として提供（lockfile ベースの固定・オフラインビルド。#15/#20 でサプライチェーン対策として npx 方式から移行）
   - 依存取得は `fetchNpmDeps`（fixed-output derivation）による hash 検証つき。推移的依存まで lockfile で固定され、実行時にレジストリへアクセスしない
   - `npmFlags = [ "--ignore-scripts" ]`: install スクリプト（npm マルウェアの主要経路）は実行しない。外さないこと
   - **`runCommand`+`npm install` に戻さないこと**: Nix ビルドサンドボックスはネットワーク不可で、空の derivation を「成功」として生成してしまう（失敗が握りつぶされる）。`fetchNpmDeps` は fixed-output derivation なのでネットワーク可
   - **ツールの更新手順**: `ai-tools/package.json` のバージョンを上げ → `cd ai-tools && npm install --ignore-scripts` で lockfile を再生成 → `flake.nix` の `npmDepsHash` を再計算（いったん `lib.fakeHash` にして `nix build` し、hash mismatch エラーの `got:` の値を転記）。`npmDepsFetcherVersion` を変えた場合も hash の再計算が必要
-- **使用方法**: 下記「AI ツール（ccusage, repomix, codegraph）」セクションを参照
+- **使用方法**: 下記「AI ツール（ccusage, codegraph）」セクションを参照
 
-## AI ツール（ccusage, repomix, codegraph）
+## AI ツール（ccusage, codegraph）
 
-このリポジトリでは 3 つの AI 関連ツールを Nix flake で一元管理しています。
+このリポジトリでは 2 つの AI 関連ツールを Nix flake で一元管理しています。
 
 ### セットアップ
 
-home-manager に統合済みのため、通常は追加セットアップ不要。`home-manager switch --flake .#$DOTFILES_MACHINE --impure` で 3 ツールが `~/.nix-profile/bin` に入り、以降どのシェルでもそのまま使える。
+home-manager に統合済みのため、通常は追加セットアップ不要。`home-manager switch --flake .#$DOTFILES_MACHINE --impure` で 2 ツールが `~/.nix-profile/bin` に入り、以降どのシェルでもそのまま使える。
 
 （`ai-tools/flake.nix` には dev shell も残っているが、ツールを使うだけなら `cd` や `nix develop` は不要）
 
@@ -94,20 +94,7 @@ ccusage daily --json > usage.json      # JSON でエクスポート
 ccusage claude monthly                 # Claude のみ抽出
 ```
 
-#### 2. repomix — リポジトリを AI 向けに 1 ファイル化
-
-大規模リポジトリを XML/Markdown に圧縮し、LLM に供給。
-
-```bash
-repomix                    # カレントディレクトリをリポジトリ化
-repomix /path/to/repo      # 指定ディレクトリを処理
-repomix --format markdown  # Markdown 形式で出力
-repomix --exclude src/test # 特定ディレクトリを除外
-```
-
-出力: `repomix-output.xml`（デフォルト）→ Claude にコピペして大規模コード分析
-
-#### 3. codegraph — ローカルコード知識グラフ構築
+#### 2. codegraph — ローカルコード知識グラフ構築
 
 プロジェクトのコード知識グラフをローカルインデックス化し、Claude Code と連携。セマンティック検索で関連コードを素早く検索可能。
 
