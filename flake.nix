@@ -33,6 +33,7 @@
       # マシン追加手順は nix/README.md を参照
       homeConfigurations = {
         work-mac = mkHome ./nix/work-mac.nix;
+        personal-mac = mkHome ./nix/personal-mac.nix;
       };
     };
 }
