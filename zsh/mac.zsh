@@ -5,13 +5,11 @@ if [[ -z $HOMEBREW_PREFIX && -f /opt/homebrew/bin/brew ]]; then
 fi
 
 # Homebrew (cask管理のために維持)
-if is_cmd_exists brew; then
-  BREW_PREFIX=$(brew --prefix)
-  fpath=(
-    $BREW_PREFIX/share/zsh/site-functions(N-/)
-    $fpath
-  )
-fi
+# brew 未導入なら HOMEBREW_PREFIX は空で、(N-/) により候補ごと消える
+fpath=(
+  $HOMEBREW_PREFIX/share/zsh/site-functions(N-/)
+  $fpath
+)
 
 # iterm2
 # https://iterm2.com/documentation-shell-integration.html
