@@ -10,7 +10,3 @@ fpath=(
   $HOMEBREW_PREFIX/share/zsh/site-functions(N-/)
   $fpath
 )
-
-# iterm2
-# https://iterm2.com/documentation-shell-integration.html
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh" || true

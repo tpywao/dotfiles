@@ -154,6 +154,12 @@ fi
 # Docker
 fpath=(/Users/ogiso/.docker/completions $fpath)
 
+# iterm2 (対話シェル専用の統合。ファイルは macOS にのみ存在する)
+# https://iterm2.com/documentation-shell-integration.html
+if [[ -e ${HOME}/.iterm2_shell_integration.zsh ]]; then
+  source "${HOME}/.iterm2_shell_integration.zsh"
+fi
+
 source $ZDOTDIR/aliases.zsh
 source $ZDOTDIR/keybinds.zsh
 source $ZDOTDIR/check.zsh
