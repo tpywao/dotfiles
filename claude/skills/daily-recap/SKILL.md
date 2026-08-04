@@ -68,7 +68,7 @@ git -C <repo> log --all --since="$DATE 00:00" --until="$DATE 23:59" \
 
 - `--all` でブランチ横断（feature ブランチの作業を拾う）
 - `-workspaces-*` プロジェクトは devcontainer 内パスなのでホストから git 参照不可。スキップし、親セッションが Agent A1 のセッションログで判断する
-- `~/apn/worktree-N` は gitdir がコンテナ内パスのため `dwt N git log ...` で参照する。コンテナ停止で失敗する場合は、ホスト側クローン（`~/apn/applynow`, `~/apn/apn-master` 等）の `git log --all` で補完する
+- gitdir がコンテナ内パスを指す worktree はホストから `git log` 参照不可。同じリポジトリのホスト側クローンがあればその `git log --all` で補完し、なければセッションログで判断する
 
 報告形式: リポジトリ別コミット一覧（時刻・作者付き）。当日コミットのなかったリポジトリは省略。
 
