@@ -40,3 +40,27 @@ bindkey "^Q" fzf-find-file
 bindkey "^X^A" fzf-select-abbr
 bindkey "^^" fzf-select-ps
 bindkey "^T" fzf-change-worktree
+
+## cmux 対策: kitty keyboard protocol (CSI-u) の漏れを吸収する
+# cmux は子アプリが kitty protocol を要求していなくても Ctrl+修飾キーを
+# CSI-u 形式 (\e[<code>;5u) で pty に書くため、zle が解釈できず
+# 「9;5u」等の断片が入力に漏れる。3 段階で対処する:
+#   (1) kitty keyboard mode を pop してエンコーダを legacy に戻す試み
+#   (2) 初期化時に漏れた残留バイトを排出
+#   (3) 保険: CSI-u を対応する legacy 制御文字に再注入
+#       (ウィジェットへ直接バインドせず再注入にするのは、
+#        上記の既存バインドにそのまま追従させるため)
+if [[ -n "$CMUX_SOCKET_PATH" ]]; then
+  printf '\e[<u'
+  while read -t 0.01 -k 1 _cmux_drain 2>/dev/null; do :; done
+  for _cmux_code in {97..122}; do  # a-z
+    _cmux_ctrl=$(( _cmux_code - 96 ))
+    bindkey -s "\e[${_cmux_code};5u" "${(#)_cmux_ctrl}"
+  done
+  bindkey -s '\e[91;5u' '\e'    # ^[ (ESC)
+  bindkey -s '\e[32;5u' '^@'    # Ctrl+Space
+  # ^C は例外: SIGINT は tty ドライバが typed 0x03 を見て発生させるもので、
+  # 再注入した 0x03 は zle に文字として届くだけなので、ウィジェットで代替する
+  bindkey '\e[99;5u' send-break
+  unset _cmux_drain _cmux_code _cmux_ctrl
+fi
