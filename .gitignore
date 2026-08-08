@@ -7,3 +7,5 @@ result
 node_modules/
 # codegraph のローカルインデックス（codegraph init で再生成可能）
 .codegraph/
+# relink フック (relink-claude-files.sh) が退避する旧内容バックアップ
+*.relinkbak.*
