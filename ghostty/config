@@ -1,4 +1,0 @@
-# Ghostty 設定（cmux も ~/.config/ghostty/config を読む）
-# 左 option を Alt (ESC プレフィックス) として送る。
-# iTerm2 の「Left Option key: Esc+」相当。alt+f / alt+b の単語移動などに必要
-macos-option-as-alt = left
