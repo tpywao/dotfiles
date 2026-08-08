@@ -53,12 +53,22 @@ bindkey "^T" fzf-change-worktree
 if [[ -n "$CMUX_SOCKET_PATH" ]]; then
   printf '\e[<u'
   while read -t 0.01 -k 1 _cmux_drain 2>/dev/null; do :; done
-  for _cmux_code in {97..122}; do  # a-z
+  for _cmux_code in {97..122}; do  # Ctrl+a〜z → ^A〜^Z
     _cmux_ctrl=$(( _cmux_code - 96 ))
     bindkey -s "\e[${_cmux_code};5u" "${(#)_cmux_ctrl}"
   done
-  bindkey -s '\e[91;5u' '\e'    # ^[ (ESC)
-  bindkey -s '\e[32;5u' '^@'    # Ctrl+Space
+  for _cmux_code in {91..95}; do   # Ctrl+[ \ ] ^ _ → ESC ^\ ^] ^^ ^_
+    _cmux_ctrl=$(( _cmux_code - 64 ))
+    bindkey -s "\e[${_cmux_code};5u" "${(#)_cmux_ctrl}"
+  done
+  bindkey -s '\e[32;5u' '^@'   # Ctrl+Space → NUL
+  bindkey -s '\e[64;5u' '^@'   # Ctrl+@ → NUL
+  # 制御文字が存在しないキー (数字・記号): legacy 端末は修飾を落として
+  # 素の文字を送るので、それに合わせて文字を注入する
+  # (放置すると Ctrl+. が「46;5u」のような断片として漏れる)
+  for _cmux_code in {33..63} 96 {123..126}; do
+    bindkey -s "\e[${_cmux_code};5u" "${(#)_cmux_code}"
+  done
   # ^C は例外: SIGINT は tty ドライバが typed 0x03 を見て発生させるもので、
   # 再注入した 0x03 は zle に文字として届くだけなので、ウィジェットで代替する
   bindkey '\e[99;5u' send-break
