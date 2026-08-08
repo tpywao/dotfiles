@@ -50,7 +50,11 @@ bindkey "^T" fzf-change-worktree
 #   (3) 保険: CSI-u を対応する legacy 制御文字に再注入
 #       (ウィジェットへ直接バインドせず再注入にするのは、
 #        上記の既存バインドにそのまま追従させるため)
-if [[ -n "$CMUX_SOCKET_PATH" ]]; then
+# 有効化条件: cmux 内かつ内蔵キーボードが JIS 配列のとき。
+# CSI-u の漏れが実害になると確認できているのは JIS 配列環境のみのため、
+# それ以外では何もせず副作用を避ける (ioreg は macOS 専用。他 OS では偽になる)
+if [[ -n "$CMUX_SOCKET_PATH" ]] &&
+   ioreg -r -c AppleEmbeddedKeyboard -d 1 2>/dev/null | grep -q 'KeyboardLanguage.*Japanese'; then
   printf '\e[<u'
   while read -t 0.01 -k 1 _cmux_drain 2>/dev/null; do :; done
   for _cmux_code in {97..122}; do  # Ctrl+a〜z → ^A〜^Z
