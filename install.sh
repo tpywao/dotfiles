@@ -89,6 +89,12 @@ if is_mac && [ "$(uname -s)" = "Darwin" ]; then
   symlink $DOTFILES/karabiner/Naginata.json ~/.config/karabiner/assets/complex_modifications/Naginata.json
 fi
 
+# Ghostty / cmux - macOS only (macos-option-as-alt は macOS 専用設定)
+if is_mac && [ "$(uname -s)" = "Darwin" ]; then
+  mkdir -p "$HOME/.config/ghostty"
+  symlink $DOTFILES/ghostty/config ~/.config/ghostty/config
+fi
+
 # Nix + home-manager
 if ! command -v nix > /dev/null 2>&1; then
   NIX_INSTALL_CMD="curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install"
