@@ -25,6 +25,10 @@
     ]
   },
   "model": "claude-fable-5[1m]",
+  "statusLine": {
+    "type": "command",
+    "command": "bash $HOME/.claude/statusline-command.sh"
+  },
   "enabledMcpjsonServers": [
     "playwright",
     "context7"
