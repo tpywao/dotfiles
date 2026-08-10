@@ -21,8 +21,9 @@ jobs:
 
       - uses: DeterminateSystems/nix-installer-action@v22
 
-      # root flake が path:./ai-tools を input に持つため、
-      # ai-tools 側を先に更新してから root を更新する（narHash を追従させる）
+      # 両 flake がそれぞれ lock を持つため両方更新する
+      # （root は ai-tools の依存を root 側 lock で独自に固定しており、更新順序は無関係。
+      #   ai-tools/flake.lock は ai-tools 単体でビルドする場合に使われる）
       - name: Update ai-tools flake.lock
         run: nix flake update --flake ./ai-tools
 
