@@ -9,7 +9,7 @@
 #   .effort.level                              (reasoning effort 対応モデルのみ存在)
 #   .workspace.repo.owner / .name               (GitHub 等の remote がある場合のみ存在)
 #   .workspace.current_dir / .cwd
-#   .context_window.used_percentage             (最初のメッセージ送信前は null)
+#   .context_window.used_percentage             (セッション初期は null の場合あり)
 #   .rate_limits.five_hour.used_percentage / .resets_at   (Claude.ai サブスクのみ、初回応答後)
 #   .rate_limits.seven_day.used_percentage / .resets_at
 #
