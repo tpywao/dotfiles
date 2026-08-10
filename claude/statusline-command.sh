@@ -21,6 +21,13 @@
 #   - reasoning effort / rate_limits はフィールド自体が存在しない場合、
 #     その部分の表示を単に省略する(代替できる情報が無いため)
 
+# 依存: jq (nix/packages.nix で導入)。home-manager switch 前の新規マシンでは
+# 不在の可能性があるため、その場合は目印だけ出して正常終了する
+if ! command -v jq > /dev/null 2>&1; then
+  printf 'statusline: jq not found'
+  exit 0
+fi
+
 input=$(cat)
 
 cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // empty')
