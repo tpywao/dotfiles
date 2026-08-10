@@ -14,7 +14,8 @@
 #   .rate_limits.seven_day.used_percentage / .resets_at
 #
 # 備考(JSON に無く代替/フォールバックしている情報):
-#   - 現在の git ブランチ名は JSON に無いため git コマンドで取得する
+#   - 通常セッションの stdin JSON にはブランチ名フィールドが無いため git コマンドで取得する
+#     (worktree.branch は --worktree セッション限定、workspace.git_worktree は worktree 名のみ)
 #   - workspace.repo が無い場合は git remote origin から owner/repo を推測し、
 #     それも無ければディレクトリ名で代替する
 #   - reasoning effort / rate_limits はフィールド自体が存在しない場合、
