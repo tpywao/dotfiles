@@ -89,8 +89,15 @@ make_gauge() {
 
 fmt_time() {
   # $1: unix epoch (秒), $2: date フォーマット (省略時 +%H:%M) -> フォーマット済み文字列 (ローカルタイム)
+  # GNU date の -r は「参照ファイルの mtime 表示」の意味で、cwd に epoch と同名の
+  # ファイルがあると誤った時刻を返すため、|| フォールバックではなく方言を
+  # 明示的に判定して使い分ける (--version は GNU のみ成功する)
   local epoch="$1" fmt="${2:-+%H:%M}"
-  date -r "$epoch" "$fmt" 2>/dev/null || date -d "@$epoch" "$fmt" 2>/dev/null
+  if date --version > /dev/null 2>&1; then
+    date -d "@$epoch" "$fmt" 2>/dev/null
+  else
+    date -r "$epoch" "$fmt" 2>/dev/null
+  fi
 }
 
 fmt_remaining() {
