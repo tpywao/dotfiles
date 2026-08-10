@@ -13,16 +13,10 @@ if [ -z "$ticket_name" ]; then
   exit 0
 fi
 
-string_contain() {
-  string=$1
-  pattern=$2
-  # 前方最長一致除去した結果、
-  # -z 文字列長が 0 ならば真
-  [ -z "${string##*$pattern*}" ]
-}
-is_mac() {
-  string_contain $OSTYPE darwin
-}
+# 共通の OS 判定関数 (is_mac) を読み込む
+# DOTFILES は zsh/.zshenv が export する。zsh 以外から git を実行した場合に備えて
+# 未設定時は正規配置 ~/.dotfiles にフォールバックする
+. "${DOTFILES:-$HOME/.dotfiles}/utils/utils.bash"
 
 first_line=$(head -n1 $COMMIT_MSG_FILE)
 if [ -z "$first_line" ]; then
