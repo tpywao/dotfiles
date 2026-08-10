@@ -152,7 +152,8 @@ fi
 
 # Claude Code
 link_claude_md() {
-  find "$DOTFILES/claude" -type f | while read -r src; do
+  # relink フックが退避する *.relinkbak.* は git 管理外のバックアップなので同期しない
+  find "$DOTFILES/claude" -type f -not -name '*.relinkbak.*' | while read -r src; do
     rel="${src#$DOTFILES/claude/}"
     dst="$HOME/.claude/$rel"
     mkdir -p "$(dirname "$dst")"
