@@ -162,6 +162,7 @@ fi
 
 source $ZDOTDIR/aliases.zsh
 source $ZDOTDIR/keybinds.zsh
+source $ZDOTDIR/cmux.zsh
 source $ZDOTDIR/check.zsh
 source $ZDOTDIR/monkey-patch.zsh
 
