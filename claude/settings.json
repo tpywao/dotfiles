@@ -95,7 +95,8 @@
   "enabledPlugins": {
     "commit-commands@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
-    "playwright@claude-plugins-official": true
+    "playwright@claude-plugins-official": true,
+    "genshijin@genshijin": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
