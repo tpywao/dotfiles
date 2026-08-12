@@ -11,11 +11,13 @@ description: Use when ~/.claude/ に新しい skill・hook・agent・設定フ�
 
 ## 手順（新規追加）
 
-1. `~/.dotfiles/claude/<path>` にファイルを作成（dotfiles 側が source of truth。Write ツールで作成してから ln する順なら atomic save の影響はない）
-2. 必要なら `mkdir -p ~/.claude/<dir>`
-3. hardlink 作成: `ln ~/.dotfiles/claude/<path> ~/.claude/<path>`
-4. 検証: `ls -li ~/.dotfiles/claude/<path> ~/.claude/<path>` — inode 一致・リンク数 2 を確認
-5. `cd ~/.dotfiles && git add claude/<path>` して `feat(claude): ...` 形式でコミット
+dotfiles リポジトリのフロー（origin/main から worktree を切って PR。main へ直接コミットしない）に従う。
+
+1. `cd ~/.dotfiles && git fetch origin` し、`origin/main` から新規ブランチ + worktree を作成
+2. worktree 側に `claude/<path>` としてファイルを作成し、コミット → push → PR を作成
+3. すぐ有効化したい場合は worktree のファイルを `~/.claude/<path>` へコピー（main に実体が無い間は hardlink を張れないため暫定コピー。dotfiles 側が source of truth）
+4. PR マージ後、main を pull して hardlink 化: `rm ~/.claude/<path> && ln ~/.dotfiles/claude/<path> ~/.claude/<path>`（暫定コピーと main の内容が一致していれば relink フックでも再リンクされる）
+5. 検証: `ls -li ~/.dotfiles/claude/<path> ~/.claude/<path>` — inode 一致・リンク数 2 を確認
 
 ## 修復（リンク切れ）
 
