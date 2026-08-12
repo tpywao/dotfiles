@@ -62,7 +62,11 @@ jobs:
             定期実行の GitHub Actions による flake.lock の自動更新。
 
             - `ai-tools/flake.lock` と root の `flake.lock` を `nix flake update` で更新
-            - `nix flake check` / homeConfigurations の評価 / ai-tools のビルドは CI で通過済み
+            - CI で通過済みの検証:
+              - `nix flake check`（root / ai-tools）
+              - homeConfigurations の評価（評価のみ。ビルドは未実施）
+              - ai-tools のビルド（x86_64-linux のみ。npmDepsHash 不一致の検出が目的で、
+                実際に使う aarch64-darwin のビルドは未検証）
 
             ## 反映方法
 
