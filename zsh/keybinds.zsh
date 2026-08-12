@@ -53,8 +53,22 @@ bindkey "^T" fzf-change-worktree
 # 有効化条件: cmux 内かつ内蔵キーボードが JIS 配列のとき。
 # CSI-u の漏れが実害になると確認できているのは JIS 配列環境のみのため、
 # それ以外では何もせず副作用を避ける (ioreg は macOS 専用。他 OS では偽になる)
-if [[ -n "$CMUX_SOCKET_PATH" ]] &&
-   ioreg -r -c AppleEmbeddedKeyboard -d 1 2>/dev/null | grep -q 'KeyboardLanguage.*Japanese'; then
+# ioreg は 1 回 0.4 秒近くかかり、内蔵キーボードの配列はマシン固有で
+# 変わらないため、判定結果はファイルにキャッシュする (再判定はファイル削除で)
+_cmux-jis-internal-keyboard() {
+  local cache=${XDG_CACHE_HOME:-$HOME/.cache}/zsh/jis-internal-keyboard
+  if [[ ! -r $cache ]]; then
+    mkdir -p ${cache:h}
+    if ioreg -r -c AppleEmbeddedKeyboard -d 1 2>/dev/null |
+       grep -q 'KeyboardLanguage.*Japanese'; then
+      echo 1 > $cache
+    else
+      echo 0 > $cache
+    fi
+  fi
+  [[ "$(<$cache)" == 1 ]]
+}
+if [[ -n "$CMUX_SOCKET_PATH" ]] && _cmux-jis-internal-keyboard; then
   printf '\e[<u'
   while read -t 0.01 -k 1 _cmux_drain 2>/dev/null; do :; done
   # キーコード → 注入する文字コードのマップ
