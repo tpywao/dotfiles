@@ -104,6 +104,12 @@
         "source": "github",
         "repo": "anthropics/claude-plugins-official"
       }
+    },
+    "genshijin": {
+      "source": {
+        "source": "github",
+        "repo": "InterfaceX-co-jp/genshijin"
+      }
     }
   },
   "language": "japanese",
