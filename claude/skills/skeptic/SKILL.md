@@ -62,7 +62,7 @@ skeptic の報告自体の事実主張を、2体目の独立エージェント�
   jq -rs '[.[] | select(.type=="assistant")] | last | .message.content | map(select(.type=="text") | .text) | join("\n")' <output_file> > <保存先ファイル>
   ```
 
-  抽出後は `wc -c` と報告固有の文字列の `grep -c` で中身を確認する（`cat` で全文をコンテキストに載せない）
+  抽出後は `wc -c` と報告固有の文字列の `rg -c` で中身を確認する（`cat` で全文をコンテキストに載せない）
 - `skeptic` サブエージェント（利用不可なら `general-purpose`）に以下のプロンプトを渡して dispatch する。プロンプトは固定のため、呼び出し前のユーザー承認は不要
 
 ```
