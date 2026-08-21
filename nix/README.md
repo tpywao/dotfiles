@@ -47,7 +47,13 @@ $ nix build ".#homeConfigurations.$DOTFILES_MACHINE.activationPackage" --no-link
 4. 適用
 
 ```sh
-$ hms   # abbr: nix run home-manager -- switch --flake "$DOTFILES#${DOTFILES_MACHINE:?see nix/README.md}" --impure
+$ hms   # abbr: home-manager switch --flake "$DOTFILES#${DOTFILES_MACHINE:?see nix/README.md}" --impure
+```
+
+`home-manager` コマンドは `programs.home-manager.enable` により初回 switch 以降 PATH に入る（flake.lock で pin された版が使われる）。新マシンでまだ入っていない初回だけは `nix run` 経由で実行する:
+
+```sh
+$ nix run home-manager -- switch --flake "$DOTFILES#${DOTFILES_MACHINE:?see nix/README.md}" --impure
 ```
 
 5. コミット
