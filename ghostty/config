@@ -2,3 +2,9 @@
 # 左 option を Alt (ESC プレフィックス) として送る。
 # iTerm2 の「Left Option key: Esc+」相当。alt+f / alt+b の単語移動などに必要
 macos-option-as-alt = left
+
+# フォント。FirgeNerd Console は monospace フラグを持たないため
+# `ghostty +list-fonts` のデフォルト一覧には現れないが、font-family に明示指定すれば
+# ASCII / CJK / Nerd アイコンすべて解決される（italic は合成）
+font-family = FirgeNerd Console
+font-size = 14
