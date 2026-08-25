@@ -35,6 +35,12 @@ pkgs: with pkgs; [
   # Media
   # ffmpeg
 
+  # Fonts
+  # home-manager の darwin fonts モジュールが share/fonts を
+  # ~/Library/Fonts/HomeManager へコピーする（macOS は symlink を認識しないため）
+  (callPackage ./firge.nix { })
+  (callPackage ./firge-nerd.nix { })
+
   # Dev tools
   clang-tools
   git-lfs
