@@ -31,3 +31,6 @@ abbr gwt='git worktree'
 
 # docker
 abbr dc='docker compose -f $DOCKER_COMPOSE_YML -p $DOCKER_COMPOSE_PROJECT'
+
+# gh
+abbr prr='gh search prs --review-requested=@me --state=open'
