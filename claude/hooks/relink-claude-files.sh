@@ -7,6 +7,10 @@
 # - If both sides have identical content, just re-link (lossless).
 # - If they have diverged, back up the older side to <path>.relinkbak.<ts>
 #   before overwriting it, so no edit is silently lost.
+#
+# claude/ 配下は install.sh の link_claude_files が symlink で張るようになったため、
+# 通常は -ef が実体を辿って同一 inode と判定され、このスクリプトは何もせず終了する。
+# install.sh を未実行のマシンに残る hardlink を拾うためだけに残している。
 set -u
 
 # This script is hardlinked into ~/.claude/hooks, so it can't resolve its own
