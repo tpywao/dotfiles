@@ -74,7 +74,9 @@
 
 - `find` → `fd`（.gitignore を尊重、正規表現がデフォルト）
 - `grep` → `rg`（ファイル横断検索のとき。パイプ内の絞り込み `| grep` はどちらでもよい）
-- `curl` / `wget` → `ax`（HTTP フェッチ。status/headers/body を JSON レポートで返し、サイズ・時間キャップつき。`ax <url>` でフェッチ、`--body` で本文のみ出力）
+- `curl` / `wget` → `ax`（HTTP フェッチ。status/headers/body を JSON レポートで返す。`ax <url>` でフェッチ、`--body` で本文のみ出力）
+  - **デフォルトで 20MB / 30 秒で打ち切られる**（`--body` を付けても取得側のキャップは効く）。これを超えるファイルは `--max-bytes` / `-m` を明示するか、別手段を使う（Nix の fixed-output derivation なら `nix-prefetch-url` 等）
+  - 打ち切りは stderr に告知される。`2>/dev/null` で捨てると、途中で切れたファイルを正常なものとして掴んだまま気づけない
 
 ただし専用ツール（Grep / Glob / Read / WebFetch）が使える場面ではそちらが最優先。これは Bash に降りる場合の選択規則。
 
