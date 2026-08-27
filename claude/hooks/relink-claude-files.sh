@@ -34,6 +34,11 @@ case "$EDITED" in
     ;;
 esac
 
+# settings.json は hardlink 同期の対象外。Claude Code 自身が model や autoMode を
+# ~/.claude/settings.json へ書き込むため、リンクを張るとマシン固有の値が dotfiles
+# 側へ流れ込む。共有キーの反映は install.sh の merge_claude_settings が担う
+[ "$rest" = "settings.json" ] && exit 0
+
 [ -f "$EDITED" ] || exit 0
 [ -f "$OTHER" ] || exit 0
 

@@ -152,13 +152,39 @@ fi
 
 # Claude Code
 link_claude_md() {
-  # relink フックが退避する *.relinkbak.* は git 管理外のバックアップなので同期しない
-  find "$DOTFILES/claude" -type f -not -name '*.relinkbak.*' | while read -r src; do
+  # relink フックが退避する *.relinkbak.* は git 管理外のバックアップなので同期しない。
+  # settings.json は hardlink せず merge_claude_settings で反映する
+  find "$DOTFILES/claude" -type f -not -name '*.relinkbak.*' \
+    -not -path "$DOTFILES/claude/settings.json" | while read -r src; do
     rel="${src#$DOTFILES/claude/}"
     dst="$HOME/.claude/$rel"
     mkdir -p "$(dirname "$dst")"
     hardlink "$src" "$dst"
   done
+}
+
+# settings.json は hardlink の対象にできない。Claude Code 自身が model や
+# effortLevel、autoMode をこのファイルへ書き込むため、リンクを張るとマシン固有の
+# 値が dotfiles 側に流れ込み、書き込みのたび（atomic save）にリンクも切れる。
+# dotfiles 側は共有したいキーだけを持ち、既存の設定へ上書き適用する。
+# dotfiles にないキーは既存値がそのまま残る。
+merge_claude_settings() {
+  src="$DOTFILES/claude/settings.json"
+  dst="$HOME/.claude/settings.json"
+  [ -f "$src" ] || return 0
+  if ! command -v jq > /dev/null 2>&1; then
+    echo "-----> jq が無いため $dst のマージをスキップしました"
+    return 0
+  fi
+  mkdir -p "$(dirname "$dst")"
+  [ -f "$dst" ] || echo '{}' > "$dst"
+  tmp="$dst.merging.$$"
+  if jq -s '.[0] * .[1]' "$dst" "$src" > "$tmp"; then
+    mv "$tmp" "$dst"
+    printf "\033[0;36m[merged]\033[0m %s\n" "$dst"
+  else
+    echo "-----> $dst のマージに失敗しました。$tmp を確認してください"
+  fi
 }
 
 if ! command -v claude > /dev/null 2>&1; then
@@ -170,11 +196,13 @@ if ! command -v claude > /dev/null 2>&1; then
   if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
     eval "$CLAUDE_INSTALL_CMD"
     link_claude_md
+    merge_claude_settings
   else
     echo "Skipping Claude Code installation."
   fi
 else
   link_claude_md
+  merge_claude_settings
 fi
 
 exec $SHELL
