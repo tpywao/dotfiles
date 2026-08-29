@@ -114,9 +114,44 @@ fi
 
 if command -v nix > /dev/null 2>&1; then
   if [ -z "${DOTFILES_MACHINE:-}" ]; then
-    echo "Error: DOTFILES_MACHINE is not set." >&2
-    echo "  export DOTFILES_MACHINE=<machine> (flake.nix の homeConfigurations のエントリ名。詳細は nix/README.md)" >&2
-    exit 1
+    # flake.nix の homeConfigurations から選択肢を列挙する
+    # (`<machine> = mkHome ...;` の行をパース。nix eval は入力の fetch が要るため使わない)
+    machines=$(sed -n 's/^ *\([A-Za-z0-9_-]*\) = mkHome .*/\1/p' "$DOTFILES/flake.nix")
+    if [ -z "$machines" ]; then
+      echo "Error: DOTFILES_MACHINE is not set, and no homeConfigurations found in flake.nix." >&2
+      echo "  export DOTFILES_MACHINE=<machine> (詳細は nix/README.md)" >&2
+      exit 1
+    fi
+    echo "DOTFILES_MACHINE is not set. Select a machine configuration:"
+    i=0
+    for machine in $machines; do
+      i=$((i + 1))
+      echo "  $i) $machine"
+    done
+    printf "Select [1-%s]: " "$i"
+    read answer
+    i=0
+    for machine in $machines; do
+      i=$((i + 1))
+      if [ "$answer" = "$i" ] || [ "$answer" = "$machine" ]; then
+        DOTFILES_MACHINE=$machine
+        break
+      fi
+    done
+    if [ -z "${DOTFILES_MACHINE:-}" ]; then
+      echo "Error: invalid selection: $answer" >&2
+      exit 1
+    fi
+    export DOTFILES_MACHINE
+    # 次回以降のシェルのために永続化する (~/.local/zsh/*.zsh は zshrc が source する。nix/README.md 参照)
+    machine_zsh="$HOME/.local/zsh/machine.zsh"
+    if [ ! -e "$machine_zsh" ]; then
+      mkdir -p "$HOME/.local/zsh"
+      printf 'export DOTFILES_MACHINE=%s\n' "$DOTFILES_MACHINE" > "$machine_zsh"
+      echo "-----> Saved DOTFILES_MACHINE=$DOTFILES_MACHINE to $machine_zsh"
+    else
+      echo "Note: add 'export DOTFILES_MACHINE=$DOTFILES_MACHINE' to ~/.local/zsh/*.zsh (see nix/README.md)"
+    fi
   fi
   if ! command -v home-manager > /dev/null 2>&1; then
     echo "-----> Applying home-manager for the first time"

@@ -11,6 +11,8 @@
 export DOTFILES_MACHINE=work-mac
 ```
 
+`install.sh` は `DOTFILES_MACHINE` が未設定のとき、`flake.nix` の `homeConfigurations` から選択肢を提示して選ばせる。選択結果は `~/.local/zsh/machine.zsh` が無ければそこに保存される（既存の場合は上書きせず、手動追記を促すメッセージを出す）。
+
 ### マシンの追加手順
 
 1. `nix/<machine>.nix` を作成する（`common.nix` を imports し、そのマシン固有のパッケージ・設定を書く。`work-mac.nix` を参考に）
