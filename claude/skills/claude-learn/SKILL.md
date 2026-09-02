@@ -50,7 +50,7 @@ flowchart TD
 
 ## 却下履歴ファイル
 
-- パス: `~/.claude/learn-candidates/<cwd-slug>.md`。マシンローカル（dotfiles / git 管理外、hardlink 同期対象外）。
+- パス: `~/.claude/learn-candidates/<cwd-slug>.md`。マシンローカル（dotfiles / git 管理外、同期対象外）。
 - `<cwd-slug>` は cwd の英数字以外を `-` に置換したもの。ディレクトリが無ければこのスキルが `mkdir -p` で作る。
 - 人間可読の Markdown 追記（機械突合しないため JSON 不要）。このスキルのみが読み書きする。
 - 目的: 一度「残さない」と判断した候補を次回以降に再提案しないため。
