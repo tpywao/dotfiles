@@ -1,7 +1,7 @@
 #!/bin/bash
-# PreToolUse hook for Bash: remind to run the pr-selfcheck skill before opening a PR.
-# Denies the first `gh pr create` in a 30-minute window (exit 2 surfaces the reason
-# to Claude), then lets a retry through so it cannot loop.
+# PreToolUse hook (Bash): PR を作る前に pr-selfcheck スキルの実行を促す。
+# 30 分の窓のうち最初の 1 件だけを exit 2 で止める（stderr に書いた理由が Claude に渡る）。
+# マーカーはこのスクリプト自身が作るため、再実行は必ず通りループしない。
 set -u
 
 COMMAND=$(jq -r '.tool_input.command // empty' 2>/dev/null < /dev/stdin)
