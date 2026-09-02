@@ -43,6 +43,7 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 | `inject-context.sh` | SessionStart | ブランチ名と working tree の状態をコンテキストに注入 |
 | `update-usage.sh` | SessionStart | `usage/collect.py` をバックグラウンド起動（セッション開始を遅延させない） |
 | `relink-claude-files.sh` | PostToolUse (Edit\|Write) | hardlink 時代の再同期用。symlink 化後は何もせず終了する（`settings.json` も対象外） |
+| `remind-pr-selfcheck.sh` | PreToolUse (Bash) | `gh pr create` の初回を exit 2 で一度止め、`pr-selfcheck` の実行を促す（30分以内の再実行は通す） |
 | `notify-stop.sh` | Stop | 作業完了を macOS 通知（terminal-notifier があればクリックでアプリ前面化） |
 
 このほか UserPromptSubmit に `codegraph prompt-hook` が配線されている（スクリプトではなく `settings.json` に直接記述）。
@@ -64,6 +65,7 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 | `impl` | チケット ID から feature ブランチを作って実装開始 |
 | `mb-reorder-params` | Metabase カードのパラメータ並び替え |
 | `pr-format` | PR タイトル・本文のフォーマット |
+| `pr-selfcheck` | PR を出す前に diff を走査し、レビュー負荷を上げる要因を本文の追記案にする |
 | `review-strict` | 同調しない厳格なコードレビュー |
 
 ## agents/
