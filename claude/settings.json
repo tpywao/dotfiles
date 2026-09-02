@@ -41,10 +41,6 @@
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/block-dangerous.sh"
-          },
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/remind-pr-selfcheck.sh"
           }
         ]
       }
