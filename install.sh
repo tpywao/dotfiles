@@ -5,17 +5,6 @@ shell=${1:-$SHELL}
 # OS 判定関数 (is_mac, is_wsl, is_linux)
 . "$DOTFILES/utils/utils.bash"
 
-hardlink() {
-  file=$1
-  link=$2
-  if [ "$file" -ef "$link" ]; then
-    printf "\033[0;36m[linked]\033[0m %s\n" "$link"
-  elif [ ! -e "$link" ]; then
-    echo "-----> Hardlinking your new $link"
-    ln "$file" "$link"
-  fi
-}
-
 symlink() {
   file=$1
   link=$2
@@ -151,14 +140,79 @@ if command -v brew > /dev/null 2>&1; then
 fi
 
 # Claude Code
-link_claude_md() {
-  # relink フックが退避する *.relinkbak.* は git 管理外のバックアップなので同期しない
-  find "$DOTFILES/claude" -type f -not -name '*.relinkbak.*' | while read -r src; do
+# claude/ 配下は symlink で同期する。hardlink は inode 参照なので、git switch や
+# Claude Code の atomic save（tmpfile + rename）でリンクが切れ、両側が黙って分岐する。
+# symlink はパス参照なので切れない。Claude Code の Edit は symlink 経由の書き込みを
+# 拒否するため、~/.claude/ 側が誤って編集されることもない（編集は dotfiles 側で行う）。
+#
+# 既存ファイルの扱いは共通の symlink() と違い、hardlink 時代の実ファイルを
+# symlink へ置き換える必要があるため専用関数にしている。
+link_claude_file() {
+  file=$1
+  link=$2
+  if [ -L "$link" ]; then
+    if [ "$(readlink "$link")" = "$file" ]; then
+      printf "\033[0;36m[linked]\033[0m %s\n" "$link"
+      return 0
+    fi
+    ln -sfn "$file" "$link"
+    echo "-----> Re-symlinked $link"
+    return 0
+  fi
+  if [ ! -e "$link" ]; then
+    echo "-----> Symlinking your new $link"
+    ln -s "$file" "$link"
+    return 0
+  fi
+  # hardlink 時代の実ファイル、または手で置いたファイル。内容が一致していれば
+  # そのまま置き換え、分岐しているなら退避してから張る（編集を黙って捨てない）
+  if cmp -s "$file" "$link"; then
+    /bin/rm -- "$link"
+    ln -s "$file" "$link"
+    echo "-----> Replaced with symlink: $link"
+  else
+    backup="$link.presymlink.$(date +%Y%m%d-%H%M%S)"
+    cp -p "$link" "$backup"
+    /bin/rm -- "$link"
+    ln -s "$file" "$link"
+    echo "-----> $link は内容が分岐していました。$backup へ退避して symlink を張りました"
+  fi
+}
+
+link_claude_files() {
+  # relink フックが退避する *.relinkbak.* は git 管理外のバックアップなので同期しない。
+  # settings.json はリンクせず merge_claude_settings で共有キーのみを反映する
+  find "$DOTFILES/claude" -type f -not -name '*.relinkbak.*' \
+    -not -path "$DOTFILES/claude/settings.json" | while read -r src; do
     rel="${src#$DOTFILES/claude/}"
     dst="$HOME/.claude/$rel"
     mkdir -p "$(dirname "$dst")"
-    hardlink "$src" "$dst"
+    link_claude_file "$src" "$dst"
   done
+}
+
+# settings.json はリンクの対象にできない。Claude Code 自身が model や
+# effortLevel、autoMode をこのファイルへ書き込むため、リンクを張るとマシン固有の
+# 値が dotfiles 側に流れ込む。
+# dotfiles 側は共有したいキーだけを持ち、既存の設定へ上書き適用する。
+# dotfiles にないキーは既存値がそのまま残る。
+merge_claude_settings() {
+  src="$DOTFILES/claude/settings.json"
+  dst="$HOME/.claude/settings.json"
+  [ -f "$src" ] || return 0
+  if ! command -v jq > /dev/null 2>&1; then
+    echo "-----> jq が無いため $dst のマージをスキップしました"
+    return 0
+  fi
+  mkdir -p "$(dirname "$dst")"
+  [ -f "$dst" ] || echo '{}' > "$dst"
+  tmp="$dst.merging.$$"
+  if jq -s '.[0] * .[1]' "$dst" "$src" > "$tmp"; then
+    mv "$tmp" "$dst"
+    printf "\033[0;36m[merged]\033[0m %s\n" "$dst"
+  else
+    echo "-----> $dst のマージに失敗しました。$tmp を確認してください"
+  fi
 }
 
 if ! command -v claude > /dev/null 2>&1; then
@@ -169,12 +223,14 @@ if ! command -v claude > /dev/null 2>&1; then
   read answer
   if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
     eval "$CLAUDE_INSTALL_CMD"
-    link_claude_md
+    link_claude_files
+    merge_claude_settings
   else
     echo "Skipping Claude Code installation."
   fi
 else
-  link_claude_md
+  link_claude_files
+  merge_claude_settings
 fi
 
 exec $SHELL
