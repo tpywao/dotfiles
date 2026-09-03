@@ -114,6 +114,12 @@ fi
 
 if command -v nix > /dev/null 2>&1; then
   if [ -z "${DOTFILES_MACHINE:-}" ]; then
+    # 非対話実行 (パイプ・CI) では read がパイプ入力を消費・ブロックするため、メニューを出さず fail-fast
+    if [ ! -t 0 ]; then
+      echo "Error: DOTFILES_MACHINE is not set." >&2
+      echo "  export DOTFILES_MACHINE=<machine> (flake.nix の homeConfigurations のエントリ名。詳細は nix/README.md)" >&2
+      exit 1
+    fi
     # flake.nix の homeConfigurations から選択肢を列挙する
     # (`<machine> = mkHome ...;` の行をパース。nix eval は入力の fetch が要るため使わない)
     machines=$(sed -n 's/^ *\([A-Za-z0-9_-]*\) = mkHome .*/\1/p' "$DOTFILES/flake.nix")
