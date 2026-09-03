@@ -52,17 +52,9 @@ description: Use when Claude Code 環境の定期監査・健全性チェック�
         ```
 
         処分前に現行ファイルと比べ、退避側にしかない編集がないことを確認する。git 管理外なので削除すると復元できない
-5. **バックアップ確認**: `~/.claude/backups/` は Claude Code が自動でローテーションする（数件で頭打ち）。件数だけ見て、増え続けていなければ放置してよい。見るべきは**その外**に取り残されたバックアップ
-
-    ```bash
-    ls -A ~/.claude/backups/                       # ローテーション対象。件数の確認のみ
-    find ~/.claude -maxdepth 1 -name '*.backup.*'  # ローテーション対象外。処分候補
-    ```
-
-    `backups/` 配下は `.claude.json.backup.*` のようにドットで始まるため、`ls` や `*` グロブでは 0 件に見える。必ず `ls -A` か `find` を使う
-6. **memory 鮮度**: 監査対象プロジェクト（通常 -Users-ogiso--dotfiles）の MEMORY.md と memory/*.md を確認し、古くなった・誤っていた記憶の更新・削除候補を報告。全プロジェクトの memory は指示があった場合のみ
-7. **skills の description**: 各 SKILL.md の description に発火条件（いつ使うか）が書かれているか
-8. **dotfiles 同期**: `git -C ~/.dotfiles status --short --branch` で untracked / ahead を確認（コミット漏れ・push 忘れ）。あわせて `git branch -vv` で `[gone]`（リモート削除済み）のブランチを削除候補として報告する
+5. **memory 鮮度**: 監査対象プロジェクト（通常 -Users-ogiso--dotfiles）の MEMORY.md と memory/*.md を確認し、古くなった・誤っていた記憶の更新・削除候補を報告。全プロジェクトの memory は指示があった場合のみ
+6. **skills の description**: 各 SKILL.md の description に発火条件（いつ使うか）が書かれているか
+7. **dotfiles 同期**: `git -C ~/.dotfiles status --short --branch` で untracked / ahead を確認（コミット漏れ・push 忘れ）。あわせて `git branch -vv` で `[gone]`（リモート削除済み）のブランチを削除候補として報告する
 
 ## 出力形式
 
