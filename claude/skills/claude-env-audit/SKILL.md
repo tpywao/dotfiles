@@ -7,7 +7,9 @@ description: Use when Claude Code 環境の定期監査・健全性チェック�
 
 ## 概要
 
-~/.claude/ と ~/.dotfiles/claude/ の健全性を**読み取り専用**でチェックし、問題を報告する。修正はユーザーの承認を得てから行う。
+`~/.claude/` と `$DOTFILES/claude/` の健全性を**読み取り専用**でチェックし、問題を報告する。修正はユーザーの承認を得てから行う。
+
+`$DOTFILES` は dotfiles リポジトリのパス（`zsh/.zshenv` が export する）。リポジトリの配置はマシンによって変わりうるので、パスは直書きせずこの変数を使う。
 
 ## チェックリスト
 
@@ -21,7 +23,7 @@ description: Use when Claude Code 環境の定期監査・健全性チェック�
         live_only: [$live | keys[] as $k | select($shared | has($k) | not) | $k],
         differs:   [$live | keys[] as $k | select(($shared | has($k)) and ($live[$k] != $shared[$k])) | $k]
       }
-    ' ~/.claude/settings.json ~/.dotfiles/claude/settings.json
+    ' ~/.claude/settings.json "$DOTFILES/claude/settings.json"
     ```
 
     - `live_only`: グローバルにだけあるキー。マシンをまたいで揃えたいものは dotfiles へ入れる。ただし `autoMode` は Claude Code が生成し、ホームディレクトリのパスやリポジトリ名を含むため**入れない**
@@ -33,8 +35,8 @@ description: Use when Claude Code 環境の定期監査・健全性チェック�
 4. **symlink 整合性**: `~/.claude/` 側が dotfiles を指す symlink になっているか確認する（`settings.json` は上記 2 で見るので対象外）
 
     ```bash
-    find ~/.dotfiles/claude -type f -not -name 'settings.json' -not -name '*.relinkbak.*' -not -name '*.presymlink.*' -not -name '*.local.*' | while read -r src; do
-      dst="$HOME/.claude/${src#$HOME/.dotfiles/claude/}"
+    find "$DOTFILES/claude" -type f -not -name 'settings.json' -not -name '*.relinkbak.*' -not -name '*.presymlink.*' -not -name '*.local.*' | while read -r src; do
+      dst="$HOME/.claude/${src#$DOTFILES/claude/}"
       if [ ! -e "$dst" ]; then
         echo "MISSING       $dst"
       elif [ ! -L "$dst" ]; then
@@ -44,17 +46,22 @@ description: Use when Claude Code 環境の定期監査・健全性チェック�
     ```
 
     `NOT A SYMLINK` は hardlink 時代の残りか手動コピー。`diff` で内容を比べ、`~/.claude/` 側にしかない編集があれば dotfiles 側へ取り込んでから `./install.sh` を実行する（内容が分岐していれば `*.presymlink.<ts>` へ退避される）。手順は claude-add-config skill に従う
-    - `~/.claude/` 側にしかないファイルは `diff -rq ~/.dotfiles/claude/<dir> ~/.claude/<dir>`（対象: skills, hooks, agents）で検出する。dotfiles に入れるべきものか、そのマシン限定のものかを判断する
-    - 退避ファイル（`*.presymlink.*` / `*.relinkbak.*`）は `~/.claude/` と `~/.dotfiles/claude/` の**両方**に残る。片側だけ見ると取りこぼす
+    - `~/.claude/` 側にしかないファイルは `diff -rq "$DOTFILES/claude/<dir>" ~/.claude/<dir>`（対象: skills, hooks, agents）で検出する。dotfiles に入れるべきものか、そのマシン限定のものかを判断する
+    - 退避ファイル（`*.presymlink.*` / `*.relinkbak.*`）は `~/.claude/` と `$DOTFILES/claude/` の**両方**に残る。片側だけ見ると取りこぼす
 
         ```bash
-        find ~/.claude ~/.dotfiles/claude \( -name '*.presymlink.*' -o -name '*.relinkbak.*' \) 2>/dev/null
+        find ~/.claude "$DOTFILES/claude" \( -name '*.presymlink.*' -o -name '*.relinkbak.*' \) 2>/dev/null
         ```
 
         処分前に現行ファイルと比べ、退避側にしかない編集がないことを確認する。git 管理外なので削除すると復元できない
-5. **memory 鮮度**: 監査対象プロジェクト（通常 -Users-ogiso--dotfiles）の MEMORY.md と memory/*.md を確認し、古くなった・誤っていた記憶の更新・削除候補を報告。全プロジェクトの memory は指示があった場合のみ
+5. **memory 鮮度**: dotfiles リポジトリのプロジェクトメモリを確認し、古くなった・誤っていた記憶の更新・削除候補を報告する。全プロジェクトの memory は指示があった場合のみ
+
+    ```bash
+    # プロジェクトディレクトリ名は cwd の英数字以外を - に置換したもの
+    ls ~/.claude/projects/"$(printf '%s' "$DOTFILES" | sed 's/[^a-zA-Z0-9]/-/g')"/memory/
+    ```
 6. **skills の description**: 各 SKILL.md の description に発火条件（いつ使うか）が書かれているか
-7. **dotfiles 同期**: `git -C ~/.dotfiles status --short --branch` で untracked / ahead を確認（コミット漏れ・push 忘れ）。あわせて `git branch -vv` で `[gone]`（リモート削除済み）のブランチを削除候補として報告する
+7. **dotfiles 同期**: `git -C "$DOTFILES" status --short --branch` で untracked / ahead を確認（コミット漏れ・push 忘れ）。あわせて `git branch -vv` で `[gone]`（リモート削除済み）のブランチを削除候補として報告する
 
 ## 出力形式
 
