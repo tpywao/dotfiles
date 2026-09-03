@@ -53,7 +53,7 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 
 | スキル | 用途 |
 | --- | --- |
-| `claude-add-config` | ~/.claude/ への設定追加と hardlink 同期 |
+| `claude-add-config` | ~/.claude/ への設定追加と symlink 同期 |
 | `claude-env-audit` | Claude Code 環境の定期監査 |
 | `claude-learn` | 会話で得た学びをメモリ / CLAUDE.md / スキルへ反映 |
 | `complexity` | 計算量を O 記法で解析・比較 |
