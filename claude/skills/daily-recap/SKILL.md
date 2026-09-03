@@ -53,7 +53,7 @@ jq -r 'select(.type=="user") | .message.content |
 1. **dotfiles の当日コミット**
 
 ```bash
-git -C ~/.dotfiles log --since="$DATE 00:00" --until="$DATE 23:59" \
+git -C "$DOTFILES" log --since="$DATE 00:00" --until="$DATE 23:59" \
   --pretty=format:'%h %ad %s' --date=format:'%H:%M'
 ```
 
