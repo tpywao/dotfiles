@@ -122,7 +122,7 @@ if command -v nix > /dev/null 2>&1; then
     fi
     # flake.nix の homeConfigurations から選択肢を列挙する
     # (`<machine> = mkHome ...;` の行をパース。nix eval は入力の fetch が要るため使わない)
-    machines=$(sed -n 's/^ *\([A-Za-z0-9_-]*\) = mkHome .*/\1/p' "$DOTFILES/flake.nix")
+    machines=$(sed -n 's/^[[:space:]]*\([A-Za-z0-9_-]*\)[[:space:]]*=[[:space:]]*mkHome[[:space:]].*/\1/p' "$DOTFILES/flake.nix")
     if [ -z "$machines" ]; then
       echo "Error: DOTFILES_MACHINE is not set, and no homeConfigurations found in flake.nix." >&2
       echo "  export DOTFILES_MACHINE=<machine> (詳細は nix/README.md)" >&2
