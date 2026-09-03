@@ -180,6 +180,19 @@ link_claude_file() {
 }
 
 link_claude_files() {
+  # 外部インストーラ（npx skills 等）は ~/.claude/skills/<name> を自前 store への
+  # ディレクトリ symlink として張ることがある。dotfiles に同名スキルを vendoring した
+  # 状態でこの symlink を残すと、ファイル単位のリンクが symlink を辿って store 側の
+  # 実体を書き換えてしまうため、先に symlink 自体を除去する（store の実体は残る）
+  for src_dir in "$DOTFILES"/claude/skills/*/; do
+    [ -d "$src_dir" ] || continue
+    dst_dir="$HOME/.claude/skills/$(basename "$src_dir")"
+    if [ -L "$dst_dir" ]; then
+      /bin/rm -- "$dst_dir"
+      echo "-----> Removed installer dir symlink: $dst_dir"
+    fi
+  done
+
   # relink フックが退避する *.relinkbak.* は git 管理外のバックアップなので同期しない。
   # settings.json はリンクせず merge_claude_settings で共有キーのみを反映する
   find "$DOTFILES/claude" -type f -not -name '*.relinkbak.*' \
