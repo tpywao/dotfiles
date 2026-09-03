@@ -18,7 +18,13 @@
       "Bash(rg --hostname-bin=*)",
       "Bash(rg * --hostname-bin=*)",
       "Bash(rg --hostname-bin *)",
-      "Bash(rg * --hostname-bin *)"
+      "Bash(rg * --hostname-bin *)",
+      "Bash(git log * --output*)",
+      "Bash(git log --output*)",
+      "Bash(git diff * --output*)",
+      "Bash(git diff --output*)",
+      "Bash(git show * --output*)",
+      "Bash(git show --output*)"
     ],
     "allow": [
       "Bash(python manage.py test *)",
