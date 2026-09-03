@@ -150,8 +150,14 @@ if command -v nix > /dev/null 2>&1; then
     fi
     export DOTFILES_MACHINE
     # 次回以降のシェルのために永続化する (~/.local/zsh/*.zsh は zshrc が source する。nix/README.md 参照)
+    # 別ファイルで export 済みなら machine.zsh を作らない
+    # (*.zsh はアルファベット順に source されるため、後から作った machine.zsh が既存の設定を黙って上書きし得る)
     machine_zsh="$HOME/.local/zsh/machine.zsh"
-    if [ ! -e "$machine_zsh" ]; then
+    existing_export=$(grep -lE '^[[:space:]]*export[[:space:]]+DOTFILES_MACHINE=' "$HOME"/.local/zsh/*.zsh 2>/dev/null | head -n 1)
+    if [ -n "$existing_export" ]; then
+      echo "Note: DOTFILES_MACHINE is already exported in $existing_export."
+      echo "      update it to 'export DOTFILES_MACHINE=$DOTFILES_MACHINE' if needed (see nix/README.md)"
+    elif [ ! -e "$machine_zsh" ]; then
       mkdir -p "$HOME/.local/zsh"
       printf 'export DOTFILES_MACHINE=%s\n' "$DOTFILES_MACHINE" > "$machine_zsh"
       echo "-----> Saved DOTFILES_MACHINE=$DOTFILES_MACHINE to $machine_zsh"
