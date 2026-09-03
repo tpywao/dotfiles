@@ -1,5 +1,17 @@
 {
+  "skillOverrides": {
+    "complexity": "name-only"
+  },
   "permissions": {
+    "defaultMode": "auto",
+    "deny": [
+      "Bash(find * -delete*)",
+      "Bash(find -delete*)",
+      "Bash(find * -exec*)",
+      "Bash(find -exec*)",
+      "Bash(find * -ok*)",
+      "Bash(find -ok*)"
+    ],
     "allow": [
       "Bash(python manage.py test *)",
       "Bash(uv run ruff check)",

@@ -63,8 +63,9 @@
 
 ### Claude Code 設定
 - `claude/`: Claude Code 関連（hooks, skills など）
-- グローバル ~/.claude/ との hardlink で同期
-- Edit/Write 後に自動で hardlink が再同期される
+- グローバル `~/.claude/` へ **symlink** で同期する。**編集は必ず dotfiles 側で行う**（`~/.claude/` 側は参照専用。Claude Code は symlink 経由の書き込みを拒否する）
+- `settings.json` だけはリンクしない。Claude Code 自身が書き込むファイルのため、`install.sh` の `merge_claude_settings` が dotfiles 側の共有キーのみを既存の設定へ上書きする。マシン固有キー（`effortLevel` / `modelSettings` / `autoMode`）は dotfiles 側に書かない
+- 仕組みの詳細は `claude/README.md`
 
 ### AI ツール環境（ai-tools）
 - **ディレクトリ**: `ai-tools/`（dotfiles で管理）
