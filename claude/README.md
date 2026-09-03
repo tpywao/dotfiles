@@ -64,6 +64,7 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 | `impl` | チケット ID から feature ブランチを作って実装開始 |
 | `mb-reorder-params` | Metabase カードのパラメータ並び替え |
 | `pr-format` | PR タイトル・本文のフォーマット |
+| `pr-selfcheck` | PR を出す前に diff を走査し、レビュー負荷を上げる要因を本文の追記案にする |
 | `review-strict` | 同調しない厳格なコードレビュー |
 
 ## agents/
