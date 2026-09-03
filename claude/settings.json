@@ -10,7 +10,15 @@
       "Bash(find * -exec*)",
       "Bash(find -exec*)",
       "Bash(find * -ok*)",
-      "Bash(find -ok*)"
+      "Bash(find -ok*)",
+      "Bash(rg --pre=*)",
+      "Bash(rg * --pre=*)",
+      "Bash(rg --pre *)",
+      "Bash(rg * --pre *)",
+      "Bash(rg --hostname-bin=*)",
+      "Bash(rg * --hostname-bin=*)",
+      "Bash(rg --hostname-bin *)",
+      "Bash(rg * --hostname-bin *)"
     ],
     "allow": [
       "Bash(python manage.py test *)",
