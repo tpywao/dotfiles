@@ -34,4 +34,10 @@ if printf '%s' "$COMMAND" | grep -qE 'git[[:space:]]+branch[[:space:]]+[^|;&]*-D
   block "git branch -D"
 fi
 
+# find は検索用途で許可しているが、-delete と -exec 系はファイル削除・任意コマンド実行の
+# 経路になる。プレフィックス一致の allow ルールではこれらを弾けないためここで止める。
+if printf '%s' "$COMMAND" | grep -qE '(^|[;&|[:space:]])find[[:space:]][^;&|]*-(delete|exec|execdir|ok|okdir)\b'; then
+  block "find -delete / -exec (use a read-only find, or ask the user to run it)"
+fi
+
 exit 0
