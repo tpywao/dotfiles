@@ -67,6 +67,19 @@
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/block-dangerous.sh"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/refresh-codegraph-index.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__codegraph__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/refresh-codegraph-index.sh"
           }
         ]
       }
