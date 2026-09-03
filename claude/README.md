@@ -33,6 +33,7 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 | `CLAUDE.md` | 全プロジェクト共通のグローバル指示（質問方法、worktree 運用、コードコメント方針、自動生成ファイルの扱いなど） |
 | `settings.json` | 共有したい設定のみ（permissions の allow リスト、model、hooks の配線、plugins、language など）。hardlink ではなくマージ方式で反映する |
 | `keybindings.json` | Claude Code のキーバインド（`meta+k` → submit） |
+| `skills-external.json` | 外部インストーラ由来スキルの出所記録（リポジトリ・commit hash）。詳細は「外部スキル（vendoring）」を参照 |
 
 ## hooks/
 
@@ -69,6 +70,37 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 | `review-strict` | 同調しない厳格なコードレビュー |
 
 `complexity` は `settings.json` の `skillOverrides` で `name-only` にしている。Claude には名前だけが提示され、説明文は常駐しない（`/complexity` での呼び出しはそのまま使える）。
+
+### 外部スキル（vendoring）
+
+`npx skills` / `gh skill` で導入したスキルは、実体をこのリポジトリへ取り込んで（vendoring）管理する。出所は `claude/skills-external.json` に記録する。
+
+| スキル | 出所 | インストーラ |
+| --- | --- | --- |
+| `archify` | tt-a1i/archify | npx skills |
+| `find-skills` | vercel-labs/skills | npx skills |
+| `gh-stack` | github/gh-stack | gh skill |
+
+方針:
+
+- 内容のバージョン管理は git 履歴が担う。更新は必ず diff レビューを通るため、上流の変更が黙って反映されることがない。新しいマシンは clone + `install.sh` だけで揃う（インストーラ不要）
+- インストーラの管理ファイル（`~/.agents/skills/` の store と `~/.agents/.skill-lock.json`）はマシンローカルのまま触らない。update の実行に使う
+- vendoring したスキルは dotfiles 側で手編集しない。インストーラの update に上書きされて編集が消える。カスタムしたい場合は別名の自作スキルとして fork する
+- `npx skills` が `~/.claude/skills/<name>` に張るディレクトリ symlink（store 参照）は `install.sh` が除去し、ファイル単位の symlink に張り替える。除去しないままファイル単位リンクを張ると symlink を辿って store 側の実体を壊すため
+
+取り込み手順（新規に外部スキルを導入したとき）:
+
+1. インストーラでインストールする（`npx skills add <owner>/<repo> -g` / `gh skill install <owner>/<repo> <name>`）
+2. 実体を `claude/skills/<name>/` へコピーする。実体の場所はインストーラで異なる: `npx skills` は `~/.agents/skills/<name>`、`gh skill` は `~/.claude/skills/<name>` に直置き
+3. `~/.agents/.skill-lock.json` の該当エントリ（source / skillFolderHash 等）を `claude/skills-external.json` へ転記する
+4. コミット → PR。マージ後に `./install.sh` を実行してファイル単位 symlink に張り替える
+
+更新手順:
+
+1. `npx skills update` / `gh skill update` を実行する
+2. 更新後の実体を `claude/skills/<name>/` へコピーし直し、diff をレビューする
+3. `claude/skills-external.json` の skillFolderHash を `~/.agents/.skill-lock.json` から転記する
+4. コミット → PR。マージ後に `./install.sh` を実行する
 
 ## agents/
 
