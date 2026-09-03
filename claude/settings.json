@@ -1,4 +1,7 @@
 {
+  "skillOverrides": {
+    "complexity": "name-only"
+  },
   "permissions": {
     "allow": [
       "Bash(python manage.py test *)",
