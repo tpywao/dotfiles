@@ -1,5 +1,9 @@
 {
+  "skillOverrides": {
+    "complexity": "name-only"
+  },
   "permissions": {
+    "defaultMode": "auto",
     "allow": [
       "Bash(python manage.py test *)",
       "Bash(uv run ruff check)",
