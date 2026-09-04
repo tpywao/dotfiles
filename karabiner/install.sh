@@ -5,8 +5,7 @@ DOTFILES=$(cd "$(dirname "$0")/.." && pwd -P)
 # 薙刀式 complex modifications - macOS only
 is_mac || exit 0
 
-mkdir -p "$HOME/.config/karabiner/assets/complex_modifications"
-symlink "$DOTFILES/karabiner/Naginata.json" "$HOME/.config/karabiner/assets/complex_modifications/Naginata.json"
+link_config "$DOTFILES/karabiner/Naginata.json" "$HOME/.config/karabiner/assets/complex_modifications/Naginata.json"
 
 # 個別の失敗でルートの install.sh を止めない (止めたいときだけ exit 1 する)
 exit 0
