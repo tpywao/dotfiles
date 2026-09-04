@@ -4,12 +4,14 @@
 
 `flake.nix` の `homeConfigurations` はマシンごとにエントリを持つ。各エントリは共通の `nix/home.nix` に加えてマシン固有モジュール（例: `nix/work-mac.nix`）を読み込む。
 
-適用先のマシン名は環境変数 `DOTFILES_MACHINE` で指定する。**未設定時はフォールバックせずエラーになる**（設定し忘れたマシンに別マシンの構成が黙って当たるのを防ぐため）。マシン固有の設定なので dotfiles 管理外の `~/.local/zsh/*.zsh` で export する。
+適用先のマシン名は環境変数 `DOTFILES_MACHINE` で指定する。**未設定時に別マシンの構成へフォールバックすることはない**（設定し忘れたマシンに別マシンの構成が黙って当たるのを防ぐため）。`home-manager switch`（`hms`）や非対話実行の `install.sh` はエラーで止まり、対話実行の `install.sh` のみ選択メニューを提示する（後述）。マシン固有の設定なので dotfiles 管理外の `~/.local/zsh/*.zsh` で export する。
 
 ```sh
 # ~/.local/zsh/machine.zsh（例）
 export DOTFILES_MACHINE=work-mac
 ```
+
+`install.sh` は環境変数 `DOTFILES_MACHINE` が未設定のとき、まず `~/.local/zsh/*.zsh` の `export DOTFILES_MACHINE=...` を読み、`flake.nix` の `homeConfigurations` にある値ならそれを使う（zsh の source と同じく最後の export が有効。bash からの実行や保存直後の再実行でも再選択にならない）。保存値が無い・無効なときは、対話実行（stdin が tty）なら選択肢を提示して選ばせ、非対話実行（パイプ・CI）ではメニューを出さずエラー終了する。選択結果は `~/.local/zsh/machine.zsh` に保存される。ただし既存の `~/.local/zsh/*.zsh` に export が残っている場合は新たに作成せず、そのファイルの更新を促すメッセージを出す（`*.zsh` はアルファベット順に source されるため、後から作ったファイルが既存の設定を黙って上書きするのを防ぐ）。
 
 ### マシンの追加手順
 
