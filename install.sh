@@ -114,15 +114,33 @@ fi
 
 if command -v nix > /dev/null 2>&1; then
   if [ -z "${DOTFILES_MACHINE:-}" ]; then
+    # flake.nix の homeConfigurations から選択肢を列挙する
+    # (`<machine> = mkHome ...;` の行をパース。nix eval は入力の fetch が要るため使わない)
+    machines=$(sed -n 's/^[[:space:]]*\([A-Za-z0-9_-]*\)[[:space:]]*=[[:space:]]*mkHome[[:space:]].*/\1/p' "$DOTFILES/flake.nix")
+    # 環境変数に無くても ~/.local/zsh/*.zsh に保存済みの値があればそれを使う
+    # (bash からの実行や保存直後の再実行では環境変数に載らない。zsh の source と同じく後の export を有効値とする)
+    saved_machine=$(sed -n "s/^[[:space:]]*export[[:space:]]\{1,\}DOTFILES_MACHINE=[\"']\{0,1\}\([A-Za-z0-9_-]*\).*/\1/p" "$HOME"/.local/zsh/*.zsh 2>/dev/null | tail -n 1)
+    if [ -n "$saved_machine" ]; then
+      for machine in $machines; do
+        if [ "$saved_machine" = "$machine" ]; then
+          DOTFILES_MACHINE=$saved_machine
+          export DOTFILES_MACHINE
+          echo "-----> Using DOTFILES_MACHINE=$DOTFILES_MACHINE (saved in ~/.local/zsh/*.zsh)"
+          break
+        fi
+      done
+      if [ -z "${DOTFILES_MACHINE:-}" ]; then
+        echo "Note: saved DOTFILES_MACHINE=$saved_machine is not in flake.nix homeConfigurations. Ignoring it."
+      fi
+    fi
+  fi
+  if [ -z "${DOTFILES_MACHINE:-}" ]; then
     # 非対話実行 (パイプ・CI) では read がパイプ入力を消費・ブロックするため、メニューを出さず fail-fast
     if [ ! -t 0 ]; then
       echo "Error: DOTFILES_MACHINE is not set." >&2
       echo "  export DOTFILES_MACHINE=<machine> (flake.nix の homeConfigurations のエントリ名。詳細は nix/README.md)" >&2
       exit 1
     fi
-    # flake.nix の homeConfigurations から選択肢を列挙する
-    # (`<machine> = mkHome ...;` の行をパース。nix eval は入力の fetch が要るため使わない)
-    machines=$(sed -n 's/^[[:space:]]*\([A-Za-z0-9_-]*\)[[:space:]]*=[[:space:]]*mkHome[[:space:]].*/\1/p' "$DOTFILES/flake.nix")
     if [ -z "$machines" ]; then
       echo "Error: DOTFILES_MACHINE is not set, and no homeConfigurations found in flake.nix." >&2
       echo "  export DOTFILES_MACHINE=<machine> (詳細は nix/README.md)" >&2
