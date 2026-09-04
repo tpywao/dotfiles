@@ -1,4 +1,3 @@
-# ~/.dotfiles/nix/personal-mac.nix
 { config, pkgs, ai-tools-pkgs, ... }:
 
 {

@@ -1,4 +1,3 @@
-# ~/.dotfiles/nix/work-mac.nix
 { config, pkgs, ai-tools-pkgs, dwt-pkgs, ... }:
 
 {
