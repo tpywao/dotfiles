@@ -222,14 +222,14 @@ exec zsh
   nix run home-manager -- switch --flake "$DOTFILES#$DOTFILES_MACHINE" --impure
   ```
 
-- **`jq が無いため ... のマージをスキップしました` と出る**
-  `jq` を入れてから `install.sh` を再実行する。Claude Code の共有設定が反映されていない。
+- **`[skipped] ... (jq が無い)` と出る**
+  `jq` を入れてから `install.sh` を再実行する。Claude Code か Docker の共有設定が反映されていない。
 
-- **`gh が無いため外部スキルの導入をスキップしました` と出る**
+- **`[skipped] 外部スキルの導入 (gh が無い)` と出る**
   `gh` を入れてから `install.sh` を再実行する。
 
-- **`~/.claude/` に `*.presymlink.<timestamp>` が残っている**
-  symlink 化の際に内容が分岐していたファイルの退避。中身を確認したうえで手で削除する。
+- **設定ファイルの隣に `*.presymlink.<timestamp>` が残っている**
+  symlink 化の際に、リンク先に内容の違う実体があったファイル・ディレクトリの退避。中身を確認したうえで手で削除する。
 
 ## マシンを追加する
 
