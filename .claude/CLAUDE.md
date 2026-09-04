@@ -25,6 +25,17 @@
 
 理由: 古いローカル main や現在の作業ブランチを起点にしないこと、メインの作業ツリーの状態を汚さないことを保証するため。
 
+### コミットメッセージと main の履歴
+
+コミットメッセージは `feat(component):` 形式で記述する。サブジェクトは日本語で書く。
+
+- `type`: 履歴で使われているのは `feat` / `fix` / `docs` / `chore` / `perf` / `refactor`
+- `component`: 変更対象の領域名。`claude` / `zsh` / `install` / `nix` / `ai-tools` / `ghostty` / `utils`
+
+**main の履歴は PR タイトルから生成される（squash）。** このリポジトリは squash マージのみを許可し（`allow_merge_commit` / `allow_rebase_merge` はいずれも false）、squash コミットのタイトルは PR タイトルから生成される（`squash_merge_commit_title: PR_TITLE`）。そのためブランチ側のコミットメッセージは main の履歴に残らず、main の文面を決めるのは PR タイトルである。PR タイトルの形式は `pr-format` スキル（日本語1行・50 字以内・プレフィックスなし）が正本。
+
+`feat(component):` 形式は、PR レビュー時にコミット単位で変更の目的を追うために維持する。main の履歴を Conventional Commits に揃えたい場合は、この CLAUDE.md ではなく `pr-format` スキル側の規約を変える必要がある。
+
 ### 固有文言の禁止
 - このリポジトリに追加するファイル（skills, hooks, 設定, ドキュメント等）には、**マシン・個人・勤務先プロジェクトに固有の文言を書かない**
   - 対象: ユーザー名、ホスト名、勤務先の社名・プロジェクト名・リポジトリ名、社内 URL など
@@ -149,7 +160,7 @@ exec zsh
 1. 自動生成ファイル（flake.lock など）は手書き編集しない
 2. 設定変更後は実際に機能するか確認（exec zsh など）
 3. 新しい dotfiles は install.sh に追加
-4. git commit 時は `feat(component):` 形式で記述
+4. コミットメッセージは `feat(component):` 形式（詳細は「コミットメッセージと main の履歴」）
 
 ## 参考資料
 - [README.md](../README.md)
