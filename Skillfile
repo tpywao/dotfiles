@@ -1,7 +1,8 @@
 # 外部スキルのマニフェスト。install.sh の install_external_skills が
 # gh skill install --pin で ~/.claude/skills/ へ導入する。
 # 形式: <owner>/<repo> <skill> <pin>
-# pin はタグを書く。更新はこの pin を上げてから ./install.sh を実行する。
+# pin には上流のリリースタグを書く。更新するときは該当行の pin を新しいタグへ
+# 書き換えてから ./install.sh を実行する。
 tt-a1i/archify archify v2.16.0
 vercel-labs/skills find-skills v1.5.23
 github/gh-stack gh-stack v0.1.1
