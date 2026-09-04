@@ -215,10 +215,11 @@ merge_claude_settings() {
   fi
 }
 
-# 外部スキルは vendoring せず、Skillfile をマニフェストとして gh skill install --pin で
-# ~/.claude/skills/ へ導入する（実体は git 管理外）。pin されたスキルは gh skill update の
-# 対象外になるため、更新は Skillfile の pin を上げて再実行する。導入済みでも取得済みの
-# ref（SKILL.md frontmatter の github-ref）が pin と食い違えば入れ直す（マニフェスト側が正）。
+# 外部スキルは実体をリポジトリに取り込まず、Skillfile をマニフェストとして
+# gh skill install --pin で ~/.claude/skills/ へ導入する（実体は git 管理外）。
+# pin されたスキルは gh skill update の対象外になるため、更新するときは Skillfile の
+# pin を上げてからこのスクリプトを再実行する。導入済みスキルの ref（SKILL.md
+# frontmatter の github-ref）が pin と食い違う場合も入れ直す（マニフェスト側が正）。
 install_external_skills() {
   manifest="$DOTFILES/Skillfile"
   [ -f "$manifest" ] || return 0
