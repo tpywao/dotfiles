@@ -1,33 +1,247 @@
-# DotFiles
+# dotfiles
 
--   [GitHub Checkout](#github-checkout)
--   [Upgrading](#upgrading)
+zsh / git / Nix (home-manager) / Homebrew / Claude Code などの設定を 1 つのリポジトリで管理し、`install.sh` で各設定ファイルへ symlink を張って反映する個人用 dotfiles。
 
-## GitHub Checkout
+CLI ツールは Nix で宣言的に、GUI アプリは Homebrew で管理し、マシンごとに変わる値はリポジトリ管理外へ逃がす構成になっている。
 
-This will get you going with the latest version of dotfiles.
+- [対応環境](#対応環境)
+- [管理対象](#管理対象)
+- [必要なもの](#必要なもの)
+- [インストール](#インストール)
+- [リポジトリ構成](#リポジトリ構成)
+- [インストール後の手動作業](#インストール後の手動作業)
+- [設計方針](#設計方針)
+- [よく使うコマンド](#よく使うコマンド)
+- [トラブルシューティング](#トラブルシューティング)
+- [マシンを追加する](#マシンを追加する)
+- [ライセンス](#ライセンス)
 
-1. Check out dotfiles into `~/.dotfiles`.
+## 対応環境
+
+レイヤーごとに対応範囲が違う。
+
+| レイヤー | 対応 |
+| --- | --- |
+| `install.sh` の symlink 群 | macOS / Linux / WSL（`utils/utils.bash` の `is_mac` / `is_wsl` / `is_linux` で分岐） |
+| Nix + home-manager | **Apple Silicon の macOS のみ**（`flake.nix` の `system = "aarch64-darwin"` 固定）。他のアーキテクチャ・OS で使うには `system` の変更が必要 |
+| Homebrew（`Brewfile*`） | macOS |
+| Karabiner-Elements / Ghostty の設定 | macOS のみリンクされる |
+| `ahk/`（AutoHotkey） | Windows。`install.sh` の対象外で、手動配置 |
+
+シェルは zsh を主対象にしている（fish / bash も `install.sh` に分岐はあるが、設定の充実度は zsh とは差がある）。
+
+## 管理対象
+
+| ディレクトリ / ファイル | 内容 |
+| --- | --- |
+| [`zsh/`](zsh/README.md) | zsh 設定一式。`~/.zshenv` だけを symlink し、以降は `$ZDOTDIR` 配下から読む |
+| [`git/`](git/README.md) | グローバル `gitconfig`、フックスクリプト置き場 |
+| [`nix/`](nix/README.md) | home-manager の設定。共通パッケージ（`packages.nix`）とマシン固有モジュール |
+| [`ai-tools/`](ai-tools/README.md) | AI 関連 CLI を `buildNpmPackage` で固定して提供する子 flake |
+| [`claude/`](claude/README.md) | Claude Code の設定（CLAUDE.md、settings.json、hooks、skills、agents） |
+| `Brewfile` / `Brewfile.gui` / `Brewfile.gui.opt` | Homebrew の管理リスト（CLI 例外 / 常用 GUI / オプション GUI） |
+| [`ahk/`](ahk/README.md) | Windows 用 AutoHotkey 設定 |
+| `fzf/`、`sheldon/`、`ghostty/`、`karabiner/`、`tmux.conf`、`vimrc` ほか | 各ツールの設定ファイル |
+
+Nix で入る CLI ツールの一覧は [`nix/packages.nix`](nix/packages.nix) を参照（`bat` / `eza` / `fd` / `ripgrep` / `fzf` / `delta` / `gh` / `jq` / `zoxide` / `uv` / `nodejs` など）。
+
+## 必要なもの
+
+事前に必要なもの:
+
+- `git`（clone に `gh` を使う場合は `gh` も）
+- `curl`（Nix / Homebrew / Claude Code のインストーラを取得する）
+
+未導入なら `install.sh` が y/N で確認したうえでインストールするもの:
+
+- Nix（Determinate Systems のインストーラ）
+- Homebrew
+- Claude Code
+
+任意（無い場合は該当ステップをスキップする）:
+
+- `jq` — `~/.claude/settings.json` のマージに使う
+- `gh` — `Skillfile` に書かれた外部スキルの導入に使う
+
+## インストール
+
+1. `~/.dotfiles` へ clone する
+
+   ```sh
+   gh repo clone tpywao/dotfiles ~/.dotfiles -- --depth 1 --branch main
+   ```
+
+2. インストーラを実行する
+
+   ```sh
+   ~/.dotfiles/install.sh
+   ```
+
+3. シェルを再起動する（`install.sh` は最後に `exec $SHELL` する）
+
+   ```sh
+   exec $SHELL
+   ```
+
+`install.sh` は冪等で、張り済みの symlink は `[linked]` と表示してスキップする。設定を更新したあとに何度でも再実行してよい。
+
+### install.sh が行うこと
+
+1. シェル別の symlink（zsh なら `~/.zshenv`、fish なら `~/.config/fish`、bash なら `~/.bashrc` など）
+2. 各ツールの設定を symlink（editorconfig / vim / git / docker / tmux / screen / sqlite / direnv / fzf / sheldon / nix.conf）。macOS ではさらに Karabiner-Elements と Ghostty
+3. Nix が無ければインストールを確認 → `DOTFILES_MACHINE` を解決 → `home-manager switch --flake "$DOTFILES#$DOTFILES_MACHINE" --impure`
+4. Homebrew が無ければインストールを確認 → `brew bundle --file=Brewfile`
+5. Claude Code が無ければインストールを確認 → `claude/` 配下を `~/.claude/` へ symlink、`settings.json` のみ `jq` でマージ
+6. `Skillfile` に書かれた外部スキルを `gh skill install --pin` で導入
+
+### DOTFILES_MACHINE
+
+適用する home-manager の構成（`flake.nix` の `homeConfigurations` のエントリ名）を環境変数 `DOTFILES_MACHINE` で選ぶ。**未設定のときに別マシンの構成へフォールバックすることはない**。
+
+`install.sh` は次の順で解決する。
+
+1. 環境変数 `DOTFILES_MACHINE`
+2. `~/.local/zsh/*.zsh` に保存済みの `export DOTFILES_MACHINE=...`（`flake.nix` に存在する値であること）
+3. 対話実行（stdin が tty）なら選択メニューを提示し、選んだ値を `~/.local/zsh/machine.zsh` へ保存する
+4. 非対話実行（パイプ・CI）はメニューを出さずエラー終了する
+
+したがって非対話で流す場合は事前に export しておく。
 
 ```sh
-$ gh repo clone tpywao/dotfiles ~/.dotfiles -- --depth 1 --branch main
+export DOTFILES_MACHINE=work-mac
+~/.dotfiles/install.sh
 ```
 
-2. Execute shell
+詳細は [nix/README.md](nix/README.md) を参照。
+
+### 更新
 
 ```sh
-$ ~/.dotfiles/install.sh
+cd $DOTFILES
+git pull
+./install.sh   # 新しい symlink やパッケージの追加を反映する
 ```
 
-3. Restart shell
+## リポジトリ構成
+
+```
+.
+├── install.sh              セットアップ用インストーラ（冪等）
+├── flake.nix / flake.lock  home-manager の flake（system は aarch64-darwin 固定）
+├── Skillfile               外部 Claude Code スキルのマニフェスト（owner/repo skill pin）
+├── Brewfile                Homebrew の CLI（nixpkgs 未収録の例外のみ）
+├── Brewfile.gui            常用 GUI アプリ
+├── Brewfile.gui.opt        用途限定の GUI アプリ
+├── nix/                    home-manager 設定（home.nix, common.nix, packages.nix, <machine>.nix）
+├── ai-tools/               AI CLI ツールを固定する子 flake（buildNpmPackage）
+├── zsh/                    $ZDOTDIR 配下の zsh 設定
+├── git/                    gitconfig と git hooks
+├── claude/                 Claude Code の設定（~/.claude/ へ symlink）
+├── fish/                   fish の設定
+├── fzf/                    fzf のウィジェット関数
+├── sheldon/                zsh プラグイン定義（plugins.toml）
+├── ghostty/                Ghostty の設定（macOS）
+├── karabiner/              Karabiner-Elements の complex modifications（薙刀式・macOS）
+├── ahk/                    Windows 用 AutoHotkey 設定
+├── utils/                  シェル共通のユーティリティ（OS 判定関数など）
+├── docker/                 Docker CLI の config.json
+├── cargo/                  プロキシ環境向け cargo 設定
+├── docs/                   設計メモ
+├── Dockerfile/             用途別 Dockerfile 置き場
+└── tmux.conf, vimrc, screenrc, sqliterc, direnvrc, ssh_config, bashrc, ...
+```
+
+## インストール後の手動作業
+
+`install.sh` が面倒を見ない部分。
+
+- **git のユーザー情報** — `~/.gitconfig.local` に書く（`gitconfig` から `[include]` で読まれる）
+
+  ```sh
+  git config --file ~/.gitconfig.local user.name "Your Name"
+  git config --file ~/.gitconfig.local user.email "your.email@example.com"
+  ```
+
+- **GUI アプリ** — `install.sh` は `Brewfile` しか流さない
+
+  ```sh
+  brew bundle --file=Brewfile.gui
+  brew bundle --file=Brewfile.gui.opt   # 必要なときだけ
+  ```
+
+- **Claude Code のプラグイン** — marketplace の登録までは `settings.json` の同期で入るが、プラグイン本体は自動インストールされない。起動時に表示される `claude plugin install <name>` を一度実行する
+- **git hooks** — `git/hooks/` はどこからも配線されていない。使うなら対象リポジトリの `.git/hooks/` へコピーするか `core.hooksPath` を向ける
+- **AutoHotkey** — `ahk/` は Windows 側で手動配置する
+
+## 設計方針
+
+- **zsh は `~/.zshenv` だけを張る** — その中で `$ZDOTDIR` をこのリポジトリの `zsh/` に向け、`no_global_rcs` も設定する。したがって `~/.zshrc` は読まれない
+- **CLI は Nix、GUI は Homebrew** — CLI ツールは `nix/packages.nix` で宣言的に固定する。nixpkgs に無い CLI だけ例外的に `Brewfile` の formula で入れる
+- **マシン固有の値はリポジトリの外へ** — `DOTFILES_MACHINE` は `~/.local/zsh/*.zsh`、git のユーザー情報は `~/.gitconfig.local`。リポジトリ側にはマシン・個人に固有の文言を置かない
+- **マシン構成の取り違えを防ぐため fail-fast** — `DOTFILES_MACHINE` 未設定時に既定の構成へ倒さない。設定し忘れたマシンに別マシンの構成が黙って当たるのを防ぐ
+- **Claude Code の設定は symlink + `settings.json` だけマージ** — Claude Code 自身がマシン固有の値を `settings.json` へ書き込むため、このファイルだけはリンクせず、共有したいキーだけを既存の設定へ上書きする（[claude/README.md](claude/README.md)）
+- **外部スキルは vendoring しない** — 実体をリポジトリに取り込まず、`Skillfile` にリリースタグを pin してマニフェスト管理する
+- **npm 由来のツールは lockfile で固定してオフラインビルド** — `ai-tools/` は `buildNpmPackage` + `--ignore-scripts` で、install スクリプトを実行せず推移的依存まで固定する（[ai-tools/README.md](ai-tools/README.md)）
+
+## よく使うコマンド
 
 ```sh
-$ exec $SHELL
+# 設定の反映（冪等。symlink の追加・Claude 設定の同期・外部スキル導入）
+./install.sh
+
+# home-manager の適用（--impure 必須）
+home-manager switch --flake "$DOTFILES#$DOTFILES_MACHINE" --impure
+
+# flake の更新と検証
+nix flake update
+nix flake check --impure
+nix build ".#homeConfigurations.$DOTFILES_MACHINE.activationPackage" --no-link --impure
+
+# Homebrew
+brew bundle --file=Brewfile
+brew bundle check --file=Brewfile.gui
+
+# zsh 設定の再読み込み
+exec zsh
 ```
 
-## Upgrading
+`hms`（home-manager switch）や `nfu`（nix flake update）などの略語は `zsh/abbr.zsh` に定義してある。
 
-```sh
-$ cd $DOTFILES
-$ git pull
-```
+## トラブルシューティング
+
+- **`Username could not be determined` で Nix の評価が落ちる**
+  `--impure` を付ける。`nix/home.nix` が `builtins.getEnv "USER"` を使うため、pure 評価では失敗する。`flake check` / `build` / `home-manager switch` のいずれにも必要。
+
+- **`~/.zshrc` を編集しても反映されない**
+  読まれていない。`$ZDOTDIR`（= `zsh/`）配下の `.zshrc` を編集する（[zsh/README.md](zsh/README.md)）。
+
+- **`DOTFILES_MACHINE is not set` で `install.sh` が止まる**
+  非対話実行では選択メニューを出さずエラー終了する。事前に `export DOTFILES_MACHINE=<machine>` するか、対話実行して選択する。
+
+- **新しいマシンで `home-manager` コマンドが無い**
+  初回だけ `nix run` 経由で実行する。以降は `programs.home-manager.enable` により PATH に入る。
+
+  ```sh
+  nix run home-manager -- switch --flake "$DOTFILES#$DOTFILES_MACHINE" --impure
+  ```
+
+- **`jq が無いため ... のマージをスキップしました` と出る**
+  `jq` を入れてから `install.sh` を再実行する。Claude Code の共有設定が反映されていない。
+
+- **`gh が無いため外部スキルの導入をスキップしました` と出る**
+  `gh` を入れてから `install.sh` を再実行する。
+
+- **`~/.claude/` に `*.presymlink.<timestamp>` が残っている**
+  symlink 化の際に内容が分岐していたファイルの退避。中身を確認したうえで手で削除する。
+
+## マシンを追加する
+
+1. `nix/<machine>.nix` を作成する（`common.nix` を imports し、そのマシン固有のパッケージ・設定を書く）
+2. `flake.nix` の `homeConfigurations` に `<machine> = mkHome ./nix/<machine>.nix;` を追加する
+3. 新しいマシンの `~/.local/zsh/` で `export DOTFILES_MACHINE=<machine>` を設定する
+
+詳細と注意点は [nix/README.md](nix/README.md) を参照。
+
+## ライセンス
+
+[MIT](LICENSE)
