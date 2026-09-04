@@ -1,4 +1,5 @@
-root = ture
+# このリポジトリ自身に効かせる設定。
+root = true
 
 [*]
 indent_style = space

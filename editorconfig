@@ -1,4 +1,6 @@
-root = ture
+# ~/.editorconfig へ配布する設定（install.sh がリンクする）。
+# このリポジトリ自身に効かせる設定は .editorconfig（ドットあり）に分けてある。
+root = true
 
 [*]
 indent_style = space
