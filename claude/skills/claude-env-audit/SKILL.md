@@ -27,7 +27,28 @@ description: Use when Claude Code 環境の定期監査・健全性チェック�
     ```
 
     - `live_only`: グローバルにだけあるキー。マシンをまたいで揃えたいものは dotfiles へ入れる。ただし `autoMode` は Claude Code が生成し、ホームディレクトリのパスやリポジトリ名を含むため**入れない**
-    - `differs`: 値が違うキー。`install.sh` の実行で dotfiles 側の値に戻る。`/model` や `/config` で変えた値を恒久化したいなら dotfiles 側を更新する
+    - `differs`: 値が違うキー。スカラー・配列・`hooks` は `install.sh` の実行で dotfiles 側の値に戻る。`/model` や `/config` で変えた値を恒久化したいなら dotfiles 側を更新する
+    - **`hooks` 以外のオブジェクトは戻らない。** `*` の再帰マージは削除を表現できないため、dotfiles 側で消したエントリがグローバル側に残り続ける。上の比較はトップレベルのキー名しか見ないので、両側にあるキーの配下に取り残された枝は次のコマンドで洗い出す
+
+        ```bash
+        jq -n --slurpfile d ~/.claude/settings.json --slurpfile s "$DOTFILES/claude/settings.json" '
+          # 配列の内側は dotfiles 側が丸ごと置換するので見ない（全要素が文字列のパス＝オブジェクトの枝）
+          def opaths: [paths] | map(select(all(.[]; type == "string")));
+          ($d[0] | opaths) as $dp | ($s[0] | opaths) as $sp |
+          [ $dp[] | . as $p
+            | select(($p | length) > 1)
+            | select(any($sp[]; . == [$p[0]]))   # dotfiles も所有するトップレベルキーの配下
+            | select(all($sp[]; . != $p))        # だが dotfiles 側に無い＝マージで取り残される
+            | $p ]
+        '
+        ```
+
+        出たパスの扱いは 2 通り。マシンローカルで試している plugin 登録（`enabledPlugins` / `extraKnownMarketplaces` の枝）なら残して構わない。dotfiles 側から意図して削除したものが出たら、そのマシンに取り残された残骸なので手で消す
+
+        ```bash
+        jq 'del(.<path>)' ~/.claude/settings.json > ~/.claude/settings.json.new \
+          && mv ~/.claude/settings.json.new ~/.claude/settings.json
+        ```
 3. **permissions 棚卸し**: allow リストに危険なエントリ（書き込み系・破壊系）が紛れていないかのみ確認。利用パターンとの照合・再生成は /fewer-permission-prompts skill に委ねる
     - allow は**プレフィックス一致**なので、読み取り目的で置いたエントリでも破壊的なフラグを弾けない。`Bash(find *)` は `-delete` / `-exec` を、`Bash(rg *)` は `--pre=<cmd>` を、`Bash(git log *)` 等は `--output=<file>` を通す
     - auto mode では narrow な allow ルールが classifier を通らずに解決されるため、この経路は classifier のチェックも受けない。`deny` / `ask` が空なら歯止めが無いことを報告する
