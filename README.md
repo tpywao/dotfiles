@@ -65,7 +65,9 @@ Nix で入る CLI ツールの一覧は [`nix/packages.nix`](nix/packages.nix) �
 
 ## インストール
 
-1. `~/.dotfiles` へ clone する
+clone 先は任意の場所でよい。`install.sh` は自身の位置から `$DOTFILES` を算出し、zsh 側も `~/.zshenv`（symlink）の実体パスから `$ZDOTDIR` と `$DOTFILES` を逆算するため、特定のパスに固定する必要はない。以下は `~/.dotfiles` に置く例。
+
+1. clone する
 
    ```sh
    gh repo clone tpywao/dotfiles ~/.dotfiles -- --depth 1 --branch main
