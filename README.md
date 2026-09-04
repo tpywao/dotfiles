@@ -95,7 +95,7 @@ clone 先は任意の場所でよい。`install.sh` は自身の位置から `$D
 6. `brew/install.sh` — Homebrew が無ければインストールを確認 → `brew bundle --file=brew/Brewfile`
 7. `claude/install.sh` — Claude Code が無ければインストールを確認 → `claude/` 配下を `~/.claude/` へ symlink、`settings.json` のみ `jq` でマージ、`claude/Skillfile` の外部スキルを `gh skill install --pin` で導入
 
-`jq` と `gh` は `nix/packages.nix` で入るため、これらを使うステップ（5 と 7）は 4 より後に置いてある。
+順序の制約は「4 より後に 5 と 7」だけ。この 2 つが使う `jq` / `gh` は `nix/packages.nix` で入るため。残りのステップの順序に意味は無い。
 
 ### DOTFILES_MACHINE
 

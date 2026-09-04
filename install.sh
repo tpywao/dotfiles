@@ -36,11 +36,11 @@ done
 
 # Nix を今回インストールした場合、サブプロセスでの PATH 変更はここへ届かない。
 # jq / gh は home-manager が ~/.nix-profile へ入れるため、このプロセスでも
-# 読み込んでおく。以降のディレクトリはこの 2 つを使う
+# 読み込んでおく
 NIX_PROFILE="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
 [ -f "$NIX_PROFILE" ] && . "$NIX_PROFILE"
 
-# docker と claude は設定を jq でマージする。jq は nix で入るため nix より後に置く
+# docker と claude は設定を jq でマージするため、jq が入る nix より後に置く
 for dir in docker brew claude; do
   sh "$DOTFILES/$dir/install.sh" || exit $?
 done
