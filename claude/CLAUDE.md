@@ -105,6 +105,7 @@ PR も同じ基準で分ける。障害対応・性能改善・リファクタ�
 - `git reset --hard` → `git stash` / `git restore` で代替する
 - `git clean -f`
 - `git branch -D` / `--delete --force`（未マージ強制削除）→ `git branch -d` を使う
+  - squash マージ済みブランチは remote-tracking ref が残るうち（`git fetch --prune` の**前**）に `-d` すれば upstream 判定で通る。prune 済みなら `gh pr view <n> --json headRefOid` でローカル head との一致を確認し、ユーザーに `-D` を依頼する
 
 代替手段がなく本当に必要な場合は、自分で実行せず理由を添えてユーザーに実行を依頼する。
 
