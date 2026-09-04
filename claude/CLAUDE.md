@@ -102,6 +102,18 @@ PR も同じ基準で分ける。障害対応・性能改善・リファクタ�
 
 Bash ツールの cwd は呼び出しごとにリセットされるため、`cd` は毎回のコマンドに含める。
 
+### sed のインプレース編集は -i.bak を使う
+
+`sed -i '' 'script' file`（BSD sed の空 suffix 形式）は Bash ツール経由では通らない。空文字列の引数が欠落し、script がファイル名として扱われて `sed: can't read <script>: No such file or directory` になる。script の内容とは無関係で、`/a/d` のような単純なものでも再現する。
+
+インプレース編集が必要なときは suffix を明示し、生成されたバックアップを消す:
+
+```bash
+sed -i.bak '/pattern/d' file && rm file.bak
+```
+
+`grep -v pattern file > tmp && mv tmp file` で代替すると、`mv` は元ファイルの mode を引き継がないためパーミッションが落ちる。実行ビット付きのファイルに使うと git diff に mode 変更が混ざる（`zsh/.zshrc` が 100755 → 100644 になった）。`-i.bak` は mode を保持する。
+
 ## 破壊的コマンド
 
 以下の破壊的コマンドは実行しない。フラグの別表記や言い換えによる回避もしない（大半は PreToolUse hook（block-dangerous.sh）でもブロックされる）:
