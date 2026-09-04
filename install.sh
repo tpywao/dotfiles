@@ -164,6 +164,7 @@ if command -v nix > /dev/null 2>&1; then
     done
     if [ -z "${DOTFILES_MACHINE:-}" ]; then
       echo "Error: invalid selection: $answer" >&2
+      echo "  再実行して選び直すか、export DOTFILES_MACHINE=<machine> を設定する (詳細は nix/README.md)" >&2
       exit 1
     fi
     export DOTFILES_MACHINE
