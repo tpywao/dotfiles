@@ -19,7 +19,7 @@ case $shell in
 esac
 
 # 専用ディレクトリを持たない、リポジトリ直下の設定ファイル
-symlink "$DOTFILES/.editorconfig" "$HOME/.editorconfig"
+symlink "$DOTFILES/editorconfig" "$HOME/.editorconfig"
 symlink "$DOTFILES/vimrc" "$HOME/.vimrc"
 symlink "$DOTFILES/tmux.conf" "$HOME/.tmux.conf"
 symlink "$DOTFILES/screenrc" "$HOME/.screenrc"
