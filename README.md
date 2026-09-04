@@ -79,11 +79,7 @@ clone 先は任意の場所でよい。`install.sh` は自身の位置から `$D
    ~/.dotfiles/install.sh
    ```
 
-3. シェルを再起動する（`install.sh` は最後に `exec $SHELL` する）
-
-   ```sh
-   exec $SHELL
-   ```
+`install.sh` は最後に `exec $SHELL` するため、完了した時点で新しい設定を読んだシェルに入っている。ただしそれは `install.sh` の子プロセスなので、`exit` すると起動元のシェル（古い環境のまま）へ戻る。
 
 `install.sh` は冪等で、張り済みの symlink は `[linked]` と表示してスキップする。設定を更新したあとに何度でも再実行してよい。
 
