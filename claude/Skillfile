@@ -1,4 +1,4 @@
-# 外部スキルのマニフェスト。install.sh の install_external_skills が
+# 外部スキルのマニフェスト。claude/install.sh の install_external_skills が
 # gh skill install --pin で ~/.claude/skills/ へ導入する。
 # 形式: <owner>/<repo> <skill> <pin>
 # pin には上流のリリースタグを書く。更新するときは該当行の pin を新しいタグへ

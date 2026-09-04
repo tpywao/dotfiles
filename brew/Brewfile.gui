@@ -2,8 +2,8 @@
 # GUI環境で常に使用する cask を管理
 # 用途限定のオプションアプリは Brewfile.gui.opt で管理
 #
-# インストール: brew bundle --file=Brewfile.gui
-# 差分確認:    brew bundle check --file=Brewfile.gui
+# インストール: brew bundle --file=brew/Brewfile.gui
+# 差分確認:    brew bundle check --file=brew/Brewfile.gui
 
 # development
 cask "docker"

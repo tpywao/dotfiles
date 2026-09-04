@@ -4,15 +4,34 @@
 
 ## プロジェクト概要
 - **用途**: macOS + Linux 向けの個人用 dotfiles リポジトリ
-- **管理対象**: zsh, git, nix, Brewfile, karabiner, fzf など
+- **管理対象**: zsh, git, nix, Homebrew, karabiner, fzf など
 - **主な構成**:
   - `zsh/`: zsh 設定（$ZDOTDIR 配下）
   - `git/`: git 設定（gitconfig, gitignore）
   - `nix/`: Nix/NixOS 設定（flake.nix, flake.lock）
-  - `Brewfile`: macOS Homebrew パッケージリスト
+  - `brew/`: Homebrew パッケージリスト（Brewfile 群）
   - `karabiner/`: Karabiner-Elements 設定（キーボード）
   - `fzf/`: fzf 設定ファイル
   - `claude/`: Claude Code 関連設定（hooks, skills など）
+
+## インストーラの構成
+
+`install.sh` はディレクトリ単位に分割されている。
+
+- ルートの `install.sh`: 専用ディレクトリを持たない設定（`vimrc`, `tmux.conf`, `screenrc`, `sqliterc`, `direnvrc`, `.editorconfig`, bash 用の `bashrc` / `aliases.bash`）の symlink と、各ディレクトリの `install.sh` の実行
+- 各ディレクトリの `install.sh`（`git/`, `docker/`, `sheldon/`, `karabiner/`, `ghostty/`, `nix/`, `brew/`, `claude/`）: そのディレクトリに関する処理。ルートがこの順で実行する
+- `zsh/install.sh` はループに入れず、`$SHELL` が zsh のときだけ case 分岐から実行する（`fish/`・bash 用のリンクも同じ分岐にある）
+- `utils/install-common.sh`: 各 `install.sh` が source する共通部（`symlink()` と `utils/utils.bash` の読み込み）
+
+規約:
+
+- 各 `install.sh` は先頭で `DOTFILES` を自前で解決して `utils/install-common.sh` を source する。単体でも実行できる（例: `./claude/install.sh`）
+- ルートは `sh "$DOTFILES/<dir>/install.sh" || exit $?` で呼ぶ。**各サブは末尾で明示的に `exit 0` する**。これが無いと最後のコマンド（`home-manager switch`、`brew bundle`、`ln` など）の失敗がそのままスクリプトの終了ステータスになり、後続のディレクトリが丸ごとスキップされる（分割前は 1 プロセスで、失敗しても後続が走っていた）
+- 意図的に全体を止めたいときだけ `exit 1` する（現状は `nix/install.sh` の `DOTFILES_MACHINE` 未設定のみ）
+- `symlink()` を `utils/utils.bash` に置かない。`utils.bash` は `zsh/.zshenv` から全 zsh 起動で source されるため、インストール時にしか使わない関数を常駐させない
+- サブプロセスなので、サブ側の環境変数・PATH の変更はルートへ届かない。Nix を初めて入れた回に `claude/install.sh` が `jq` / `gh` を見つけられるよう、ルートは `nix` と `brew` の間で `nix-daemon.sh` を読み込む
+- `fish/` と `fzf/` はディレクトリごとリンク先（`~/.config/fish`, `~/.fzf`）へ symlink するため、中に `install.sh` を置くとインストーラまでリンク先に配られる。この 2 つはルートの `install.sh` でリンクする
+- `claude/install.sh` と `claude/Skillfile` は `link_claude_files` の `find` で除外している。除外しないと `~/.claude/` へリンクされる
 
 ## 作業時の注意事項
 
@@ -55,16 +74,16 @@
 - `nix flake check --impure` で構文確認可
   - `--impure` 必須: `nix/home.nix` が `builtins.getEnv` で `USER` / `HOME` を取得しているため、pure 評価では両者が空文字列になり `home.homeDirectory` の型エラー（`is not of type 'absolute path'`）で失敗する
   - `flake check` だけでなく `nix build` / `home-manager switch --flake .#$DOTFILES_MACHINE --impure` など評価を伴うコマンドすべてに `--impure` が要る
-- **マシンごとの構成**: `homeConfigurations` はマシンごとにエントリを持ち（例: `work-mac`）、共通の `home.nix` ＋マシン固有モジュール（例: `work-mac.nix`、`common.nix` を imports）を組み合わせる。適用先は環境変数 `DOTFILES_MACHINE` で選択し、dotfiles 管理外の `~/.local/zsh/*.zsh` で export する。**未設定時に別マシンの構成へフォールバックすることはない**（fail-fast）。`install.sh` は `~/.local/zsh/*.zsh` に保存済みの有効な export があればそれを使い、無ければ対話実行時のみ選択メニューを提示して `~/.local/zsh/machine.zsh` に永続化、非対話実行ではエラーで止まる（`home-manager switch` 単体も未設定はエラー）。マシン追加手順は `nix/README.md` を参照
+- **マシンごとの構成**: `homeConfigurations` はマシンごとにエントリを持ち（例: `work-mac`）、共通の `home.nix` ＋マシン固有モジュール（例: `work-mac.nix`、`common.nix` を imports）を組み合わせる。適用先は環境変数 `DOTFILES_MACHINE` で選択し、dotfiles 管理外の `~/.local/zsh/*.zsh` で export する。**未設定時に別マシンの構成へフォールバックすることはない**（fail-fast）。`nix/install.sh` は `~/.local/zsh/*.zsh` に保存済みの有効な export があればそれを使い、無ければ対話実行時のみ選択メニューを提示して `~/.local/zsh/machine.zsh` に永続化、非対話実行ではエラーで止まる（`home-manager switch` 単体も未設定はエラー）。マシン追加手順は `nix/README.md` を参照
   - `home.packages` はリスト型オプションで、複数モジュールの定義は自動的に concat（マージ）される（後勝ち上書きではない）。マシン固有パッケージは `work-mac.nix` に追加分だけ列挙する（`packages.nix` を再 import すると二重登録になる）
   - 共通パッケージは `nix/packages.nix`、マシン固有は `nix/work-mac.nix` に書く
 
 ### Brewfile 管理
-- `Brewfile`: macOS Homebrew パッケージリスト
-- `Brewfile.gui`: GUI アプリケーションリスト
+- `brew/Brewfile`: macOS Homebrew パッケージリスト
+- `brew/Brewfile.gui`: GUI アプリケーションリスト
 - 更新方法:
-  - `brew bundle dump --file=Brewfile` で現在のパッケージをダンプ
-  - 手動編集後、`brew bundle install` でインストール
+  - `brew bundle dump --file=brew/Brewfile` で現在のパッケージをダンプ
+  - 手動編集後、`brew bundle install --file=brew/Brewfile` でインストール
 
 ### git 設定
 - `git/gitconfig`: グローバル git 設定
@@ -75,7 +94,7 @@
 ### Claude Code 設定
 - `claude/`: Claude Code 関連（hooks, skills など）
 - グローバル `~/.claude/` へ **symlink** で同期する。**編集は必ず dotfiles 側で行う**（`~/.claude/` 側は参照専用。Claude Code は symlink 経由の書き込みを拒否する）
-- `settings.json` だけはリンクしない。Claude Code 自身が書き込むファイルのため、`install.sh` の `merge_claude_settings` が dotfiles 側の共有キーのみを既存の設定へ上書きする。マシン固有キー（`effortLevel` / `modelSettings` / `autoMode`）は dotfiles 側に書かない
+- `settings.json` だけはリンクしない。Claude Code 自身が書き込むファイルのため、`claude/install.sh` の `merge_claude_settings` が dotfiles 側の共有キーのみを既存の設定へ上書きする。マシン固有キー（`effortLevel` / `modelSettings` / `autoMode`）は dotfiles 側に書かない
 - 仕組みの詳細は `claude/README.md`
 
 ### AI ツール環境（ai-tools）
@@ -146,7 +165,7 @@ nix flake update
 nix flake check --impure
 
 # Brewfile の更新
-brew bundle dump --file=Brewfile --force
+brew bundle dump --file=brew/Brewfile --force
 
 # git 設定確認
 git config --list --local
@@ -159,7 +178,7 @@ exec zsh
 ## 保守性のルール
 1. 自動生成ファイル（flake.lock など）は手書き編集しない
 2. 設定変更後は実際に機能するか確認（exec zsh など）
-3. 新しい dotfiles は install.sh に追加
+3. 新しい dotfiles はインストーラに追加（対象ディレクトリの `install.sh`。無ければルートの `install.sh`）
 4. コミットメッセージは `feat(component):` 形式（詳細は「コミットメッセージと main の履歴」）
 
 ## 参考資料

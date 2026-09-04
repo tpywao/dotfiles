@@ -24,7 +24,7 @@ CLI ツールは Nix で宣言的に、GUI アプリは Homebrew で管理し、
 | --- | --- |
 | `install.sh` の symlink 群 | macOS / Linux / WSL（`utils/utils.bash` の `is_mac` / `is_wsl` / `is_linux` で分岐） |
 | Nix + home-manager | **Apple Silicon の macOS のみ**（`flake.nix` の `system = "aarch64-darwin"` 固定）。他のアーキテクチャ・OS で使うには `system` の変更が必要 |
-| Homebrew（`Brewfile*`） | macOS |
+| Homebrew（`brew/Brewfile*`） | macOS |
 | Karabiner-Elements / Ghostty の設定 | macOS のみリンクされる |
 | `ahk/`（AutoHotkey） | Windows。`install.sh` の対象外で、手動配置 |
 
@@ -39,7 +39,7 @@ CLI ツールは Nix で宣言的に、GUI アプリは Homebrew で管理し、
 | [`nix/`](nix/README.md) | home-manager の設定。共通パッケージ（`packages.nix`）とマシン固有モジュール |
 | [`ai-tools/`](ai-tools/README.md) | AI 関連 CLI を `buildNpmPackage` で固定して提供する子 flake |
 | [`claude/`](claude/README.md) | Claude Code の設定（CLAUDE.md、settings.json、hooks、skills、agents） |
-| `Brewfile` / `Brewfile.gui` / `Brewfile.gui.opt` | Homebrew の管理リスト（CLI 例外 / 常用 GUI / オプション GUI） |
+| `brew/` | Homebrew の管理リスト（`Brewfile` = CLI 例外 / `Brewfile.gui` = 常用 GUI / `Brewfile.gui.opt` = オプション GUI） |
 | [`ahk/`](ahk/README.md) | Windows 用 AutoHotkey 設定 |
 | `fzf/`、`sheldon/`、`ghostty/`、`karabiner/`、`tmux.conf`、`vimrc` ほか | 各ツールの設定ファイル |
 
@@ -61,7 +61,7 @@ Nix で入る CLI ツールの一覧は [`nix/packages.nix`](nix/packages.nix) �
 任意（無い場合は該当ステップをスキップする）:
 
 - `jq` — `~/.claude/settings.json` のマージに使う
-- `gh` — `Skillfile` に書かれた外部スキルの導入に使う
+- `gh` — `claude/Skillfile` に書かれた外部スキルの導入に使う
 
 ## インストール
 
@@ -85,18 +85,20 @@ clone 先は任意の場所でよい。`install.sh` は自身の位置から `$D
 
 ### install.sh が行うこと
 
-1. シェル別の symlink（zsh なら `~/.zshenv`、fish なら `~/.config/fish`、bash なら `~/.bashrc` など）
-2. 各ツールの設定を symlink（editorconfig / vim / git / docker / tmux / screen / sqlite / direnv / fzf / sheldon / nix.conf）。macOS ではさらに Karabiner-Elements と Ghostty
-3. Nix が無ければインストールを確認 → `DOTFILES_MACHINE` を解決 → `home-manager switch --flake "$DOTFILES#$DOTFILES_MACHINE" --impure`
-4. Homebrew が無ければインストールを確認 → `brew bundle --file=Brewfile`
-5. Claude Code が無ければインストールを確認 → `claude/` 配下を `~/.claude/` へ symlink、`settings.json` のみ `jq` でマージ
-6. `Skillfile` に書かれた外部スキルを `gh skill install --pin` で導入
+ルートの `install.sh` は、専用ディレクトリを持たない設定を自分でリンクし、あとは各ディレクトリの `install.sh` を順に呼ぶ。サブは単体でも実行できる（例: `./claude/install.sh` で Claude Code の設定だけ張り直す）。
+
+1. シェル別の symlink（zsh なら `zsh/install.sh` が `~/.zshenv`、fish なら `~/.config/fish`、bash なら `~/.bashrc`）
+2. リポジトリ直下の設定を symlink（editorconfig / vim / tmux / screen / sqlite / direnv / fzf）
+3. `git/` `docker/` `sheldon/` `karabiner/` `ghostty/` の各 `install.sh`（Karabiner-Elements と Ghostty は macOS のみ）
+4. `nix/install.sh` — nix.conf をリンク。Nix が無ければインストールを確認 → `DOTFILES_MACHINE` を解決 → `home-manager switch --flake "$DOTFILES#$DOTFILES_MACHINE" --impure`
+5. `brew/install.sh` — Homebrew が無ければインストールを確認 → `brew bundle --file=brew/Brewfile`
+6. `claude/install.sh` — Claude Code が無ければインストールを確認 → `claude/` 配下を `~/.claude/` へ symlink、`settings.json` のみ `jq` でマージ、`claude/Skillfile` の外部スキルを `gh skill install --pin` で導入
 
 ### DOTFILES_MACHINE
 
 適用する home-manager の構成（`flake.nix` の `homeConfigurations` のエントリ名）を環境変数 `DOTFILES_MACHINE` で選ぶ。**未設定のときに別マシンの構成へフォールバックすることはない**。
 
-`install.sh` は次の順で解決する。
+`nix/install.sh` は次の順で解決する。
 
 1. 環境変数 `DOTFILES_MACHINE`
 2. `~/.local/zsh/*.zsh` に保存済みの `export DOTFILES_MACHINE=...`（`flake.nix` に存在する値であること）
@@ -124,24 +126,21 @@ git pull
 
 ```
 .
-├── install.sh              セットアップ用インストーラ（冪等）
+├── install.sh              セットアップ用インストーラ（冪等）。各ディレクトリの install.sh を呼ぶ
 ├── flake.nix / flake.lock  home-manager の flake（system は aarch64-darwin 固定）
-├── Skillfile               外部 Claude Code スキルのマニフェスト（owner/repo skill pin）
-├── Brewfile                Homebrew の CLI（nixpkgs 未収録の例外のみ）
-├── Brewfile.gui            常用 GUI アプリ
-├── Brewfile.gui.opt        用途限定の GUI アプリ
+├── brew/                   Homebrew の管理リスト（Brewfile / Brewfile.gui / Brewfile.gui.opt）
 ├── nix/                    home-manager 設定（home.nix, common.nix, packages.nix, <machine>.nix）
 ├── ai-tools/               AI CLI ツールを固定する子 flake（buildNpmPackage）
 ├── zsh/                    $ZDOTDIR 配下の zsh 設定
 ├── git/                    gitconfig と git hooks
-├── claude/                 Claude Code の設定（~/.claude/ へ symlink）
+├── claude/                 Claude Code の設定（~/.claude/ へ symlink）と Skillfile
 ├── fish/                   fish の設定
 ├── fzf/                    fzf のウィジェット関数
 ├── sheldon/                zsh プラグイン定義（plugins.toml）
 ├── ghostty/                Ghostty の設定（macOS）
 ├── karabiner/              Karabiner-Elements の complex modifications（薙刀式・macOS）
 ├── ahk/                    Windows 用 AutoHotkey 設定
-├── utils/                  シェル共通のユーティリティ（OS 判定関数など）
+├── utils/                  シェル共通のユーティリティ（OS 判定関数、インストーラ共通部）
 ├── docker/                 Docker CLI の config.json
 ├── cargo/                  プロキシ環境向け cargo 設定
 ├── docs/                   設計メモ
@@ -160,11 +159,11 @@ git pull
   git config --file ~/.gitconfig.local user.email "your.email@example.com"
   ```
 
-- **GUI アプリ** — `install.sh` は `Brewfile` しか流さない
+- **GUI アプリ** — `install.sh` は `brew/Brewfile` しか流さない
 
   ```sh
-  brew bundle --file=Brewfile.gui
-  brew bundle --file=Brewfile.gui.opt   # 必要なときだけ
+  brew bundle --file=brew/Brewfile.gui
+  brew bundle --file=brew/Brewfile.gui.opt   # 必要なときだけ
   ```
 
 - **Claude Code のプラグイン** — marketplace の登録までは `settings.json` の同期で入るが、プラグイン本体は自動インストールされない。起動時に表示される `claude plugin install <name>` を一度実行する
@@ -174,11 +173,11 @@ git pull
 ## 設計方針
 
 - **zsh は `~/.zshenv` だけを張る** — その中で `$ZDOTDIR` をこのリポジトリの `zsh/` に向け、`no_global_rcs` も設定する。したがって `~/.zshrc` は読まれない
-- **CLI は Nix、GUI は Homebrew** — CLI ツールは `nix/packages.nix` で宣言的に固定する。nixpkgs に無い CLI だけ例外的に `Brewfile` の formula で入れる
+- **CLI は Nix、GUI は Homebrew** — CLI ツールは `nix/packages.nix` で宣言的に固定する。nixpkgs に無い CLI だけ例外的に `brew/Brewfile` の formula で入れる
 - **マシン固有の値はリポジトリの外へ** — `DOTFILES_MACHINE` は `~/.local/zsh/*.zsh`、git のユーザー情報は `~/.gitconfig.local`。リポジトリ側にはマシン・個人に固有の文言を置かない
 - **マシン構成の取り違えを防ぐため fail-fast** — `DOTFILES_MACHINE` 未設定時に既定の構成へ倒さない。設定し忘れたマシンに別マシンの構成が黙って当たるのを防ぐ
 - **Claude Code の設定は symlink + `settings.json` だけマージ** — Claude Code 自身がマシン固有の値を `settings.json` へ書き込むため、このファイルだけはリンクせず、共有したいキーだけを既存の設定へ上書きする（[claude/README.md](claude/README.md)）
-- **外部スキルは vendoring しない** — 実体をリポジトリに取り込まず、`Skillfile` にリリースタグを pin してマニフェスト管理する
+- **外部スキルは vendoring しない** — 実体をリポジトリに取り込まず、`claude/Skillfile` にリリースタグを pin してマニフェスト管理する
 - **npm 由来のツールは lockfile で固定してオフラインビルド** — `ai-tools/` は `buildNpmPackage` + `--ignore-scripts` で、install スクリプトを実行せず推移的依存まで固定する（[ai-tools/README.md](ai-tools/README.md)）
 
 ## よく使うコマンド
@@ -196,8 +195,8 @@ nix flake check --impure
 nix build ".#homeConfigurations.$DOTFILES_MACHINE.activationPackage" --no-link --impure
 
 # Homebrew
-brew bundle --file=Brewfile
-brew bundle check --file=Brewfile.gui
+brew bundle --file=brew/Brewfile
+brew bundle check --file=brew/Brewfile.gui
 
 # zsh 設定の再読み込み
 exec zsh
