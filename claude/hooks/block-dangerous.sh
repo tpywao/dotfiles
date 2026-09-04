@@ -15,11 +15,11 @@ if printf '%s' "$COMMAND" | grep -qE '(^|[;&|[:space:]])rm[[:space:]]+(-[a-zA-Z]
   block "rm -rf detected"
 fi
 
-if printf '%s' "$COMMAND" | grep -qE 'git[[:space:]]+push\b'; then
-  if printf '%s' "$COMMAND" | grep -qE '(--force(\s|$)|\s-f(\s|$))' \
-    && ! printf '%s' "$COMMAND" | grep -q -- '--force-with-lease'; then
-    block "git push --force (use --force-with-lease)"
-  fi
+# フラグは git push と同じサブコマンド内にあるものだけを見る ([^|;&]* が区切りで止まる)。
+# コマンド文字列全体から探すと、無関係な -f (shellcheck -f など) と同居しただけで誤検知する。
+# --force-with-lease は --force の直後が - なので終端に合わず、このパターンには掛からない。
+if printf '%s' "$COMMAND" | grep -qE 'git[[:space:]]+push[[:space:]]+[^|;&]*(--force|-f)([[:space:]]|[|;&]|$)'; then
+  block "git push --force (use --force-with-lease)"
 fi
 
 if printf '%s' "$COMMAND" | grep -qE 'git[[:space:]]+reset[[:space:]]+(--[a-z-]+[[:space:]]+)*--hard\b'; then

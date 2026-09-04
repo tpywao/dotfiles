@@ -97,6 +97,7 @@
 - グローバル `~/.claude/` へ **symlink** で同期する。**編集は必ず dotfiles 側で行う**（`~/.claude/` 側は参照専用。Claude Code は symlink 経由の書き込みを拒否する）
 - `settings.json` だけはリンクしない。Claude Code 自身が書き込むファイルのため、`claude/install.sh` の `merge_claude_settings` が dotfiles 側の共有キーのみを既存の設定へ上書きする。マシン固有キー（`effortLevel` / `modelSettings` / `autoMode`）は dotfiles 側に書かない
 - 仕組みの詳細は `claude/README.md`
+- `claude/hooks/block-dangerous.sh` を変更したら `sh tests/claude/block-dangerous_test.sh` を流す。止めるべきコマンドと通すべきコマンドの両方をケースにしてある
 
 ### AI ツール環境（ai-tools）
 - **ディレクトリ**: `ai-tools/`（dotfiles で管理。`flake.nix` からは `path:./ai-tools` で相対参照する）
@@ -181,6 +182,7 @@ exec zsh
 2. 設定変更後は実際に機能するか確認（exec zsh など）
 3. 新しい dotfiles はインストーラに追加（対象ディレクトリの `install.sh`。無ければルートの `install.sh`）
 4. コミットメッセージは `feat(component):` 形式（詳細は「コミットメッセージと main の履歴」）
+5. テストは対象コードの隣ではなく `tests/<component>/` に置く（例: `tests/claude/`）。`claude/` 配下に置くと `link_claude_files` が `~/.claude/` へ配ってしまい、除外の追加が必要になる
 
 ## 参考資料
 - [README.md](../README.md)
