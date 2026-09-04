@@ -1,4 +1,3 @@
-# ~/.dotfiles/nix/common.nix
 { config, pkgs, ... }:
 
 {

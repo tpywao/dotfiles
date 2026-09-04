@@ -44,7 +44,7 @@ home-manager / nixpkgs の更新差分（旧 rev → 新 rev）が表示され�
 $ nix build ".#homeConfigurations.$DOTFILES_MACHINE.activationPackage" --no-link --impure
 ```
 
-`--impure` は必須。`home.nix` が `builtins.getEnv "USER"` を使うため、付けないと Username could not be determined で落ちる。
+`--impure` は必須。`home.nix` が `builtins.getEnv` で `USER` / `HOME` を読むため、付けないと両者が空文字列になり `home.homeDirectory' is not of type 'absolute path'` で落ちる。
 
 4. 適用
 
