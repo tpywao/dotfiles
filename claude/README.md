@@ -102,6 +102,8 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 3. `claude/skills-external.json` の skillFolderHash を `~/.agents/.skill-lock.json` から転記する
 4. コミット → PR。マージ後に `./install.sh` を実行する
 
+`gh skill update` は `~/.claude/skills/<name>` のファイル単位 symlink を実ファイルで置き換える（リンク先の dotfiles 実体は書き換えない。sandbox で検証済み）。dotfiles へコピーする前に `install.sh` を実行すると、更新内容が `*.presymlink.<ts>` へ退避されてリンクが旧内容に戻るため、上記の順序（コピー → コミット → マージ → install.sh）を守る。
+
 ## agents/
 
 読み取り専用の調査系サブエージェント定義。
