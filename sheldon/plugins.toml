@@ -29,13 +29,12 @@ github = "romkatv/zsh-defer"
 github = "zdharma-continuum/fast-syntax-highlighting"
 apply = ["defer"]
 
-# 上流の fd-handling バグ (20f6c34) を回避するため、自前 clone に fixed3 パッチを
-# 当てて source する。20f6c34 は clear()/wait/complete の fd クローズを全て
-# `[[ -t $fd ]]` ゲート付きにしたが、async fd はパイプで -t が常に偽のため fd が
-# 閉じられず "write error: bad file descriptor" が多発する (上流 main も未修正)。
-# clone と更新は `zac-update` (zsh/tools.zsh)。パッチ: sheldon/patches/zsh-autocomplete-fd.patch
+# main は初回ロード時に依存の z-async を ~/.cache へ git clone し、以降 git pull で
+# 追従する。シェル起動時のネットワークアクセスを避けるため、z-async が同梱されている
+# タグに固定する。
 [plugins.zsh-autocomplete]
-local = "~/.local/src/zsh-autocomplete"
+github = "marlonrichert/zsh-autocomplete"
+tag = "26.08.04"
 use = ["zsh-autocomplete.plugin.zsh"]
 
 # job-queue(uuidgen 等のサブプロセス起動)が起動時に重い(~221ms)ため遅延ロードする
