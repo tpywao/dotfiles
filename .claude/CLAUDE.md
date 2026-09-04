@@ -22,14 +22,15 @@
   - `editorconfig`（ドットなし）が `~/.editorconfig` へ配布する設定。`.editorconfig`（ドットあり）はこのリポジトリ自身に効かせる設定で、配布対象ではない
 - 各ディレクトリの `install.sh`（`git/`, `docker/`, `sheldon/`, `karabiner/`, `ghostty/`, `nix/`, `brew/`, `claude/`）: そのディレクトリに関する処理。ルートがこの順で実行する
 - `zsh/install.sh` はループに入れず、`$SHELL` が zsh のときだけ case 分岐から実行する（`fish/`・bash 用のリンクも同じ分岐にある）
-- `utils/install-common.sh`: 各 `install.sh` が source する共通部（`symlink()` と `utils/utils.bash` の読み込み）
+- `utils/install-common.sh`: 各 `install.sh` が source する共通部（`link_config()` と `utils/utils.bash` の読み込み）
+  - `link_config()` はリンクの有無だけでなく**リンク先**を検証し、違う先を指していれば張り替える。リンク先に実体があるときは、ファイルは内容が一致すれば置き換え・分岐していれば `.presymlink.<ts>` へ退避、ディレクトリは内容を比較せず常に退避する。親ディレクトリの作成も関数内で行うので、呼び出し側に `mkdir -p` は要らない
 
 規約:
 
 - 各 `install.sh` は先頭で `DOTFILES` を自前で解決して `utils/install-common.sh` を source する。単体でも実行できる（例: `./claude/install.sh`）
 - ルートは `sh "$DOTFILES/<dir>/install.sh" || exit $?` で呼ぶ。**各サブは末尾で明示的に `exit 0` する**。これが無いと最後のコマンド（`home-manager switch`、`brew bundle`、`ln` など）の失敗がそのままスクリプトの終了ステータスになり、後続のディレクトリが丸ごとスキップされる（分割前は 1 プロセスで、失敗しても後続が走っていた）
 - 意図的に全体を止めたいときだけ `exit 1` する（現状は `nix/install.sh` の `DOTFILES_MACHINE` 未設定のみ）
-- `symlink()` を `utils/utils.bash` に置かない。`utils.bash` は `zsh/.zshenv` から全 zsh 起動で source されるため、インストール時にしか使わない関数を常駐させない
+- `link_config()` を `utils/utils.bash` に置かない。`utils.bash` は `zsh/.zshenv` から全 zsh 起動で source されるため、インストール時にしか使わない関数を常駐させない
 - サブプロセスなので、サブ側の環境変数・PATH の変更はルートへ届かない。Nix を初めて入れた回に `claude/install.sh` が `jq` / `gh` を見つけられるよう、ルートは `nix` と `brew` の間で `nix-daemon.sh` を読み込む
 - `fish/` と `fzf/` はディレクトリごとリンク先（`~/.config/fish`, `~/.fzf`）へ symlink するため、中に `install.sh` を置くとインストーラまでリンク先に配られる。この 2 つはルートの `install.sh` でリンクする
 - `claude/install.sh` と `claude/Skillfile` は `link_claude_files` の `find` で除外している。除外しないと `~/.claude/` へリンクされる

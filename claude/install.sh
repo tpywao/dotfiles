@@ -6,41 +6,6 @@ DOTFILES=$(cd "$(dirname "$0")/.." && pwd -P)
 # Claude Code の atomic save（tmpfile + rename）でリンクが切れ、両側が黙って分岐する。
 # symlink はパス参照なので切れない。Claude Code の Edit は symlink 経由の書き込みを
 # 拒否するため、~/.claude/ 側が誤って編集されることもない（編集は dotfiles 側で行う）。
-#
-# 既存ファイルの扱いは共通の symlink() と違い、hardlink 時代の実ファイルを
-# symlink へ置き換える必要があるため専用関数にしている。
-link_claude_file() {
-  file=$1
-  link=$2
-  if [ -L "$link" ]; then
-    if [ "$(readlink "$link")" = "$file" ]; then
-      printf "\033[0;36m[linked]\033[0m %s\n" "$link"
-      return 0
-    fi
-    ln -sfn "$file" "$link"
-    echo "-----> Re-symlinked $link"
-    return 0
-  fi
-  if [ ! -e "$link" ]; then
-    echo "-----> Symlinking your new $link"
-    ln -s "$file" "$link"
-    return 0
-  fi
-  # hardlink 時代の実ファイル、または手で置いたファイル。内容が一致していれば
-  # そのまま置き換え、分岐しているなら退避してから張る（編集を黙って捨てない）
-  if cmp -s "$file" "$link"; then
-    /bin/rm -- "$link"
-    ln -s "$file" "$link"
-    echo "-----> Replaced with symlink: $link"
-  else
-    backup="$link.presymlink.$(date +%Y%m%d-%H%M%S)"
-    cp -p "$link" "$backup"
-    /bin/rm -- "$link"
-    ln -s "$file" "$link"
-    echo "-----> $link は内容が分岐していました。$backup へ退避して symlink を張りました"
-  fi
-}
-
 link_claude_files() {
   # settings.json はリンクせず merge_claude_settings で共有キーのみを反映する。
   # install.sh と Skillfile はインストーラ側のファイルで ~/.claude/ には要らない
@@ -49,9 +14,7 @@ link_claude_files() {
     -not -path "$DOTFILES/claude/install.sh" \
     -not -path "$DOTFILES/claude/Skillfile" | while read -r src; do
     rel="${src#$DOTFILES/claude/}"
-    dst="$HOME/.claude/$rel"
-    mkdir -p "$(dirname "$dst")"
-    link_claude_file "$src" "$dst"
+    link_config "$src" "$HOME/.claude/$rel"
   done
 }
 
