@@ -9,7 +9,7 @@
   - `zsh/`: zsh 設定（$ZDOTDIR 配下）
   - `git/`: git 設定（gitconfig, gitignore）
   - `nix/`: Nix/NixOS 設定（flake.nix, flake.lock）
-  - `Brewfile`: macOS Homebrew パッケージリスト
+  - `brew/`: Homebrew パッケージリスト（Brewfile 群）
   - `karabiner/`: Karabiner-Elements 設定（キーボード）
   - `fzf/`: fzf 設定ファイル
   - `claude/`: Claude Code 関連設定（hooks, skills など）
@@ -49,11 +49,11 @@
   - 共通パッケージは `nix/packages.nix`、マシン固有は `nix/work-mac.nix` に書く
 
 ### Brewfile 管理
-- `Brewfile`: macOS Homebrew パッケージリスト
-- `Brewfile.gui`: GUI アプリケーションリスト
+- `brew/Brewfile`: macOS Homebrew パッケージリスト
+- `brew/Brewfile.gui`: GUI アプリケーションリスト
 - 更新方法:
-  - `brew bundle dump --file=Brewfile` で現在のパッケージをダンプ
-  - 手動編集後、`brew bundle install` でインストール
+  - `brew bundle dump --file=brew/Brewfile` で現在のパッケージをダンプ
+  - 手動編集後、`brew bundle install --file=brew/Brewfile` でインストール
 
 ### git 設定
 - `git/gitconfig`: グローバル git 設定
@@ -136,7 +136,7 @@ nix flake update
 nix flake check --impure
 
 # Brewfile の更新
-brew bundle dump --file=Brewfile --force
+brew bundle dump --file=brew/Brewfile --force
 
 # git 設定確認
 git config --list --local

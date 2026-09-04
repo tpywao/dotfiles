@@ -30,32 +30,9 @@ symlink $DOTFILES/direnvrc ~/.direnvrc
 symlink $DOTFILES/fzf ~/.fzf
 
 # 各ディレクトリの install.sh。それぞれ単体でも実行できる (例: ./git/install.sh)
-for dir in git docker sheldon karabiner ghostty nix; do
+for dir in git docker sheldon karabiner ghostty nix brew; do
   sh "$DOTFILES/$dir/install.sh" || exit $?
 done
-
-# Homebrew casks
-if ! command -v brew > /dev/null 2>&1; then
-  BREW_INSTALL_CMD='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-  echo "Homebrew is not installed."
-  echo "  $BREW_INSTALL_CMD"
-  printf "Install now? [y/N] "
-  read answer
-  if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
-    eval "$BREW_INSTALL_CMD"
-    # Load brew into the current shell session after installation
-    [ -f /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
-  else
-    echo "Skipping Homebrew installation."
-  fi
-fi
-
-if command -v brew > /dev/null 2>&1; then
-  if [ -f "$DOTFILES/Brewfile" ]; then
-    echo "-----> Installing casks from Brewfile"
-    brew bundle --file="$DOTFILES/Brewfile"
-  fi
-fi
 
 # Claude Code
 # claude/ 配下は symlink で同期する。hardlink は inode 参照なので、git switch や

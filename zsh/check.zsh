@@ -108,10 +108,10 @@ _dotfiles_check_sheldon_daily() {
 _dotfiles_check_brew_daily() {
   local dotfiles="$1"
 
-  [[ -f "$dotfiles/Brewfile" ]] && (( $+commands[brew] )) || return
-  brew bundle check --file="$dotfiles/Brewfile" --no-upgrade &>/dev/null && return
+  [[ -f "$dotfiles/brew/Brewfile" ]] && (( $+commands[brew] )) || return
+  brew bundle check --file="$dotfiles/brew/Brewfile" --no-upgrade &>/dev/null && return
 
-  echo "brew    → brew bundle install --file=$dotfiles/Brewfile"
+  echo "brew    → brew bundle install --file=$dotfiles/brew/Brewfile"
 }
 
 _dotfiles_check() {

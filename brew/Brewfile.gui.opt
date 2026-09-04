@@ -1,8 +1,8 @@
 # Brewfile.gui.opt (オプションGUIアプリ)
 # 用途限定・状況に応じて使う cask を管理
 #
-# インストール: brew bundle --file=Brewfile.gui.opt
-# 差分確認:    brew bundle check --file=Brewfile.gui.opt
+# インストール: brew bundle --file=brew/Brewfile.gui.opt
+# 差分確認:    brew bundle check --file=brew/Brewfile.gui.opt
 
 # design
 cask "freecad"
