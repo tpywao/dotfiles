@@ -1,27 +1,16 @@
 #! /bin/sh
-DOTFILES=`cd $(dirname $0) && pwd -P`
+DOTFILES=$(cd "$(dirname "$0")" && pwd -P)
+. "$DOTFILES/utils/install-common.sh"
 shell=${1:-$SHELL}
-
-# OS 判定関数 (is_mac, is_wsl, is_linux)
-. "$DOTFILES/utils/utils.bash"
-
-symlink() {
-  file=$1
-  link=$2
-  if [ -L "$link" ]; then
-    printf "\033[0;36m[linked]\033[0m %s\n" "$link"
-  elif [ ! -e "$link" ]; then
-    echo "-----> Symlinking your new $link"
-    ln -si $file $link
-  fi
-}
 
 case $shell in
   *fish )
+    # fish/ はディレクトリごと ~/.config/fish へリンクするため、fish/install.sh を
+    # 置くとインストーラまでリンク先に配られる。ここでリンクする
     symlink $DOTFILES/fish ~/.config/fish
     ;;
   *zsh )
-    symlink $DOTFILES/zsh/.zshenv ~/.zshenv
+    sh "$DOTFILES/zsh/install.sh" || exit $?
     ;;
   *bash )
     symlink $DOTFILES/bashrc ~/.bashrc
@@ -29,60 +18,25 @@ case $shell in
     ;;
 esac
 
-# EditorConfig
+# 専用ディレクトリを持たない、リポジトリ直下の設定ファイル
 symlink $DOTFILES/.editorconfig ~/.editorconfig
-
-# vim
 symlink $DOTFILES/vimrc ~/.vimrc
-
-# git
-symlink $DOTFILES/git/gitconfig ~/.gitconfig
-if [ ! -e "$HOME/.gitconfig.local" ]; then
-  echo ""
-  echo "📝 Note: Consider creating ~/.gitconfig.local for machine-specific settings"
-  echo "   Example:"
-  echo "   git config --file ~/.gitconfig.local user.name \"Your Name\""
-  echo "   git config --file ~/.gitconfig.local user.email \"your.email@example.com\""
-  echo ""
-fi
-
-# docker
-symlink $DOTFILES/docker/config.json ~/.docker/config.json
-
-# tmux
 symlink $DOTFILES/tmux.conf ~/.tmux.conf
-
-# screen
 symlink $DOTFILES/screenrc ~/.screenrc
-
-# sqlite
 symlink $DOTFILES/sqliterc ~/.sqliterc
-
-# direnv
 symlink $DOTFILES/direnvrc ~/.direnvrc
 
-# fzf
+# fzf/ も fish/ と同じくディレクトリごとリンクするため、ここでリンクする
 symlink $DOTFILES/fzf ~/.fzf
 
-# sheldon
-mkdir -p "$HOME/.config/sheldon"
-symlink $DOTFILES/sheldon/plugins.toml ~/.config/sheldon/plugins.toml
+# 各ディレクトリの install.sh。それぞれ単体でも実行できる (例: ./git/install.sh)
+for dir in git docker sheldon karabiner ghostty; do
+  sh "$DOTFILES/$dir/install.sh" || exit $?
+done
 
 # Nix config
 mkdir -p "$HOME/.config/nix"
 symlink $DOTFILES/nix/nix.conf ~/.config/nix/nix.conf
-
-# Karabiner-Elements (薙刀式 complex modifications) - macOS only
-if is_mac; then
-  mkdir -p "$HOME/.config/karabiner/assets/complex_modifications"
-  symlink $DOTFILES/karabiner/Naginata.json ~/.config/karabiner/assets/complex_modifications/Naginata.json
-fi
-
-# Ghostty / cmux - macOS only (macos-option-as-alt は macOS 専用設定)
-if is_mac; then
-  mkdir -p "$HOME/.config/ghostty"
-  symlink $DOTFILES/ghostty/config ~/.config/ghostty/config
-fi
 
 # Nix + home-manager
 if ! command -v nix > /dev/null 2>&1; then
