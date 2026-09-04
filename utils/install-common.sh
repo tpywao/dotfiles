@@ -18,6 +18,6 @@ symlink() {
     printf "\033[0;36m[linked]\033[0m %s\n" "$link"
   elif [ ! -e "$link" ]; then
     echo "-----> Symlinking your new $link"
-    ln -si $file $link
+    ln -si "$file" "$link"
   fi
 }

@@ -3,7 +3,7 @@ DOTFILES=$(cd "$(dirname "$0")/.." && pwd -P)
 . "$DOTFILES/utils/install-common.sh"
 
 mkdir -p "$HOME/.config/nix"
-symlink $DOTFILES/nix/nix.conf ~/.config/nix/nix.conf
+symlink "$DOTFILES/nix/nix.conf" "$HOME/.config/nix/nix.conf"
 
 # Nix + home-manager
 if ! command -v nix > /dev/null 2>&1; then

@@ -2,7 +2,7 @@
 DOTFILES=$(cd "$(dirname "$0")/.." && pwd -P)
 . "$DOTFILES/utils/install-common.sh"
 
-symlink $DOTFILES/git/gitconfig ~/.gitconfig
+symlink "$DOTFILES/git/gitconfig" "$HOME/.gitconfig"
 
 if [ ! -e "$HOME/.gitconfig.local" ]; then
   echo ""

@@ -7,27 +7,27 @@ case $shell in
   *fish )
     # fish/ はディレクトリごと ~/.config/fish へリンクするため、fish/install.sh を
     # 置くとインストーラまでリンク先に配られる。ここでリンクする
-    symlink $DOTFILES/fish ~/.config/fish
+    symlink "$DOTFILES/fish" "$HOME/.config/fish"
     ;;
   *zsh )
     sh "$DOTFILES/zsh/install.sh" || exit $?
     ;;
   *bash )
-    symlink $DOTFILES/bashrc ~/.bashrc
-    symlink $DOTFILES/aliases.bash ~/.aliases.bash
+    symlink "$DOTFILES/bashrc" "$HOME/.bashrc"
+    symlink "$DOTFILES/aliases.bash" "$HOME/.aliases.bash"
     ;;
 esac
 
 # 専用ディレクトリを持たない、リポジトリ直下の設定ファイル
-symlink $DOTFILES/.editorconfig ~/.editorconfig
-symlink $DOTFILES/vimrc ~/.vimrc
-symlink $DOTFILES/tmux.conf ~/.tmux.conf
-symlink $DOTFILES/screenrc ~/.screenrc
-symlink $DOTFILES/sqliterc ~/.sqliterc
-symlink $DOTFILES/direnvrc ~/.direnvrc
+symlink "$DOTFILES/.editorconfig" "$HOME/.editorconfig"
+symlink "$DOTFILES/vimrc" "$HOME/.vimrc"
+symlink "$DOTFILES/tmux.conf" "$HOME/.tmux.conf"
+symlink "$DOTFILES/screenrc" "$HOME/.screenrc"
+symlink "$DOTFILES/sqliterc" "$HOME/.sqliterc"
+symlink "$DOTFILES/direnvrc" "$HOME/.direnvrc"
 
 # fzf/ も fish/ と同じくディレクトリごとリンクするため、ここでリンクする
-symlink $DOTFILES/fzf ~/.fzf
+symlink "$DOTFILES/fzf" "$HOME/.fzf"
 
 # 各ディレクトリの install.sh。それぞれ単体でも実行できる (例: ./git/install.sh)
 for dir in git docker sheldon karabiner ghostty nix; do
