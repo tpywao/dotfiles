@@ -44,4 +44,7 @@ for dir in brew claude; do
   sh "$DOTFILES/$dir/install.sh" || exit $?
 done
 
-exec $SHELL
+# 実行中のシェルは置き換えない。exec すると終了ステータスを返せず、
+# 再実行のたびにシェルが入れ子になる
+echo ""
+echo "-----> Done. Open a new shell to load the new configuration."
