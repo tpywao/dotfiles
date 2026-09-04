@@ -23,6 +23,13 @@ link_claude_files() {
 # 値が dotfiles 側に流れ込む。
 # dotfiles 側は共有したいキーだけを持ち、既存の設定へ上書き適用する。
 # dotfiles にないキーは既存値がそのまま残る。
+#
+# ただし hooks は dotfiles を唯一の正として丸ごと差し替える。jq の `*` は
+# オブジェクトを再帰マージするだけで削除を表現できないため、再帰マージのままだと
+# dotfiles 側で消したイベントが既存の設定に残り、実体を失ったスクリプトが
+# 呼ばれ続ける。差し替えの副作用として、マシン単位で hook を足したいときは
+# ~/.claude/settings.json への直書きではなくプロジェクトの
+# .claude/settings.local.json を使う必要がある。
 merge_claude_settings() {
   src="$DOTFILES/claude/settings.json"
   dst="$HOME/.claude/settings.json"
@@ -34,7 +41,11 @@ merge_claude_settings() {
   mkdir -p "$(dirname "$dst")"
   [ -f "$dst" ] || echo '{}' > "$dst"
   tmp="$dst.merging.$$"
-  if jq -s '.[0] * .[1]' "$dst" "$src" > "$tmp"; then
+  if jq -s '
+    .[0] as $live | .[1] as $shared
+    | ($live * $shared)
+    | if ($shared | has("hooks")) then .hooks = $shared.hooks else . end
+  ' "$dst" "$src" > "$tmp"; then
     mv "$tmp" "$dst"
     printf "\033[0;36m[merged]\033[0m %s\n" "$dst"
   else
