@@ -18,7 +18,8 @@
 
 `install.sh` はディレクトリ単位に分割されている。
 
-- ルートの `install.sh`: 専用ディレクトリを持たない設定（`vimrc`, `tmux.conf`, `screenrc`, `sqliterc`, `direnvrc`, `.editorconfig`, bash 用の `bashrc` / `aliases.bash`）の symlink と、各ディレクトリの `install.sh` の実行
+- ルートの `install.sh`: 専用ディレクトリを持たない設定（`vimrc`, `tmux.conf`, `screenrc`, `sqliterc`, `direnvrc`, `editorconfig`, bash 用の `bashrc` / `aliases.bash`）の symlink と、各ディレクトリの `install.sh` の実行
+  - `editorconfig`（ドットなし）が `~/.editorconfig` へ配布する設定。`.editorconfig`（ドットあり）はこのリポジトリ自身に効かせる設定で、配布対象ではない
 - 各ディレクトリの `install.sh`（`git/`, `docker/`, `sheldon/`, `karabiner/`, `ghostty/`, `nix/`, `brew/`, `claude/`）: そのディレクトリに関する処理。ルートがこの順で実行する
 - `zsh/install.sh` はループに入れず、`$SHELL` が zsh のときだけ case 分岐から実行する（`fish/`・bash 用のリンクも同じ分岐にある）
 - `utils/install-common.sh`: 各 `install.sh` が source する共通部（`symlink()` と `utils/utils.bash` の読み込み）
