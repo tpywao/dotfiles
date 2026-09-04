@@ -4,7 +4,7 @@
 
 ## プロジェクト概要
 - **用途**: macOS + Linux 向けの個人用 dotfiles リポジトリ
-- **管理対象**: zsh, git, nix, Brewfile, karabiner, fzf など
+- **管理対象**: zsh, git, nix, Homebrew, karabiner, fzf など
 - **主な構成**:
   - `zsh/`: zsh 設定（$ZDOTDIR 配下）
   - `git/`: git 設定（gitconfig, gitignore）
