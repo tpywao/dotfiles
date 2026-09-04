@@ -8,7 +8,7 @@
 # - If they have diverged, back up the older side to <path>.relinkbak.<ts>
 #   before overwriting it, so no edit is silently lost.
 #
-# claude/ 配下は install.sh の link_claude_files が symlink で張るようになったため、
+# claude/ 配下は claude/install.sh の link_claude_files が symlink で張るようになったため、
 # 通常は -ef が実体を辿って同一 inode と判定され、このスクリプトは何もせず終了する。
 # install.sh を未実行のマシンに残る hardlink を拾うためだけに残している。
 set -u
@@ -40,7 +40,7 @@ esac
 
 # settings.json は hardlink 同期の対象外。Claude Code 自身が model や autoMode を
 # ~/.claude/settings.json へ書き込むため、リンクを張るとマシン固有の値が dotfiles
-# 側へ流れ込む。共有キーの反映は install.sh の merge_claude_settings が担う
+# 側へ流れ込む。共有キーの反映は claude/install.sh の merge_claude_settings が担う
 [ "$rest" = "settings.json" ] && exit 0
 
 [ -f "$EDITED" ] || exit 0
