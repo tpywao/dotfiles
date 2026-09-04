@@ -30,7 +30,17 @@ symlink $DOTFILES/direnvrc ~/.direnvrc
 symlink $DOTFILES/fzf ~/.fzf
 
 # 各ディレクトリの install.sh。それぞれ単体でも実行できる (例: ./git/install.sh)
-for dir in git docker sheldon karabiner ghostty nix brew claude; do
+for dir in git docker sheldon karabiner ghostty nix; do
+  sh "$DOTFILES/$dir/install.sh" || exit $?
+done
+
+# Nix を今回インストールした場合、サブプロセスでの PATH 変更はここへ届かない。
+# claude/install.sh が使う jq / gh は home-manager が ~/.nix-profile へ入れるため、
+# このプロセスでも読み込んでおく
+NIX_PROFILE="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
+[ -f "$NIX_PROFILE" ] && . "$NIX_PROFILE"
+
+for dir in brew claude; do
   sh "$DOTFILES/$dir/install.sh" || exit $?
 done
 

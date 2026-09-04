@@ -102,3 +102,7 @@ if command -v nix > /dev/null 2>&1; then
     home-manager switch --flake "$DOTFILES#$DOTFILES_MACHINE" --impure
   fi
 fi
+
+# home-manager switch の失敗でルートの install.sh を止めない
+# (DOTFILES_MACHINE 未設定は上の exit 1 で意図的に止める)
+exit 0

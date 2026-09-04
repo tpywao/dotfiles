@@ -12,3 +12,6 @@ if [ ! -e "$HOME/.gitconfig.local" ]; then
   echo "   git config --file ~/.gitconfig.local user.email \"your.email@example.com\""
   echo ""
 fi
+
+# 個別の失敗でルートの install.sh を止めない (止めたいときだけ exit 1 する)
+exit 0

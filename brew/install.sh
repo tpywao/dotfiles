@@ -23,3 +23,6 @@ if command -v brew > /dev/null 2>&1; then
     brew bundle --file="$DOTFILES/brew/Brewfile"
   fi
 fi
+
+# formula 1 つの失敗でルートの install.sh を止めない
+exit 0

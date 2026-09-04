@@ -129,3 +129,6 @@ else
   merge_claude_settings
 fi
 install_external_skills
+
+# 個別の失敗でルートの install.sh を止めない (止めたいときだけ exit 1 する)
+exit 0
