@@ -21,36 +21,21 @@ link_claude_files() {
 # settings.json はリンクの対象にできない。Claude Code 自身が model や
 # effortLevel、autoMode をこのファイルへ書き込むため、リンクを張るとマシン固有の
 # 値が dotfiles 側に流れ込む。
-# dotfiles 側は共有したいキーだけを持ち、既存の設定へ上書き適用する。
-# dotfiles にないキーは既存値がそのまま残る。
 #
-# ただし hooks は dotfiles を唯一の正として丸ごと差し替える。jq の `*` は
-# オブジェクトを再帰マージするだけで削除を表現できないため、再帰マージのままだと
-# dotfiles 側で消したイベントが既存の設定に残り、実体を失ったスクリプトが
-# 呼ばれ続ける。差し替えの副作用として、マシン単位で hook を足したいときは
-# ~/.claude/settings.json への直書きではなくプロジェクトの
-# .claude/settings.local.json を使う必要がある。
+# hooks だけは dotfiles を唯一の正として丸ごと差し替えるため、既定の再帰マージ
+# ではなくフィルタを渡す。jq の `*` はオブジェクトを再帰マージするだけで削除を
+# 表現できず、再帰マージのままだと dotfiles 側で消したイベントが既存の設定に
+# 残り、実体を失ったスクリプトが呼ばれ続ける。差し替えの副作用として、マシン
+# 単位で hook を足したいときは ~/.claude/settings.json への直書きではなく
+# プロジェクトの .claude/settings.local.json を使う必要がある。
 merge_claude_settings() {
-  src="$DOTFILES/claude/settings.json"
-  dst="$HOME/.claude/settings.json"
-  [ -f "$src" ] || return 0
-  if ! command -v jq > /dev/null 2>&1; then
-    log_tag "$LOG_CHANGED" "[skipped]" "$dst (jq が無い)"
-    return 0
-  fi
-  mkdir -p "$(dirname "$dst")"
-  [ -f "$dst" ] || echo '{}' > "$dst"
-  tmp="$dst.merging.$$"
-  if jq -s '
+  # $live / $shared は jq の変数。シェルに展開させない
+  # shellcheck disable=SC2016
+  merge_config "$DOTFILES/claude/settings.json" "$HOME/.claude/settings.json" '
     .[0] as $live | .[1] as $shared
     | ($live * $shared)
     | if ($shared | has("hooks")) then .hooks = $shared.hooks else . end
-  ' "$dst" "$src" > "$tmp"; then
-    mv "$tmp" "$dst"
-    log_tag "$LOG_UNCHANGED" "[merged]" "$dst"
-  else
-    log_tag "$LOG_FAILED" "[failed]" "$dst (マージ失敗。$tmp を確認)"
-  fi
+  '
 }
 
 # 外部スキルは実体をリポジトリに取り込まず、Skillfile をマニフェストとして
