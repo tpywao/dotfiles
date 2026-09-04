@@ -33,7 +33,6 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 | `CLAUDE.md` | 全プロジェクト共通のグローバル指示（質問方法、worktree 運用、コードコメント方針、自動生成ファイルの扱いなど） |
 | `settings.json` | 共有したい設定のみ（permissions の allow リスト、model、hooks の配線、plugins、language など）。hardlink ではなくマージ方式で反映する |
 | `keybindings.json` | Claude Code のキーバインド（`meta+k` → submit） |
-| `skills-external.json` | 外部インストーラ由来スキルの出所記録（リポジトリ・commit hash）。詳細は「外部スキル（vendoring）」を参照 |
 
 ## hooks/
 
@@ -73,36 +72,35 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 
 ### 外部スキル（vendoring）
 
-`npx skills` / `gh skill` で導入したスキルは、実体をこのリポジトリへ取り込んで（vendoring）管理する。出所は `claude/skills-external.json` に記録する。
+外部リポジトリ由来のスキルは、`gh skill` の `--dir` でこのリポジトリへ直接インストールして（vendoring）管理する。出所（リポジトリ・tree SHA）は各 SKILL.md の frontmatter（`github-repo` / `github-tree-sha` 等。`gh skill` が注入する）が持つため、別のメタファイルは置かない。
 
-| スキル | 出所 | インストーラ |
-| --- | --- | --- |
-| `archify` | tt-a1i/archify | npx skills |
-| `find-skills` | vercel-labs/skills | npx skills |
-| `gh-stack` | github/gh-stack | gh skill |
+| スキル | 出所 |
+| --- | --- |
+| `archify` | tt-a1i/archify |
+| `find-skills` | vercel-labs/skills |
+| `gh-stack` | github/gh-stack |
 
 方針:
 
-- 内容のバージョン管理は git 履歴が担う。更新は必ず diff レビューを通るため、上流の変更が黙って反映されることがない。新しいマシンは clone + `install.sh` だけで揃う（インストーラ不要）
-- インストーラの管理ファイル（`~/.agents/skills/` の store と `~/.agents/.skill-lock.json`）はマシンローカルのまま触らない。update の実行に使う
-- vendoring したスキルは dotfiles 側で手編集しない。インストーラの update に上書きされて編集が消える。カスタムしたい場合は別名の自作スキルとして fork する
-- `npx skills` が `~/.claude/skills/<name>` に張るディレクトリ symlink（store 参照）は `install.sh` が除去し、ファイル単位の symlink に張り替える。除去しないままファイル単位リンクを張ると symlink を辿って store 側の実体を壊すため
+- インストール・更新とも `--dir` で dotfiles 側を直接対象にする。変更は working tree の diff として現れ、通常の commit → PR フローに乗る。内容のバージョン管理は git 履歴が担い、上流の変更が黙って反映されることはない。新しいマシンは clone + `./install.sh` だけで揃う
+- インストーラは `gh skill` に一本化する。`npx skills` は使わない（GitHub メタデータを SKILL.md に注入せず、更新も `~/.agents/skills/` store 経由の手動コピーになるため）。既存の store と他エージェント向け symlink は他ツールが参照している可能性があるため触らない
+- vendoring したスキルは dotfiles 側で手編集しない。`gh skill update` に上書きされて編集が消える。カスタムしたい場合は別名の自作スキルとして fork する
+- `npx skills` が過去に `~/.claude/skills/<name>` へ張ったディレクトリ symlink（store 参照）は `install.sh` が除去し、ファイル単位の symlink に張り替える。除去しないままファイル単位リンクを張ると symlink を辿って store 側の実体を壊すため
 
-取り込み手順（新規に外部スキルを導入したとき）:
+導入手順（worktree 上で実行）:
 
-1. インストーラでインストールする（`npx skills add <owner>/<repo> -g` / `gh skill install <owner>/<repo> <name>`）
-2. 実体を `claude/skills/<name>/` へコピーする。実体の場所はインストーラで異なる: `npx skills` は `~/.agents/skills/<name>`、`gh skill` は `~/.claude/skills/<name>` に直置き
-3. `~/.agents/.skill-lock.json` の該当エントリ（source / skillFolderHash 等）を `claude/skills-external.json` へ転記する
-4. コミット → PR。マージ後に `./install.sh` を実行してファイル単位 symlink に張り替える
+1. `gh skill install <owner>/<repo> <skill> --dir claude/skills`
+2. diff をレビューしてコミット → PR。マージ後に `./install.sh` を実行してファイル単位 symlink を張る
 
-更新手順:
+更新手順（worktree 上で実行）:
 
-1. `npx skills update` / `gh skill update` を実行する
-2. 更新後の実体を `claude/skills/<name>/` へコピーし直し、diff をレビューする
-3. `claude/skills-external.json` の skillFolderHash を `~/.agents/.skill-lock.json` から転記する
-4. コミット → PR。マージ後に `./install.sh` を実行する
+1. `gh skill update --dir claude/skills --all`
+   - GitHub メタデータの無い自作スキルは notice 付きでスキップされる（実害なし）
+2. diff をレビューしてコミット → PR。マージ後に `./install.sh` を実行する
+   - 既存ファイルの変更は symlink のリンク先が書き換わるため、マージして main を pull した時点で `~/.claude/` 側にも反映される。`install.sh` が必要なのは新規追加ファイルのリンク作成
+   - 上流でファイルが削除された更新では `~/.claude/` 側に宙吊りの symlink が残るので手で消す
 
-`gh skill update` は `~/.claude/skills/<name>` のファイル単位 symlink を実ファイルで置き換える（リンク先の dotfiles 実体は書き換えない。sandbox で検証済み）。dotfiles へコピーする前に `install.sh` を実行すると、更新内容が `*.presymlink.<ts>` へ退避されてリンクが旧内容に戻るため、上記の順序（コピー → コミット → マージ → install.sh）を守る。
+注意: `--dir` を付けずに素の `gh skill update` を実行すると、`~/.claude/skills/<name>` のファイル単位 symlink が実ファイルで置き換えられて symlink 構成が壊れる（リンク先の dotfiles 実体は書き換えられない。sandbox で検証済み）。壊れた場合は更新内容を dotfiles 側へ取り込んでから `./install.sh` で張り直す。
 
 ## agents/
 
