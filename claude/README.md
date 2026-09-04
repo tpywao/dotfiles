@@ -25,7 +25,7 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 - 配列（`permissions.allow` など）は結合ではなく置換になる。dotfiles 側で項目を削除すればそれも反映される
 - オブジェクト（`skillOverrides` など）は再帰マージなので、dotfiles 側でエントリを削除しても同期済みのマシンには残り続ける。取り消すには各マシンの `~/.claude/settings.json` から手で消す
 - CLI の「Yes, and don't ask again」はプロジェクトの `.claude/settings.local.json` に書かれるため、この方式で失われることはない
-- `enabledPlugins` / `extraKnownMarketplaces` で宣言したプラグインは、新マシンでは marketplace の登録までしか自動で行われない。プラグイン本体は自動インストールされず、Claude Code が「未インストール」として提示する `claude plugin install` を一度実行する（v2.1.195 時点の挙動）。バージョン pin を書ける場所（marketplace.json の `version` / `source.ref`）は上流 marketplace 側にしかないため、外部 marketplace のプラグインは上流追従になる
+- `enabledPlugins` / `extraKnownMarketplaces` で宣言したプラグインは、新マシンでは marketplace の登録までしか自動で行われない。プラグイン本体は自動インストールされない。起動時に「未インストール」の警告と実行すべき `claude plugin install <name>` コマンドが表示されるので、それを自分で一度実行する（v2.1.195 時点の挙動）。バージョン pin を書ける場所（marketplace.json の `version` / `source.ref`）は上流 marketplace 側にしかないため、外部 marketplace のプラグインは上流追従になる
 
 ## ファイル一覧
 
