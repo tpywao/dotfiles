@@ -36,7 +36,7 @@ dotfiles リポジトリのフロー（origin/main から worktree を切って 
 ## リンク状態の一括検出
 
 ```bash
-find "$DOTFILES/claude" -type f -not -name 'settings.json' -not -name '*.relinkbak.*' | while read -r src; do
+find "$DOTFILES/claude" -type f -not -name 'settings.json' | while read -r src; do
   dst="$HOME/.claude/${src#$DOTFILES/claude/}"
   if [ ! -e "$dst" ]; then
     echo "MISSING $dst"

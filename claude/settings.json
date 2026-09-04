@@ -86,17 +86,6 @@
         ]
       }
     ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/relink-claude-files.sh"
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "hooks": [
