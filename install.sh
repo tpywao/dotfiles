@@ -281,6 +281,37 @@ merge_claude_settings() {
   fi
 }
 
+# 外部スキルは実体をリポジトリに取り込まず、Skillfile をマニフェストとして
+# gh skill install --pin で ~/.claude/skills/ へ導入する（実体は git 管理外）。
+# pin されたスキルは gh skill update の対象外になるため、更新するときは Skillfile の
+# pin を上げてからこのスクリプトを再実行する。導入済みスキルの ref（SKILL.md
+# frontmatter の github-ref）が pin と食い違う場合も入れ直す（マニフェスト側が正）。
+install_external_skills() {
+  manifest="$DOTFILES/Skillfile"
+  [ -f "$manifest" ] || return 0
+  if ! command -v gh > /dev/null 2>&1; then
+    echo "-----> gh が無いため外部スキルの導入をスキップしました"
+    return 0
+  fi
+  while read -r repo skill pin; do
+    case "$repo" in ''|\#*) continue ;; esac
+    dst="$HOME/.claude/skills/$skill"
+    # 別の skill インストーラ（npx skills 等）が自前 store へのディレクトリ symlink を
+    # 張っていることがある。残したまま gh skill install すると symlink を辿って
+    # 別ツールの store を書き換えかねないため、先に symlink 自体を外す（store は残る）
+    if [ -L "$dst" ]; then
+      /bin/rm -- "$dst"
+      echo "-----> Removed installer dir symlink: $dst"
+    fi
+    current=$(sed -n 's|.*github-ref: *refs/tags/||p' "$dst/SKILL.md" 2>/dev/null | head -n 1)
+    if [ "$current" = "$pin" ]; then
+      printf "\033[0;36m[installed]\033[0m %s %s\n" "$skill" "$pin"
+      continue
+    fi
+    gh skill install "$repo" "$skill" --pin "$pin" --dir "$HOME/.claude/skills" --force
+  done < "$manifest"
+}
+
 if ! command -v claude > /dev/null 2>&1; then
   CLAUDE_INSTALL_CMD="curl -fsSL https://claude.ai/install.sh | bash"
   echo "Claude Code is not installed."
@@ -298,5 +329,6 @@ else
   link_claude_files
   merge_claude_settings
 fi
+install_external_skills
 
 exec $SHELL

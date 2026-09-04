@@ -25,6 +25,7 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 - 配列（`permissions.allow` など）は結合ではなく置換になる。dotfiles 側で項目を削除すればそれも反映される
 - オブジェクト（`skillOverrides` など）は再帰マージなので、dotfiles 側でエントリを削除しても同期済みのマシンには残り続ける。取り消すには各マシンの `~/.claude/settings.json` から手で消す
 - CLI の「Yes, and don't ask again」はプロジェクトの `.claude/settings.local.json` に書かれるため、この方式で失われることはない
+- プラグイン（`enabledPlugins` / `extraKnownMarketplaces`）について、新マシンで自動なのは marketplace の登録まで。プラグイン本体は自動インストールされない。起動時に「未インストール」の警告と実行すべき `claude plugin install <name>` コマンドが表示されるので、それを自分で一度実行する（v2.1.195 時点の挙動）。バージョン固定を書ける場所（marketplace.json の `version` / `source.ref`）は上流 marketplace 側にしかないため、外部 marketplace のプラグインは版固定できず、インストールした時点の最新版が入る
 
 ## ファイル一覧
 
@@ -69,6 +70,33 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 | `review-strict` | 同調しない厳格なコードレビュー |
 
 `complexity` は `settings.json` の `skillOverrides` で `name-only` にしている。Claude には名前だけが提示され、説明文は常駐しない（`/complexity` での呼び出しはそのまま使える）。
+
+### 外部スキル（Skillfile によるマニフェスト管理）
+
+外部リポジトリ由来のスキルは実体をこのリポジトリに置かず（vendoring しない）、リポジトリ root の `Skillfile`（`<owner>/<repo> <skill> <pin>` の行形式）をマニフェストとして管理する。`install.sh` の `install_external_skills` が `gh skill install --pin` で `~/.claude/skills/` へ導入する。
+
+| スキル | 出所 |
+| --- | --- |
+| `archify` | tt-a1i/archify |
+| `find-skills` | vercel-labs/skills |
+| `gh-stack` | github/gh-stack |
+
+方針:
+
+- バージョンは `Skillfile` の pin（タグ）で固定する。どのマシンでも同じ版が入ることは pin が保証する。スキルの実体は git 管理外なので、更新しても diff レビューは発生しない（内容を確認したいときは pin を上げる前に `gh skill preview <owner>/<repo> <skill>` か上流の compare を読む）
+- pin されたスキルは `gh skill update` の対象外（gh の仕様。update を実行すると notice 付きでスキップされる）。うっかり `--unpin` などで導入済みの版が pin とずれても、`install.sh` が SKILL.md frontmatter の `github-ref` と pin を突き合わせて入れ直すため、次回の `./install.sh` 実行時に `Skillfile` の pin の版へ戻る
+- インストーラは `gh skill` に一本化する。`npx skills` は使わない（pin・メタデータの仕組みが gh skill と別系統になるため）。`npx skills` は実体を `~/.agents/skills/`（store）に置き、各エージェントのスキルディレクトリからそこへディレクトリ symlink を張る方式。過去に導入した分の store と他エージェント向け symlink は他ツールが参照している可能性があるため触らないが、`~/.claude/skills/<name>` へ張られたディレクトリ symlink だけは `install_external_skills` が除去する（残したまま gh skill install すると、symlink を辿って store 側の実体を書き換えかねないため）
+- 外部スキルは `~/.claude/skills/` 側の実ファイルであり dotfiles の symlink 同期対象外。手編集しない（版が pin とずれたと判定された時点で `install.sh` が入れ直し、編集が上書きされて消える）。カスタムしたい場合は別名の自作スキルとして dotfiles 側に fork する
+
+導入手順:
+
+1. `Skillfile` に行を追加する（pin は上流のリリースタグ）
+2. コミット → PR。マージ後に `./install.sh` を実行する（他のマシンも pull 後に `./install.sh` を実行する）
+
+更新手順:
+
+1. 上流のリリースを確認して `Skillfile` の pin を上げる
+2. コミット → PR。マージ後に `./install.sh` を実行する（ref が pin とずれたスキルだけ入れ直される）
 
 ## agents/
 
