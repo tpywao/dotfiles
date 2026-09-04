@@ -20,11 +20,14 @@
 
 - ルートの `install.sh`: 専用ディレクトリを持たない設定（`vimrc`, `tmux.conf`, `screenrc`, `sqliterc`, `direnvrc`, `editorconfig`, bash 用の `bashrc` / `aliases.bash`）の symlink と、各ディレクトリの `install.sh` の実行
   - `editorconfig`（ドットなし）が `~/.editorconfig` へ配布する設定。`.editorconfig`（ドットあり）はこのリポジトリ自身に効かせる設定で、配布対象ではない
-- 各ディレクトリの `install.sh`（`git/`, `docker/`, `sheldon/`, `karabiner/`, `ghostty/`, `nix/`, `brew/`, `claude/`）: そのディレクトリに関する処理。ルートがこの順で実行する
+- 各ディレクトリの `install.sh`（`git/`, `sheldon/`, `karabiner/`, `ghostty/`, `nix/`, `brew/`, `docker/`, `claude/`）: そのディレクトリに関する処理。ルートがこの順で実行する
+  - **順序の制約は「`nix/` より後に `docker/` と `claude/`」だけ。** この 2 つは設定を `jq` でマージし、`jq` は `nix/packages.nix` で入る（前に置くと jq が無いマシンの初回実行でマージがスキップされ、2 回目まで反映されない）。残りのディレクトリの順序に意味は無い
+  - `docker/` と `claude/` の前で `nix-daemon.sh` を読み込む必要があるため、ループが 2 つに分かれている。**後半のループには制約のある 2 つだけを置く**（制約の無いものを混ぜると、そこにいる理由をコメントで説明できなくなる）
 - `zsh/install.sh` はループに入れず、`$SHELL` が zsh のときだけ case 分岐から実行する（`fish/`・bash 用のリンクも同じ分岐にある）
-- `utils/install-common.sh`: 各 `install.sh` が source する共通部（`link_config()` と `utils/utils.bash` の読み込み）
+- `utils/install-common.sh`: 各 `install.sh` が source する共通部（`link_config()`、`merge_config()`、`log_tag()` と `utils/utils.bash` の読み込み）
   - `link_config()` はリンクの有無だけでなく**リンク先**を検証し、違う先を指していれば張り替える。リンク先に実体があるときは、ファイルは内容が一致すれば置き換え・分岐していれば `.presymlink.<ts>` へ退避、ディレクトリは内容を比較せず常に退避する。親ディレクトリの作成も関数内で行うので、呼び出し側に `mkdir -p` は要らない
-  - `utils/install-common.sh` を変更したら `sh tests/utils/link-config_test.sh` を流す。リンク先の状態ごとに 6 経路あり、出力タグ・リンク先・退避の中身をケースにしてある
+  - `merge_config <src> <dst> [<jq フィルタ>]` は JSON の共有キーだけを既存の設定へ上書き適用する（下の「アプリ自身が書き込む設定ファイル」を参照）。フィルタは `.[0]` を `dst`、`.[1]` を `src` として受け取り、既定は再帰マージ（`.[0] * .[1]`）
+  - `utils/install-common.sh` を変更したら `sh tests/utils/link-config_test.sh` と `sh tests/utils/merge-config_test.sh` を流す。前者はリンク先の状態ごとに 6 経路、後者は `dst` の状態とフィルタの有無で 9 ケースあり、出力タグ・マージ後の内容・退避の中身をケースにしてある
 - 出力の書式は 2 系統に分ける。**対象ごとの結果**は `log_tag <色> <[タグ]> <対象>` でタグ付き 1 行にする（`[linked]` / `[new]` / `[relinked]` / `[replaced]` / `[backup]` / `[merged]` / `[installed]` / `[skipped]` / `[unlinked]` / `[failed]`）。色はシアン=変化なし、緑=新規、黄=既存を動かした、赤=失敗。**対象を持たない進行ログ**（`-----> Switching home-manager` など）は `----->` のままにする
 
 規約:
@@ -33,9 +36,13 @@
 - ルートは `sh "$DOTFILES/<dir>/install.sh" || exit $?` で呼ぶ。**各サブは末尾で明示的に `exit 0` する**。これが無いと最後のコマンド（`home-manager switch`、`brew bundle`、`ln` など）の失敗がそのままスクリプトの終了ステータスになり、後続のディレクトリが丸ごとスキップされる（分割前は 1 プロセスで、失敗しても後続が走っていた）
 - 意図的に全体を止めたいときだけ `exit 1` する（現状は `nix/install.sh` の `DOTFILES_MACHINE` 未設定のみ）
 - `link_config()` を `utils/utils.bash` に置かない。`utils.bash` は `zsh/.zshenv` から全 zsh 起動で source されるため、インストール時にしか使わない関数を常駐させない
-- サブプロセスなので、サブ側の環境変数・PATH の変更はルートへ届かない。Nix を初めて入れた回に `claude/install.sh` が `jq` / `gh` を見つけられるよう、ルートは `nix` と `brew` の間で `nix-daemon.sh` を読み込む
+- サブプロセスなので、サブ側の環境変数・PATH の変更はルートへ届かない。Nix を初めて入れた回に `docker/install.sh` と `claude/install.sh` が `jq` / `gh` を見つけられるよう、ルートは `nix` の直後に `nix-daemon.sh` を読み込む
 - `fish/` と `fzf/` はディレクトリごとリンク先（`~/.config/fish`, `~/.fzf`）へ symlink するため、中に `install.sh` を置くとインストーラまでリンク先に配られる。この 2 つはルートの `install.sh` でリンクする
 - `claude/install.sh` と `claude/Skillfile` は `link_claude_files` の `find` で除外している。除外しないと `~/.claude/` へリンクされる
+- **アプリ自身が書き込む設定ファイルは `link_config()` ではなく `merge_config()` を使う。** リンクを張るとアプリが書いたマシン固有の値が dotfiles 側へ流れ込み、逆に dotfiles 側の内容で置き換えるとその値が失われる。dotfiles 側は共有したいキーだけを持ち、`dst` にしか無いキーは触らない。該当するのは `claude/settings.json` と `docker/config.json` の 2 つ
+  - `claude/settings.json`: Claude Code が `model` / `effortLevel` / `autoMode` を書き込む。`hooks` だけは dotfiles を唯一の正として差し替えたいので、`merge_claude_settings` が `merge_config` へフィルタを渡す（`jq` の `*` は再帰マージだけで削除を表現できず、dotfiles 側で消した hook が既存の設定に残ってしまう）
+  - `docker/config.json`: Docker Desktop が `credsStore` / `currentContext` / `plugins` / `features` を書き込む。dotfiles 側が持つのは `detachKeys` だけで、フィルタは既定のまま
+  - `merge_config` は以前のバージョンが張った symlink を見つけたら、内容を実体へコピーし直してからマージする（リンクのまま書き込むと `src` を書き換えるため）。この 2 つのファイルを新たに symlink 管理へ戻さないこと
 
 ## 作業時の注意事項
 
@@ -98,7 +105,7 @@
 ### Claude Code 設定
 - `claude/`: Claude Code 関連（hooks, skills など）
 - グローバル `~/.claude/` へ **symlink** で同期する。**編集は必ず dotfiles 側で行う**（`~/.claude/` 側は参照専用。Claude Code は symlink 経由の書き込みを拒否する）
-- `settings.json` だけはリンクしない。Claude Code 自身が書き込むファイルのため、`claude/install.sh` の `merge_claude_settings` が dotfiles 側の共有キーのみを既存の設定へ上書きする。マシン固有キー（`effortLevel` / `modelSettings` / `autoMode`）は dotfiles 側に書かない
+- `settings.json` だけはリンクしない。Claude Code 自身が書き込むファイルのため、`claude/install.sh` の `merge_claude_settings`（共通部の `merge_config` を `hooks` 差し替えのフィルタ付きで呼ぶ）が dotfiles 側の共有キーのみを既存の設定へ上書きする。マシン固有キー（`effortLevel` / `modelSettings` / `autoMode`）は dotfiles 側に書かない
 - 仕組みの詳細は `claude/README.md`
 - `claude/hooks/block-dangerous.sh` を変更したら `sh tests/claude/block-dangerous_test.sh` を流す。止めるべきコマンドと通すべきコマンドの両方をケースにしてある
 

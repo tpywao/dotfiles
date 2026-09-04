@@ -60,7 +60,7 @@ Nix で入る CLI ツールの一覧は [`nix/packages.nix`](nix/packages.nix) �
 
 任意（無い場合は該当ステップをスキップする）:
 
-- `jq` — `~/.claude/settings.json` のマージに使う
+- `jq` — `~/.claude/settings.json` と `~/.docker/config.json` のマージに使う
 - `gh` — `claude/Skillfile` に書かれた外部スキルの導入に使う
 
 ## インストール
@@ -89,10 +89,13 @@ clone 先は任意の場所でよい。`install.sh` は自身の位置から `$D
 
 1. シェル別の symlink（zsh なら `zsh/install.sh` が `~/.zshenv`、fish なら `~/.config/fish`、bash なら `~/.bashrc`）
 2. リポジトリ直下の設定を symlink（editorconfig / vim / tmux / screen / sqlite / direnv / fzf）
-3. `git/` `docker/` `sheldon/` `karabiner/` `ghostty/` の各 `install.sh`（Karabiner-Elements と Ghostty は macOS のみ）
+3. `git/` `sheldon/` `karabiner/` `ghostty/` の各 `install.sh`（Karabiner-Elements と Ghostty は macOS のみ）
 4. `nix/install.sh` — nix.conf をリンク。Nix が無ければインストールを確認 → `DOTFILES_MACHINE` を解決 → `home-manager switch --flake "$DOTFILES#$DOTFILES_MACHINE" --impure`
 5. `brew/install.sh` — Homebrew が無ければインストールを確認 → `brew bundle --file=brew/Brewfile`
-6. `claude/install.sh` — Claude Code が無ければインストールを確認 → `claude/` 配下を `~/.claude/` へ symlink、`settings.json` のみ `jq` でマージ、`claude/Skillfile` の外部スキルを `gh skill install --pin` で導入
+6. `docker/install.sh` — `docker/config.json` の共有キーを `jq` で `~/.docker/config.json` へマージ（このファイルはリンクしない）
+7. `claude/install.sh` — Claude Code が無ければインストールを確認 → `claude/` 配下を `~/.claude/` へ symlink、`settings.json` のみ `jq` でマージ、`claude/Skillfile` の外部スキルを `gh skill install --pin` で導入
+
+順序の制約は「4 より後に 6 と 7」だけ。この 2 つが使う `jq` / `gh` は `nix/packages.nix` で入るため。残りのステップの順序に意味は無い。
 
 ### DOTFILES_MACHINE
 
@@ -176,7 +179,7 @@ git pull
 - **CLI は Nix、GUI は Homebrew** — CLI ツールは `nix/packages.nix` で宣言的に固定する。nixpkgs に無い CLI だけ例外的に `brew/Brewfile` の formula で入れる
 - **マシン固有の値はリポジトリの外へ** — `DOTFILES_MACHINE` は `~/.local/zsh/*.zsh`、git のユーザー情報は `~/.gitconfig.local`。リポジトリ側にはマシン・個人に固有の文言を置かない
 - **マシン構成の取り違えを防ぐため fail-fast** — `DOTFILES_MACHINE` 未設定時に既定の構成へ倒さない。設定し忘れたマシンに別マシンの構成が黙って当たるのを防ぐ
-- **Claude Code の設定は symlink + `settings.json` だけマージ** — Claude Code 自身がマシン固有の値を `settings.json` へ書き込むため、このファイルだけはリンクせず、共有したいキーだけを既存の設定へ上書きする（[claude/README.md](claude/README.md)）
+- **アプリ自身が書き込む設定ファイルはリンクせずマージ** — Claude Code の `settings.json` と Docker の `config.json` は、アプリがマシン固有の値（モデル設定、認証情報の保存先など）を書き込む。リンクを張るとその値が dotfiles 側へ流れ込み、dotfiles 側の内容で置き換えると失われるため、共有したいキーだけを `jq` で既存の設定へ上書きする（[claude/README.md](claude/README.md)）
 - **外部スキルは vendoring しない** — 実体をリポジトリに取り込まず、`claude/Skillfile` にリリースタグを pin してマニフェスト管理する
 - **npm 由来のツールは lockfile で固定してオフラインビルド** — `ai-tools/` は `buildNpmPackage` + `--ignore-scripts` で、install スクリプトを実行せず推移的依存まで固定する（[ai-tools/README.md](ai-tools/README.md)）
 
@@ -222,14 +225,14 @@ exec zsh
   nix run home-manager -- switch --flake "$DOTFILES#$DOTFILES_MACHINE" --impure
   ```
 
-- **`jq が無いため ... のマージをスキップしました` と出る**
-  `jq` を入れてから `install.sh` を再実行する。Claude Code の共有設定が反映されていない。
+- **`[skipped] ... (jq が無い)` と出る**
+  `jq` を入れてから `install.sh` を再実行する。Claude Code か Docker の共有設定が反映されていない。
 
-- **`gh が無いため外部スキルの導入をスキップしました` と出る**
+- **`[skipped] 外部スキルの導入 (gh が無い)` と出る**
   `gh` を入れてから `install.sh` を再実行する。
 
-- **`~/.claude/` に `*.presymlink.<timestamp>` が残っている**
-  symlink 化の際に内容が分岐していたファイルの退避。中身を確認したうえで手で削除する。
+- **設定ファイルの隣に `*.presymlink.<timestamp>` が残っている**
+  symlink 化の際に、リンク先に内容の違う実体があったファイル・ディレクトリの退避。中身を確認したうえで手で削除する。
 
 ## マシンを追加する
 
