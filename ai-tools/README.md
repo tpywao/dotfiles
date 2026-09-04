@@ -1,12 +1,12 @@
 # ai-tools
 
-AI 関連 CLI ツール（ccusage / repomix / codegraph、ほか ax / actionlint）を Nix flake で一元管理する。home-manager に統合済みのため、`home-manager switch` すれば各ツールは `~/.nix-profile/bin` に入り常に PATH 上にある（`cd` や `nix develop` は不要）。
+AI 関連 CLI ツール（ccusage / codegraph、ほか ax / actionlint）を Nix flake で一元管理する。home-manager に統合済みのため、`home-manager switch` すれば各ツールは `~/.nix-profile/bin` に入り常に PATH 上にある（`cd` や `nix develop` は不要）。
 
 ## ファイル一覧
 
 | ファイル | 役割 |
 | --- | --- |
-| `flake.nix` | npm ツール 3 つを `buildNpmPackage` で単一 derivation として定義。ax（flake input）と actionlint（nixpkgs）も packages として提供 |
+| `flake.nix` | npm ツール 2 つを `buildNpmPackage` で単一 derivation として定義。ax（flake input）と actionlint（nixpkgs）も packages として提供 |
 | `flake.lock` | flake input のロック（自動生成。手書き編集しない） |
 | `package.json` | npm ツールのバージョン固定（exact version）と `overrides` |
 | `package-lock.json` | 推移的依存まで固定する lockfile（自動生成。手書き編集しない） |
