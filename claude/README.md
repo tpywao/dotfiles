@@ -8,7 +8,6 @@ Claude Code の設定一式。`claude/install.sh` の `link_claude_files` がこ
 - **編集は必ず dotfiles 側で行う。`~/.claude/` 側は参照専用。** Claude Code の Edit は symlink 経由の書き込みを拒否する（`Refusing to write through symlink`）ため、`~/.claude/` 側を誤って編集することは構造的に起きない
 - symlink はパス参照なので、`git switch` や atomic save（tmpfile + rename）でリンクが切れない。hardlink だった頃はこれで頻繁に切れ、両側が黙って分岐していた
 - 既存の hardlink は `claude/install.sh` の再実行で symlink へ置き換わる。内容が分岐していた場合は `~/.claude/` 側を `*.presymlink.<ts>` へ退避してから張る（退避ファイルは中身を確認して手で消す）
-- `hooks/relink-claude-files.sh`（PostToolUse hook）は hardlink 時代の再リンク用。symlink では実体を辿って同一 inode と判定されるため、何もせず終了する
 - 新しい skill・hook・設定ファイルを追加するときは `claude-add-config` スキルを使う（リンク漏れを防ぐ手順になっている）
 
 ## settings.json をマージ方式にしている理由
@@ -16,7 +15,7 @@ Claude Code の設定一式。`claude/install.sh` の `link_claude_files` がこ
 Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を `~/.claude/settings.json` へ書き込むため、このファイルはリンクできない。
 
 - symlink にすると、本体がこのファイルへ書き込んだ時点で dotfiles 側の実体が書き換わる。マシン固有の値がそのままリポジトリへ流れ込む。特に `autoMode.environment` にはホームディレクトリのパスやリポジトリ名が入る
-- hardlink でも同じ流入が起きるうえ、書き込みが atomic save なのでリンクが切れる。本体の設定書き込みは PostToolUse hook を通らないため `relink-claude-files.sh` では復旧できず、気づかないまま両側が別々に育つ
+- hardlink でも同じ流入が起きるうえ、書き込みが atomic save なのでリンクが切れる。切れたことに気づかないまま両側が別々に育つ
 
 そこで `claude/install.sh` の `merge_claude_settings` が `jq -s '.[0] * .[1]'` で **dotfiles 側のキーだけを既存の設定へ上書き**する。dotfiles 側に無いキーは既存値がそのまま残るため、マシン固有の設定は保持される。
 
@@ -44,7 +43,6 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 | `block-dangerous.sh` | PreToolUse (Bash) | `rm -rf` など破壊的コマンドを exit 2 でブロック |
 | `inject-context.sh` | SessionStart | ブランチ名と working tree の状態をコンテキストに注入 |
 | `update-usage.sh` | SessionStart | `usage/collect.py` をバックグラウンド起動（セッション開始を遅延させない） |
-| `relink-claude-files.sh` | PostToolUse (Edit\|Write) | hardlink 時代の再同期用。symlink 化後は何もせず終了する（`settings.json` も対象外） |
 | `notify-stop.sh` | Stop | 作業完了を macOS 通知（terminal-notifier があればクリックでアプリ前面化） |
 
 このほか UserPromptSubmit に `codegraph prompt-hook` が配線されている（スクリプトではなく `settings.json` に直接記述）。

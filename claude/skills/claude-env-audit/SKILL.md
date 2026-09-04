@@ -35,7 +35,7 @@ description: Use when Claude Code 環境の定期監査・健全性チェック�
 4. **symlink 整合性**: `~/.claude/` 側が dotfiles を指す symlink になっているか確認する（`settings.json` は上記 2 で見るので対象外）
 
     ```bash
-    find "$DOTFILES/claude" -type f -not -name 'settings.json' -not -name '*.relinkbak.*' -not -name '*.presymlink.*' -not -name '*.local.*' -not -path "$DOTFILES/claude/install.sh" -not -path "$DOTFILES/claude/Skillfile" | while read -r src; do
+    find "$DOTFILES/claude" -type f -not -name 'settings.json' -not -name '*.presymlink.*' -not -name '*.local.*' -not -path "$DOTFILES/claude/install.sh" -not -path "$DOTFILES/claude/Skillfile" | while read -r src; do
       dst="$HOME/.claude/${src#$DOTFILES/claude/}"
       if [ ! -e "$dst" ]; then
         echo "MISSING       $dst"
@@ -47,10 +47,10 @@ description: Use when Claude Code 環境の定期監査・健全性チェック�
 
     `NOT A SYMLINK` は hardlink 時代の残りか手動コピー。`diff` で内容を比べ、`~/.claude/` 側にしかない編集があれば dotfiles 側へ取り込んでから `./install.sh` を実行する（内容が分岐していれば `*.presymlink.<ts>` へ退避される）。手順は claude-add-config skill に従う
     - `~/.claude/` 側にしかないファイルは `diff -rq "$DOTFILES/claude/<dir>" ~/.claude/<dir>`（対象: skills, hooks, agents）で検出する。dotfiles に入れるべきものか、そのマシン限定のものかを判断する
-    - 退避ファイル（`*.presymlink.*` / `*.relinkbak.*`）は `~/.claude/` と `$DOTFILES/claude/` の**両方**に残る。片側だけ見ると取りこぼす
+    - 退避ファイル（`*.presymlink.*`）は `~/.claude/` 側に残る
 
         ```bash
-        find ~/.claude "$DOTFILES/claude" \( -name '*.presymlink.*' -o -name '*.relinkbak.*' \) 2>/dev/null
+        find ~/.claude -name '*.presymlink.*' 2>/dev/null
         ```
 
         処分前に現行ファイルと比べ、退避側にしかない編集がないことを確認する。git 管理外なので削除すると復元できない

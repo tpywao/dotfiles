@@ -42,10 +42,9 @@ link_claude_file() {
 }
 
 link_claude_files() {
-  # relink フックが退避する *.relinkbak.* は git 管理外のバックアップなので同期しない。
   # settings.json はリンクせず merge_claude_settings で共有キーのみを反映する。
   # install.sh と Skillfile はインストーラ側のファイルで ~/.claude/ には要らない
-  find "$DOTFILES/claude" -type f -not -name '*.relinkbak.*' \
+  find "$DOTFILES/claude" -type f \
     -not -path "$DOTFILES/claude/settings.json" \
     -not -path "$DOTFILES/claude/install.sh" \
     -not -path "$DOTFILES/claude/Skillfile" | while read -r src; do
