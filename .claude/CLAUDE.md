@@ -24,6 +24,8 @@
 - `zsh/install.sh` はループに入れず、`$SHELL` が zsh のときだけ case 分岐から実行する（`fish/`・bash 用のリンクも同じ分岐にある）
 - `utils/install-common.sh`: 各 `install.sh` が source する共通部（`link_config()` と `utils/utils.bash` の読み込み）
   - `link_config()` はリンクの有無だけでなく**リンク先**を検証し、違う先を指していれば張り替える。リンク先に実体があるときは、ファイルは内容が一致すれば置き換え・分岐していれば `.presymlink.<ts>` へ退避、ディレクトリは内容を比較せず常に退避する。親ディレクトリの作成も関数内で行うので、呼び出し側に `mkdir -p` は要らない
+  - `utils/install-common.sh` を変更したら `sh tests/utils/link-config_test.sh` を流す。リンク先の状態ごとに 6 経路あり、出力タグ・リンク先・退避の中身をケースにしてある
+- 出力の書式は 2 系統に分ける。**対象ごとの結果**は `log_tag <色> <[タグ]> <対象>` でタグ付き 1 行にする（`[linked]` / `[new]` / `[relinked]` / `[replaced]` / `[backup]` / `[merged]` / `[installed]` / `[skipped]` / `[unlinked]` / `[failed]`）。色はシアン=変化なし、緑=新規、黄=既存を動かした、赤=失敗。**対象を持たない進行ログ**（`-----> Switching home-manager` など）は `----->` のままにする
 
 規約:
 

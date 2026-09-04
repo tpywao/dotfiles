@@ -11,6 +11,25 @@
 # OS 判定関数 (is_mac, is_wsl, is_linux)
 . "$DOTFILES/utils/utils.bash"
 
+# 対象ごとの結果は log_tag で 1 行にまとめる。何が起きたかをタグの色と語で
+# 判別できるようにするため、対象を持たない進行ログ（`-----> Switching ...`）
+# とは書式を分けている。
+LOG_UNCHANGED=36  # シアン: 変化なし
+LOG_CREATED=32    # 緑: 新規に作った
+LOG_CHANGED=33    # 黄: 既存のものを動かした
+# shellcheck disable=SC2034  # この共通部では使わず、各 install.sh から参照する
+LOG_FAILED=31     # 赤: 失敗した
+
+# log_tag <色> <[タグ]> <対象...>
+# タグ幅は最長の [installed] に合わせて揃える。色コードは %-11s の幅計算に
+# 入らないよう、書式側に固定で置く。
+log_tag() {
+  color=$1
+  tag=$2
+  shift 2
+  printf "\033[0;%sm%-11s\033[0m %s\n" "$color" "$tag" "$*"
+}
+
 # 設定ファイル/ディレクトリを symlink で配置する。親ディレクトリは自動で作る。
 #
 # リンクの有無だけでなく**リンク先**を検証する。リンク先を見ない実装では、
@@ -27,17 +46,17 @@ link_config() {
 
   if [ -L "$link" ]; then
     if [ "$(readlink "$link")" = "$file" ]; then
-      printf "\033[0;36m[linked]\033[0m %s\n" "$link"
+      log_tag "$LOG_UNCHANGED" "[linked]" "$link"
       return 0
     fi
     ln -sfn "$file" "$link"
-    echo "-----> Re-symlinked $link"
+    log_tag "$LOG_CHANGED" "[relinked]" "$link"
     return 0
   fi
 
   if [ ! -e "$link" ]; then
-    echo "-----> Symlinking your new $link"
     ln -s "$file" "$link"
+    log_tag "$LOG_CREATED" "[new]" "$link"
     return 0
   fi
 
@@ -46,18 +65,18 @@ link_config() {
   if [ -d "$link" ]; then
     mv "$link" "$backup"
     ln -sfn "$file" "$link"
-    echo "-----> $link は実ディレクトリでした。$backup へ退避して symlink を張りました"
+    log_tag "$LOG_CHANGED" "[backup]" "$link -> $backup (実ディレクトリ)"
     return 0
   fi
 
   if cmp -s "$file" "$link"; then
     /bin/rm -- "$link"
     ln -s "$file" "$link"
-    echo "-----> Replaced with symlink: $link"
+    log_tag "$LOG_CHANGED" "[replaced]" "$link"
   else
     cp -p "$link" "$backup"
     /bin/rm -- "$link"
     ln -s "$file" "$link"
-    echo "-----> $link は内容が分岐していました。$backup へ退避して symlink を張りました"
+    log_tag "$LOG_CHANGED" "[backup]" "$link -> $backup (内容が分岐)"
   fi
 }

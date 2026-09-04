@@ -35,7 +35,7 @@ merge_claude_settings() {
   dst="$HOME/.claude/settings.json"
   [ -f "$src" ] || return 0
   if ! command -v jq > /dev/null 2>&1; then
-    echo "-----> jq が無いため $dst のマージをスキップしました"
+    log_tag "$LOG_CHANGED" "[skipped]" "$dst (jq が無い)"
     return 0
   fi
   mkdir -p "$(dirname "$dst")"
@@ -47,9 +47,9 @@ merge_claude_settings() {
     | if ($shared | has("hooks")) then .hooks = $shared.hooks else . end
   ' "$dst" "$src" > "$tmp"; then
     mv "$tmp" "$dst"
-    printf "\033[0;36m[merged]\033[0m %s\n" "$dst"
+    log_tag "$LOG_UNCHANGED" "[merged]" "$dst"
   else
-    echo "-----> $dst のマージに失敗しました。$tmp を確認してください"
+    log_tag "$LOG_FAILED" "[failed]" "$dst (マージ失敗。$tmp を確認)"
   fi
 }
 
@@ -62,7 +62,7 @@ install_external_skills() {
   manifest="$DOTFILES/claude/Skillfile"
   [ -f "$manifest" ] || return 0
   if ! command -v gh > /dev/null 2>&1; then
-    echo "-----> gh が無いため外部スキルの導入をスキップしました"
+    log_tag "$LOG_CHANGED" "[skipped]" "外部スキルの導入 (gh が無い)"
     return 0
   fi
   while read -r repo skill pin; do
@@ -73,11 +73,11 @@ install_external_skills() {
     # 別ツールの store を書き換えかねないため、先に symlink 自体を外す（store は残る）
     if [ -L "$dst" ]; then
       /bin/rm -- "$dst"
-      echo "-----> Removed installer dir symlink: $dst"
+      log_tag "$LOG_CHANGED" "[unlinked]" "$dst (別インストーラの symlink)"
     fi
     current=$(sed -n 's|.*github-ref: *refs/tags/||p' "$dst/SKILL.md" 2>/dev/null | head -n 1)
     if [ "$current" = "$pin" ]; then
-      printf "\033[0;36m[installed]\033[0m %s %s\n" "$skill" "$pin"
+      log_tag "$LOG_UNCHANGED" "[installed]" "$skill $pin"
       continue
     fi
     gh skill install "$repo" "$skill" --pin "$pin" --dir "$HOME/.claude/skills" --force
