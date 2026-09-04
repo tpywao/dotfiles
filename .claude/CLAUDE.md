@@ -36,6 +36,9 @@
 - サブプロセスなので、サブ側の環境変数・PATH の変更はルートへ届かない。Nix を初めて入れた回に `claude/install.sh` が `jq` / `gh` を見つけられるよう、ルートは `nix` と `brew` の間で `nix-daemon.sh` を読み込む
 - `fish/` と `fzf/` はディレクトリごとリンク先（`~/.config/fish`, `~/.fzf`）へ symlink するため、中に `install.sh` を置くとインストーラまでリンク先に配られる。この 2 つはルートの `install.sh` でリンクする
 - `claude/install.sh` と `claude/Skillfile` は `link_claude_files` の `find` で除外している。除外しないと `~/.claude/` へリンクされる
+- **アプリ自身が書き込む設定ファイルは `link_config()` の対象にしない。** リンクを張るとアプリが書いたマシン固有の値が dotfiles 側へ流れ込み、逆に dotfiles 側の内容で置き換えるとその値が失われる。dotfiles 側は共有したいキーだけを持ち、`jq` で既存の設定へ上書き適用する（dotfiles にないキーは既存値がそのまま残る）。該当するのは `claude/settings.json`（`merge_claude_settings`）と `docker/config.json`（`merge_docker_config`）の 2 つ
+  - `docker/config.json` は Docker Desktop が `credsStore` / `currentContext` / `plugins` / `features` を書き込む。dotfiles 側が持つのは `detachKeys` だけ。`docker/install.sh` を変更したら `sh tests/docker/merge-config_test.sh` を流す
+  - `merge_docker_config` は以前のバージョンが張った symlink を見つけたら、内容を実体へコピーし直してからマージする（リンクのまま書き込むと dotfiles 側を書き換えるため）
 
 ## 作業時の注意事項
 
