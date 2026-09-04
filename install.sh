@@ -30,17 +30,18 @@ link_config "$DOTFILES/direnvrc" "$HOME/.direnvrc"
 link_config "$DOTFILES/fzf" "$HOME/.fzf"
 
 # 各ディレクトリの install.sh。それぞれ単体でも実行できる (例: ./git/install.sh)
-for dir in git docker sheldon karabiner ghostty nix; do
+for dir in git sheldon karabiner ghostty nix; do
   sh "$DOTFILES/$dir/install.sh" || exit $?
 done
 
 # Nix を今回インストールした場合、サブプロセスでの PATH 変更はここへ届かない。
-# claude/install.sh が使う jq / gh は home-manager が ~/.nix-profile へ入れるため、
-# このプロセスでも読み込んでおく
+# jq / gh は home-manager が ~/.nix-profile へ入れるため、このプロセスでも
+# 読み込んでおく。以降のディレクトリはこの 2 つを使う
 NIX_PROFILE="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
 [ -f "$NIX_PROFILE" ] && . "$NIX_PROFILE"
 
-for dir in brew claude; do
+# docker と claude は設定を jq でマージする。jq は nix で入るため nix より後に置く
+for dir in docker brew claude; do
   sh "$DOTFILES/$dir/install.sh" || exit $?
 done
 
