@@ -44,6 +44,17 @@
 
 理由: 古いローカル main や現在の作業ブランチを起点にしないこと、メインの作業ツリーの状態を汚さないことを保証するため。
 
+### コミットメッセージと main の履歴
+
+コミットメッセージは `feat(component):` 形式で記述する。サブジェクトは日本語で書く。
+
+- `type`: 履歴で使われているのは `feat` / `fix` / `docs` / `chore` / `perf` / `refactor`
+- `component`: 変更対象の領域名。`claude` / `zsh` / `install` / `nix` / `ai-tools` / `ghostty` / `utils`
+
+**main の履歴は PR タイトルから生成される（squash）。** このリポジトリは squash マージのみを許可し（`allow_merge_commit` / `allow_rebase_merge` はいずれも false）、squash コミットのタイトルは PR タイトルから生成される（`squash_merge_commit_title: PR_TITLE`）。そのためブランチ側のコミットメッセージは main の履歴に残らず、main の文面を決めるのは PR タイトルである。PR タイトルの形式は `pr-format` スキル（日本語1行・50 字以内・プレフィックスなし）が正本。
+
+`feat(component):` 形式は、PR レビュー時にコミット単位で変更の目的を追うために維持する。main の履歴を Conventional Commits に揃えたい場合は、この CLAUDE.md ではなく `pr-format` スキル側の規約を変える必要がある。
+
 ### 固有文言の禁止
 - このリポジトリに追加するファイル（skills, hooks, 設定, ドキュメント等）には、**マシン・個人・勤務先プロジェクトに固有の文言を書かない**
   - 対象: ユーザー名、ホスト名、勤務先の社名・プロジェクト名・リポジトリ名、社内 URL など
@@ -61,7 +72,7 @@
   - **編集禁止**: 手書き編集しないでください
   - 更新方法: `nix flake update` コマンド
 - `nix flake check --impure` で構文確認可
-  - `--impure` 必須: `nix/home.nix` が `builtins.getEnv "USER"` でユーザー名を取得しているため、pure 評価では `Username could not be determined` で失敗する
+  - `--impure` 必須: `nix/home.nix` が `builtins.getEnv` で `USER` / `HOME` を取得しているため、pure 評価では両者が空文字列になり `home.homeDirectory` の型エラー（`is not of type 'absolute path'`）で失敗する
   - `flake check` だけでなく `nix build` / `home-manager switch --flake .#$DOTFILES_MACHINE --impure` など評価を伴うコマンドすべてに `--impure` が要る
 - **マシンごとの構成**: `homeConfigurations` はマシンごとにエントリを持ち（例: `work-mac`）、共通の `home.nix` ＋マシン固有モジュール（例: `work-mac.nix`、`common.nix` を imports）を組み合わせる。適用先は環境変数 `DOTFILES_MACHINE` で選択し、dotfiles 管理外の `~/.local/zsh/*.zsh` で export する。**未設定時に別マシンの構成へフォールバックすることはない**（fail-fast）。`nix/install.sh` は `~/.local/zsh/*.zsh` に保存済みの有効な export があればそれを使い、無ければ対話実行時のみ選択メニューを提示して `~/.local/zsh/machine.zsh` に永続化、非対話実行ではエラーで止まる（`home-manager switch` 単体も未設定はエラー）。マシン追加手順は `nix/README.md` を参照
   - `home.packages` はリスト型オプションで、複数モジュールの定義は自動的に concat（マージ）される（後勝ち上書きではない）。マシン固有パッケージは `work-mac.nix` に追加分だけ列挙する（`packages.nix` を再 import すると二重登録になる）
@@ -87,10 +98,9 @@
 - 仕組みの詳細は `claude/README.md`
 
 ### AI ツール環境（ai-tools）
-- **ディレクトリ**: `ai-tools/`（dotfiles で管理）
-- **シンボリックリンク**: `~/.local/ai-tools` → `~/.dotfiles/ai-tools`
+- **ディレクトリ**: `ai-tools/`（dotfiles で管理。`flake.nix` からは `path:./ai-tools` で相対参照する）
 - **flake.nix**: Node.js + 2つの開発ツール（ccusage, codegraph）を定義
-- **常設**: ai-tools は home-manager に統合済み。`home-manager switch` すると codegraph/ccusage が `~/.nix-profile/bin` に入り**常に PATH 上**にある（`cd ~/.local/ai-tools` や `nix develop` は不要）
+- **常設**: ai-tools は home-manager に統合済み。`home-manager switch` すると codegraph/ccusage が `~/.nix-profile/bin` に入り**常に PATH 上**にある（`nix develop` は不要）
 - **パッケージング方式**: `ai-tools/flake.nix` は `buildNpmPackage` + `package-lock.json` で 2 ツールを単一 derivation として提供（lockfile ベースの固定・オフラインビルド。#15/#20 でサプライチェーン対策として npx 方式から移行）
   - 依存取得は `fetchNpmDeps`（fixed-output derivation）による hash 検証つき。推移的依存まで lockfile で固定され、実行時にレジストリへアクセスしない
   - `npmFlags = [ "--ignore-scripts" ]`: install スクリプト（npm マルウェアの主要経路）は実行しない。外さないこと
@@ -169,7 +179,7 @@ exec zsh
 1. 自動生成ファイル（flake.lock など）は手書き編集しない
 2. 設定変更後は実際に機能するか確認（exec zsh など）
 3. 新しい dotfiles はインストーラに追加（対象ディレクトリの `install.sh`。無ければルートの `install.sh`）
-4. git commit 時は `feat(component):` 形式で記述
+4. コミットメッセージは `feat(component):` 形式（詳細は「コミットメッセージと main の履歴」）
 
 ## 参考資料
 - [README.md](../README.md)

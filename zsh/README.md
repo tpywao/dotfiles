@@ -17,7 +17,7 @@ zsh の設定一式。`~/.zshenv` をこのディレクトリの `.zshenv` へ�
     ├── history・補完・prompt・vcs_info の設定
     ├── ../fzf/fzf.functions.zsh   fzf ウィジェットの関数定義
     ├── zoxide、gcloud
-    ├── aliases.zsh → keybinds.zsh → check.zsh → monkey-patch.zsh
+    ├── aliases.zsh → keybinds.zsh → check.zsh
     └── ~/.local/zsh/*.zsh   マシン固有設定（dotfiles 管理外）
 ```
 
@@ -32,7 +32,6 @@ zsh の設定一式。`~/.zshenv` をこのディレクトリの `.zshenv` へ�
 | `aliases.zsh` | alias と小物関数。eza/bat への置き換え、`mkcd`、ファイルパスを許容する `cd` ラッパー、グローバルエイリアス（`L`, `G`, `C` など）、WSL/Linux のクリップボード |
 | `keybinds.zsh` | キーバインドの集約先（emacs ベース）。fzf ウィジェットや zsh-abbr 展開のバインドもここに置く |
 | `check.zsh` | シェル起動時の更新チェック。sheldon/brew は週次で自動更新チェック、nix（flake.lock と home-manager profile の差・上流の新コミット）・sheldon・brew の要更新通知は日次 |
-| `monkey-patch.zsh` | 外部プラグインへの自前パッチ・回避策。現状は zsh-autocomplete の fd-handling パッチを当て直す `zac-update` |
 | `load-log.zsh` | `_load_begin` / `_load_end`。対話シェルでのみ、各初期化ブロックの読み込み時間をログ出力する |
 | `mac.zsh` | macOS 専用。Homebrew shellenv・site-functions、iTerm2 shell integration |
 | `wsl.zsh` | WSL 専用。`open` コマンドの Windows 連携 |
