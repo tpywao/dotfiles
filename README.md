@@ -91,11 +91,11 @@ clone 先は任意の場所でよい。`install.sh` は自身の位置から `$D
 2. リポジトリ直下の設定を symlink（editorconfig / vim / tmux / screen / sqlite / direnv / fzf）
 3. `git/` `sheldon/` `karabiner/` `ghostty/` の各 `install.sh`（Karabiner-Elements と Ghostty は macOS のみ）
 4. `nix/install.sh` — nix.conf をリンク。Nix が無ければインストールを確認 → `DOTFILES_MACHINE` を解決 → `home-manager switch --flake "$DOTFILES#$DOTFILES_MACHINE" --impure`
-5. `docker/install.sh` — `docker/config.json` の共有キーを `jq` で `~/.docker/config.json` へマージ（このファイルはリンクしない）
-6. `brew/install.sh` — Homebrew が無ければインストールを確認 → `brew bundle --file=brew/Brewfile`
+5. `brew/install.sh` — Homebrew が無ければインストールを確認 → `brew bundle --file=brew/Brewfile`
+6. `docker/install.sh` — `docker/config.json` の共有キーを `jq` で `~/.docker/config.json` へマージ（このファイルはリンクしない）
 7. `claude/install.sh` — Claude Code が無ければインストールを確認 → `claude/` 配下を `~/.claude/` へ symlink、`settings.json` のみ `jq` でマージ、`claude/Skillfile` の外部スキルを `gh skill install --pin` で導入
 
-順序の制約は「4 より後に 5 と 7」だけ。この 2 つが使う `jq` / `gh` は `nix/packages.nix` で入るため。残りのステップの順序に意味は無い。
+順序の制約は「4 より後に 6 と 7」だけ。この 2 つが使う `jq` / `gh` は `nix/packages.nix` で入るため。残りのステップの順序に意味は無い。
 
 ### DOTFILES_MACHINE
 

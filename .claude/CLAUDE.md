@@ -20,9 +20,9 @@
 
 - ルートの `install.sh`: 専用ディレクトリを持たない設定（`vimrc`, `tmux.conf`, `screenrc`, `sqliterc`, `direnvrc`, `editorconfig`, bash 用の `bashrc` / `aliases.bash`）の symlink と、各ディレクトリの `install.sh` の実行
   - `editorconfig`（ドットなし）が `~/.editorconfig` へ配布する設定。`.editorconfig`（ドットあり）はこのリポジトリ自身に効かせる設定で、配布対象ではない
-- 各ディレクトリの `install.sh`（`git/`, `sheldon/`, `karabiner/`, `ghostty/`, `nix/`, `docker/`, `brew/`, `claude/`）: そのディレクトリに関する処理。ルートがこの順で実行する
+- 各ディレクトリの `install.sh`（`git/`, `sheldon/`, `karabiner/`, `ghostty/`, `nix/`, `brew/`, `docker/`, `claude/`）: そのディレクトリに関する処理。ルートがこの順で実行する
   - **順序の制約は「`nix/` より後に `docker/` と `claude/`」だけ。** この 2 つは設定を `jq` でマージし、`jq` は `nix/packages.nix` で入る（前に置くと jq が無いマシンの初回実行でマージがスキップされ、2 回目まで反映されない）。残りのディレクトリの順序に意味は無い
-  - 実装上は `nix/` の直後で `nix-daemon.sh` を読み込む必要があるため、ループが 2 つに分かれている
+  - `docker/` と `claude/` の前で `nix-daemon.sh` を読み込む必要があるため、ループが 2 つに分かれている。**後半のループには制約のある 2 つだけを置く**（制約の無いものを混ぜると、そこにいる理由をコメントで説明できなくなる）
 - `zsh/install.sh` はループに入れず、`$SHELL` が zsh のときだけ case 分岐から実行する（`fish/`・bash 用のリンクも同じ分岐にある）
 - `utils/install-common.sh`: 各 `install.sh` が source する共通部（`link_config()`、`merge_config()`、`log_tag()` と `utils/utils.bash` の読み込み）
   - `link_config()` はリンクの有無だけでなく**リンク先**を検証し、違う先を指していれば張り替える。リンク先に実体があるときは、ファイルは内容が一致すれば置き換え・分岐していれば `.presymlink.<ts>` へ退避、ディレクトリは内容を比較せず常に退避する。親ディレクトリの作成も関数内で行うので、呼び出し側に `mkdir -p` は要らない
