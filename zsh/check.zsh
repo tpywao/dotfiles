@@ -82,15 +82,29 @@ _dotfiles_check_nix_upstream_daily() {
   (( $+commands[jq] && $+commands[git] )) || return
 
   local has_update=0
-  local name owner repo ref locked remote url
-  while IFS=$'\t' read -r name owner repo ref locked; do
+  local owner repo locked ref remote url
+  local -a refspecs
+  # ref は tsv の最後に置く。tab は IFS の空白文字なので、空フィールドが途中に
+  # あると read が後続を詰めてしまい、ref を持たないノードが取り落ちる。
+  while IFS=$'\t' read -r owner repo locked ref; do
     [[ -n "$owner" && -n "$repo" && -n "$locked" ]] || continue
     url="https://github.com/$owner/$repo.git"
+    # ref はフルパスで渡す。裸の名前だと ref 数の多いリポジトリで全 ref の
+    # 列挙が走り 1 リポジトリで 100 秒以上かかる。branch と tag のどちらかは
+    # lock から判別できないため両方を 1 回の問い合わせにまとめる。
+    if [[ -n "$ref" ]]; then
+      refspecs=("refs/heads/$ref" "refs/tags/$ref")
+    else
+      refspecs=(HEAD)
+    fi
     remote=$(GIT_TERMINAL_PROMPT=0 GIT_HTTP_LOW_SPEED_LIMIT=1000 GIT_HTTP_LOW_SPEED_TIME=5 \
-      git ls-remote "$url" "${ref:-HEAD}" 2>/dev/null | awk 'NR==1{print $1}')
+      git ls-remote "$url" "${refspecs[@]}" 2>/dev/null | awk 'NR==1{print $1}')
     [[ -n "$remote" ]] || continue
     [[ "$remote" != "$locked" ]] && has_update=1
-  done < <(jq -r '.nodes | to_entries[] | .value.locked as $l | select($l.type=="github") | [.key, $l.owner, $l.repo, (.value.original.ref // ""), $l.rev] | @tsv' "$flake_lock")
+  done < <(jq -r '[.nodes[] | .locked as $l | select($l.type == "github")
+      | { owner: $l.owner, repo: $l.repo, rev: $l.rev, ref: (.original.ref // "") }]
+    | unique_by([.owner, .repo, .ref])[]
+    | [.owner, .repo, .rev, .ref] | @tsv' "$flake_lock")
 
   (( has_update )) && echo "nix     → nix flake update  (上流に新しいコミットあり)"
 }
@@ -146,4 +160,5 @@ _dotfiles_check() {
   print "$today" > "$cache_file"
 }
 
-_dotfiles_check
+# テストから関数定義だけを読み込めるようにする
+[[ -n "$DOTFILES_CHECK_NO_AUTORUN" ]] || _dotfiles_check
