@@ -69,6 +69,9 @@
 - **重要**: ~/.zshrc は読まれません。$ZDOTDIR 配下（.dotfiles/zsh/）の設定を編集してください
 - 設定値: $ZDOTDIR=~/.dotfiles/zsh, no_global_rcs
 - zsh 設定ファイル: `zsh/.zshrc`, `zsh/.zprofile`, `zsh/.zlogout`
+- `zsh/check.zsh` を変更したら `zsh tests/zsh/check_test.zsh` を流す。`git` をスタブに差し替えて「flake.lock のどのノードを何回・どの ref 指定で問い合わせるか」をケースにしてあり、ネットワークへは出ない
+  - 末尾の `_dotfiles_check` 自動実行は `DOTFILES_CHECK_NO_AUTORUN` で抑止できる。テストが関数定義だけを読み込むためにある
+  - `_dotfiles_check_nix_upstream_daily` の `ls-remote` には ref を `refs/heads/<ref>` / `refs/tags/<ref>` のフルパスで渡す。裸の ref 名だとサーバ側フィルタが効かず、ref 数の多いリポジトリ（nixpkgs）1 件で 100 秒以上かかり起動がブロックされる
 
 ### Nix/Flake 管理
 - `flake.nix`: Nix パッケージと home-manager の定義
