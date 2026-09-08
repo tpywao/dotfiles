@@ -20,6 +20,7 @@ cask "google-chrome"
 
 # utils
 cask "keyclu"
+cask "notunes" # メディアキーによる Apple Music の起動を抑止
 cask "raycast"
 cask "rectangle"
 cask "stats"
