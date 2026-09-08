@@ -1,10 +1,10 @@
 # claude
 
-Claude Code の設定一式。`claude/install.sh` の `link_claude_files` がこのディレクトリ配下のファイルを `~/.claude/` へ **symlink** で張る。ただし `settings.json` はリンクせず、`merge_claude_settings` が共有キーだけを既存の設定へ上書き適用する。`install.sh` と `Skillfile` はインストーラ側のファイルなのでリンク対象から外している。
+Claude Code の設定一式。`claude/install.sh` の `link_claude_files` がこのディレクトリ配下のファイルを `~/.claude/` へ **symlink** で張る。ただし `settings.json` はリンクせず、`merge_claude_settings` が共有キーだけを既存の設定へ上書き適用する。`mcp-servers.json` も同様のマージ元で、`merge_claude_mcp_servers` が `~/.claude.json` へ反映する。`install.sh` と `Skillfile` はインストーラ側のファイルなのでリンク対象から外している。
 
 ## symlink 同期の仕組み
 
-- リンクの作成は `claude/install.sh`（`claude/` 配下を再帰的に `~/.claude/` へ symlink。`settings.json` / `install.sh` / `Skillfile` は除外）
+- リンクの作成は `claude/install.sh`（`claude/` 配下を再帰的に `~/.claude/` へ symlink。`settings.json` / `mcp-servers.json` / `install.sh` / `Skillfile` は除外）
 - **編集は必ず dotfiles 側で行う。`~/.claude/` 側は参照専用。** Claude Code の Edit は symlink 経由の書き込みを拒否する（`Refusing to write through symlink`）ため、`~/.claude/` 側を誤って編集することは構造的に起きない
 - symlink はパス参照なので、`git switch` や atomic save（tmpfile + rename）でリンクが切れない。hardlink だった頃はこれで頻繁に切れ、両側が黙って分岐していた
 - 既存の hardlink は `claude/install.sh` の再実行で symlink へ置き換わる。内容が分岐していた場合は `~/.claude/` 側を `*.presymlink.<ts>` へ退避してから張る（退避ファイルは中身を確認して手で消す）
@@ -27,12 +27,24 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 - CLI の「Yes, and don't ask again」はプロジェクトの `.claude/settings.local.json` に書かれるため、この方式で失われることはない
 - プラグイン（`enabledPlugins` / `extraKnownMarketplaces`）について、新マシンで自動なのは marketplace の登録まで。プラグイン本体は自動インストールされない。起動時に「未インストール」の警告と実行すべき `claude plugin install <name>` コマンドが表示されるので、それを自分で一度実行する（v2.1.195 時点の挙動）。バージョン固定を書ける場所（marketplace.json の `version` / `source.ref`）は上流 marketplace 側にしかないため、外部 marketplace のプラグインは版固定できず、インストールした時点の最新版が入る
 
+## mcpServers の共有（mcp-servers.json）
+
+MCP サーバーの登録先 `~/.claude.json` は、Claude Code 自身がセッション状態やプロジェクト履歴を書き込むマシンローカルのファイルで、`settings.json` と同じ理由でリンクできない。`claude/install.sh` の `merge_claude_mcp_servers` が `claude/mcp-servers.json` の内容を `~/.claude.json` へ既定の再帰マージで反映する。
+
+- dotfiles 側に置くのはマシン間で共有したいサーバーのみ（現状は `context7`）
+- マシン固有のサーバー（ローカルの環境変数やバイナリに依存する stdio サーバー等）は各マシンで `claude mcp add -s user` したままで保持される
+- マシン側で共有サーバーに追記したキーも `dst` にしか無いキーとして保持される（例: レート制限緩和のため `headers` に API キーを足す）
+- API キーやトークンの値そのものは dotfiles 側に書かない。各マシンの `~/.claude.json` 側で `headers` に追記するか、stdio サーバーなら `env` の変数参照（`${VAR}`）を使う
+- 削除は同期しない。`hooks` と違って丸ごと差し替えるとマシン固有のサーバーが消えるため、既定の再帰マージのままにしている（残ったサーバーは接続に失敗するだけで実害が小さい）。dotfiles 側で消したサーバーは各マシンで `claude mcp remove <name> -s user` する
+- サーバーの追加・変更はコミット → PR。マージ後に `./install.sh`（または `./claude/install.sh` 単体）を実行する。反映は次のセッションから
+
 ## ファイル一覧
 
 | ファイル | 役割 |
 | --- | --- |
 | `CLAUDE.md` | 全プロジェクト共通のグローバル指示（質問方法、worktree 運用、コードコメント方針、自動生成ファイルの扱いなど） |
 | `settings.json` | 共有したい設定のみ（permissions の allow リスト、model、hooks の配線、plugins、language など）。hardlink ではなくマージ方式で反映する |
+| `mcp-servers.json` | マシン間で共有したい MCP サーバーのみ。`~/.claude.json` へマージ方式で反映する |
 | `keybindings.json` | Claude Code のキーバインド（`meta+k` → submit） |
 
 ## hooks/

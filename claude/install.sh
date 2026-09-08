@@ -8,9 +8,11 @@ DOTFILES=$(cd "$(dirname "$0")/.." && pwd -P)
 # 拒否するため、~/.claude/ 側が誤って編集されることもない（編集は dotfiles 側で行う）。
 link_claude_files() {
   # settings.json はリンクせず merge_claude_settings で共有キーのみを反映する。
+  # mcp-servers.json も同様にマージ元で、~/.claude/ へ配るファイルではない。
   # install.sh と Skillfile はインストーラ側のファイルで ~/.claude/ には要らない
   find "$DOTFILES/claude" -type f \
     -not -path "$DOTFILES/claude/settings.json" \
+    -not -path "$DOTFILES/claude/mcp-servers.json" \
     -not -path "$DOTFILES/claude/install.sh" \
     -not -path "$DOTFILES/claude/Skillfile" | while read -r src; do
     rel="${src#$DOTFILES/claude/}"
@@ -36,6 +38,19 @@ merge_claude_settings() {
     | ($live * $shared)
     | if ($shared | has("hooks")) then .hooks = $shared.hooks else . end
   '
+}
+
+# MCP サーバーの登録先 ~/.claude.json は、Claude Code 自身がセッション状態や
+# プロジェクト履歴を書き込むマシンローカルのファイルのため、settings.json と同じく
+# リンクできない。マシン間で共有したいサーバーだけを mcp-servers.json に持ち、
+# 既定の再帰マージで反映する。マシン固有のサーバーや、マシン側で追記したキー
+# （API キーの headers 等）は dst にしか無いので保持される。
+#
+# hooks と違って削除は同期しない（丸ごと差し替えるとマシン固有のサーバーが消える。
+# 残ったサーバーは実体を失うわけではなく接続に失敗するだけで、実害が小さい）。
+# dotfiles 側で消したサーバーは各マシンで `claude mcp remove <name> -s user` する。
+merge_claude_mcp_servers() {
+  merge_config "$DOTFILES/claude/mcp-servers.json" "$HOME/.claude.json"
 }
 
 # 外部スキルは実体をリポジトリに取り込まず、Skillfile をマニフェストとして
@@ -79,12 +94,14 @@ if ! command -v claude > /dev/null 2>&1; then
     eval "$CLAUDE_INSTALL_CMD"
     link_claude_files
     merge_claude_settings
+    merge_claude_mcp_servers
   else
     echo "Skipping Claude Code installation."
   fi
 else
   link_claude_files
   merge_claude_settings
+  merge_claude_mcp_servers
 fi
 install_external_skills
 
