@@ -126,6 +126,20 @@ sed -i.bak '/pattern/d' file && rm file.bak
 
 `grep -v pattern file > tmp && mv tmp file` で代替すると、`mv` は元ファイルの mode を引き継がないためパーミッションが落ちる。実行ビット付きのファイルに使うと git diff に mode 変更が混ざる（`zsh/.zshrc` が 100755 → 100644 になった）。`-i.bak` は mode を保持する。
 
+### git ls-remote は ref をフルパスで渡す
+
+`git ls-remote <url> <ref>` に裸の ref 名（`main`, `v1.0.0` 等）を渡さない。`refs/heads/<ref>` / `refs/tags/<ref>` のフルパスで渡す。branch と tag のどちらかが不明なら、両方を 1 回の問い合わせに並べる:
+
+```bash
+git ls-remote "$url" "refs/heads/$ref" "refs/tags/$ref"
+```
+
+理由: 裸の名前ではサーバ側の ref フィルタが効かず、リモートの全 ref が転送される。ref 数の多いリポジトリでは 1 件で 100 秒以上かかる（`nixos/nixpkgs` で 108 秒。フルパス指定なら 3.7 秒）。スクリプトの中で複数のリポジトリをループすると分単位で待たされる。
+
+`GIT_HTTP_LOW_SPEED_LIMIT` / `GIT_HTTP_LOW_SPEED_TIME` を設定しても止まらない。これは「指定秒数のあいだ指定速度を下回ったら中断」する条件で、ref を列挙し続けている間はデータが流れているため発火しない。
+
+同じリポジトリを何度も引かないよう、問い合わせの前に `owner/repo/ref` で重複を除く。
+
 ## コミットの組み直し
 
 自分のコミットを分け直す・まとめ直すときの `git reset --soft` の基点は `HEAD~<n>` を使い、`origin/main` を指定しない。
