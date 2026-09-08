@@ -17,7 +17,6 @@
 LOG_UNCHANGED=36  # シアン: 変化なし
 LOG_CREATED=32    # 緑: 新規に作った
 LOG_CHANGED=33    # 黄: 既存のものを動かした
-# shellcheck disable=SC2034  # この共通部では使わず、各 install.sh から参照する
 LOG_FAILED=31     # 赤: 失敗した
 
 # log_tag <色> <[タグ]> <対象...>
@@ -78,5 +77,49 @@ link_config() {
     /bin/rm -- "$link"
     ln -s "$file" "$link"
     log_tag "$LOG_CHANGED" "[backup]" "$link -> $backup (内容が分岐)"
+  fi
+}
+
+# JSON の設定ファイルを、dotfiles 側の共有キーだけ既存の設定へ上書き適用する。
+#
+#   merge_config <dotfiles 側の src> <配布先の dst> [<jq フィルタ>]
+#
+# アプリ自身が書き込む設定ファイルは link_config の対象にできない。リンクを張ると
+# アプリが書いたマシン固有の値が dotfiles 側へ流れ込み、逆に dotfiles 側の内容で
+# 置き換えるとその値が失われる。dst にしか無いキーは触らずそのまま残す。
+#
+# jq フィルタは .[0] を既存の設定（dst）、.[1] を dotfiles 側（src）として受け取る。
+# 既定は再帰マージのみ。jq の `*` はオブジェクトを再帰マージするだけで削除を
+# 表現できないため、dotfiles 側で消したキーを dst からも消したい場合は
+# 呼び出し側でフィルタを渡す。
+merge_config() {
+  src=$1
+  dst=$2
+  filter="${3:-.[0] * .[1]}"
+  [ -f "$src" ] || return 0
+  if ! command -v jq > /dev/null 2>&1; then
+    log_tag "$LOG_CHANGED" "[skipped]" "$dst (jq が無い)"
+    return 0
+  fi
+  mkdir -p "$(dirname "$dst")"
+
+  # 以前のバージョンがこのファイルをリンクしていることがある。リンクのまま
+  # 書き込むと src を書き換えてしまうため、先に実体へ戻す。内容ごとコピーする
+  # ので、リンク経由でアプリが書き込んでいた値も引き継げる
+  if [ -L "$dst" ]; then
+    copy="$dst.unlinking.$$"
+    [ -f "$dst" ] && cp -L "$dst" "$copy"
+    /bin/rm -- "$dst"
+    [ -f "$copy" ] && mv "$copy" "$dst"
+    log_tag "$LOG_CHANGED" "[unlinked]" "$dst (symlink を実体に戻した)"
+  fi
+
+  [ -f "$dst" ] || echo '{}' > "$dst"
+  tmp="$dst.merging.$$"
+  if jq -s "$filter" "$dst" "$src" > "$tmp"; then
+    mv "$tmp" "$dst"
+    log_tag "$LOG_UNCHANGED" "[merged]" "$dst"
+  else
+    log_tag "$LOG_FAILED" "[failed]" "$dst (マージ失敗。$tmp を確認)"
   fi
 }
