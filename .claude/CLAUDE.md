@@ -5,14 +5,6 @@
 ## プロジェクト概要
 - **用途**: macOS + Linux 向けの個人用 dotfiles リポジトリ
 - **管理対象**: zsh, git, nix, Homebrew, karabiner, fzf など
-- **主な構成**:
-  - `zsh/`: zsh 設定（$ZDOTDIR 配下）
-  - `git/`: git 設定（gitconfig, gitignore）
-  - `nix/`: Nix/NixOS 設定（flake.nix, flake.lock）
-  - `brew/`: Homebrew パッケージリスト（Brewfile 群）
-  - `karabiner/`: Karabiner-Elements 設定（キーボード）
-  - `fzf/`: fzf 設定ファイル
-  - `claude/`: Claude Code 関連設定（hooks, skills など）
 
 ## インストーラの構成
 
@@ -48,13 +40,7 @@
 ## 作業時の注意事項
 
 ### 実装開始時のブランチ運用
-実装を開始するときは、以下の手順で作業環境を用意してから着手する:
-
-1. `git fetch` でリモートブランチを最新に更新する
-2. 新規ブランチを `origin/main` から作成する
-3. その新規ブランチの worktree を作成し（EnterWorktree ツールまたは `git worktree add`）、worktree 側で実装する
-
-理由: 古いローカル main や現在の作業ブランチを起点にしないこと、メインの作業ツリーの状態を汚さないことを保証するため。
+新規ブランチは必ず `origin/main` から作成する（`git fetch` 後）。古いローカル main や現在の作業ブランチを起点にしない。worktree を切ってから着手する手順そのものはユーザーメモリ側の規則が正本。
 
 ### コミットメッセージと main の履歴
 
@@ -82,29 +68,13 @@
   - `_dotfiles_check_nix_upstream_daily` の `ls-remote` には ref を `refs/heads/<ref>` / `refs/tags/<ref>` のフルパスで渡す。裸の ref 名だとサーバ側フィルタが効かず、ref 数の多いリポジトリ（nixpkgs）1 件で 100 秒以上かかり起動がブロックされる
 
 ### Nix/Flake 管理
-- `flake.nix`: Nix パッケージと home-manager の定義
-- `flake.lock`: Nix flake の依存関係ロック（自動生成）
-  - **編集禁止**: 手書き編集しないでください
-  - 更新方法: `nix flake update` コマンド
+- `flake.lock` は自動生成。手書き編集せず `nix flake update` で更新する
 - `nix flake check --impure` で構文確認可
   - `--impure` 必須: `nix/home.nix` が `builtins.getEnv` で `USER` / `HOME` を取得しているため、pure 評価では両者が空文字列になり `home.homeDirectory` の型エラー（`is not of type 'absolute path'`）で失敗する
   - `flake check` だけでなく `nix build` / `home-manager switch --flake .#$DOTFILES_MACHINE --impure` など評価を伴うコマンドすべてに `--impure` が要る
-- **マシンごとの構成**: `homeConfigurations` はマシンごとにエントリを持ち（例: `work-mac`）、共通の `home.nix` ＋マシン固有モジュール（例: `work-mac.nix`、`common.nix` を imports）を組み合わせる。適用先は環境変数 `DOTFILES_MACHINE` で選択し、dotfiles 管理外の `~/.local/zsh/*.zsh` で export する。**未設定時に別マシンの構成へフォールバックすることはない**（fail-fast）。`nix/install.sh` は `~/.local/zsh/*.zsh` に保存済みの有効な export があればそれを使い、無ければ対話実行時のみ選択メニューを提示して `~/.local/zsh/machine.zsh` に永続化、非対話実行ではエラーで止まる（`home-manager switch` 単体も未設定はエラー）。マシン追加手順は `nix/README.md` を参照
-  - `home.packages` はリスト型オプションで、複数モジュールの定義は自動的に concat（マージ）される（後勝ち上書きではない）。マシン固有パッケージは `work-mac.nix` に追加分だけ列挙する（`packages.nix` を再 import すると二重登録になる）
-  - 共通パッケージは `nix/packages.nix`、マシン固有は `nix/work-mac.nix` に書く
-
-### Brewfile 管理
-- `brew/Brewfile`: macOS Homebrew パッケージリスト
-- `brew/Brewfile.gui`: GUI アプリケーションリスト
-- 更新方法:
-  - `brew bundle dump --file=brew/Brewfile` で現在のパッケージをダンプ
-  - 手動編集後、`brew bundle install --file=brew/Brewfile` でインストール
 
 ### git 設定
-- `git/gitconfig`: グローバル git 設定
-- `git/gitignore`: グローバル gitignore
 - ローカル git 設定（.gitconfig.local）と結合される
-- **編集時の確認**: `git config --list` で反映を確認
 
 ### Claude Code 設定
 - `claude/`: Claude Code 関連（hooks, skills など）
@@ -115,90 +85,12 @@
 - `claude/hooks/block-dangerous.sh` を変更したら `sh tests/claude/block-dangerous_test.sh` を流す。止めるべきコマンドと通すべきコマンドの両方をケースにしてある
 
 ### AI ツール環境（ai-tools）
-- **ディレクトリ**: `ai-tools/`（dotfiles で管理。`flake.nix` からは `path:./ai-tools` で相対参照する）
-- **flake.nix**: Node.js + 2つの開発ツール（ccusage, codegraph）を定義
-- **常設**: ai-tools は home-manager に統合済み。`home-manager switch` すると codegraph/ccusage が `~/.nix-profile/bin` に入り**常に PATH 上**にある（`nix develop` は不要）
-- **パッケージング方式**: `ai-tools/flake.nix` は `buildNpmPackage` + `package-lock.json` で 2 ツールを単一 derivation として提供（lockfile ベースの固定・オフラインビルド。#15/#20 でサプライチェーン対策として npx 方式から移行）
-  - 依存取得は `fetchNpmDeps`（fixed-output derivation）による hash 検証つき。推移的依存まで lockfile で固定され、実行時にレジストリへアクセスしない
-  - `npmFlags = [ "--ignore-scripts" ]`: install スクリプト（npm マルウェアの主要経路）は実行しない。外さないこと
-  - **`runCommand`+`npm install` に戻さないこと**: Nix ビルドサンドボックスはネットワーク不可で、空の derivation を「成功」として生成してしまう（失敗が握りつぶされる）。`fetchNpmDeps` は fixed-output derivation なのでネットワーク可
-  - **ツールの更新手順**: `ai-tools/package.json` のバージョンを上げ → `cd ai-tools && npm install --ignore-scripts` で lockfile を再生成 → `flake.nix` の `npmDepsHash` を再計算（いったん `lib.fakeHash` にして `nix build` し、hash mismatch エラーの `got:` の値を転記）。`npmDepsFetcherVersion` を変えた場合も hash の再計算が必要
-- **使用方法**: 下記「AI ツール（ccusage, codegraph）」セクションを参照
-
-## AI ツール（ccusage, codegraph）
-
-このリポジトリでは 2 つの AI 関連ツールを Nix flake で一元管理しています。
-
-### セットアップ
-
-home-manager に統合済みのため、通常は追加セットアップ不要。`home-manager switch --flake .#$DOTFILES_MACHINE --impure` で 2 ツールが `~/.nix-profile/bin` に入り、以降どのシェルでもそのまま使える。
-
-（`ai-tools/flake.nix` には dev shell も残っているが、ツールを使うだけなら `cd` や `nix develop` は不要）
-
-### 各ツールの使用方法
-
-#### 1. ccusage — Claude Code トークン使用量・コスト分析
-
-Claude Code の利用状況・トークン消費量・コストを追跡。
-
-```bash
-ccusage daily          # 日単位の使用量表示
-ccusage weekly         # 週単位の集計
-ccusage monthly        # 月単位の集計
-ccusage daily --since 2026-05-01      # 特定日以降を表示
-ccusage daily --json > usage.json      # JSON でエクスポート
-ccusage claude monthly                 # Claude のみ抽出
-```
-
-#### 2. codegraph — ローカルコード知識グラフ構築
-
-プロジェクトのコード知識グラフをローカルインデックス化し、Claude Code と連携。セマンティック検索で関連コードを素早く検索可能。
-
-初回セットアップ（プロジェクトごと）：
-
-```bash
-codegraph install         # Claude Code 等のエージェントに MCP サーバーを統合
-cd ~/my-project
-codegraph init            # プロジェクトの .codegraph/ を初期化
-```
-
-日常的な使用：
-
-```bash
-# init 後は自動で Claude Code がグラフを活用
-codegraph sync      # 差分同期（通常はこれ）
-codegraph index     # フル再構築（コード大幅変更時。rebuild というサブコマンドは無い）
-codegraph status    # インデックス状態の確認
-```
-
-効果: Claude Code が関数の呼び出し元検索などを可能に。トークン消費削減（全コード送信不要）
-
-## よく使うコマンド
-```bash
-# Nix 環境の更新
-nix flake update
-
-# Nix 環境のチェック（--impure 必須: getEnv "USER" のため）
-nix flake check --impure
-
-# Brewfile の更新
-brew bundle dump --file=brew/Brewfile --force
-
-# git 設定確認
-git config --list --local
-git config --global --list
-
-# zsh 設定の再読み込み
-exec zsh
-```
+- ccusage / codegraph を Nix flake で提供する。パッケージング方式と更新手順は `ai-tools/CLAUDE.md`
 
 ## 保守性のルール
-1. 自動生成ファイル（flake.lock など）は手書き編集しない
-2. 設定変更後は実際に機能するか確認（exec zsh など）
-3. 新しい dotfiles はインストーラに追加（対象ディレクトリの `install.sh`。無ければルートの `install.sh`）
-4. コミットメッセージは `feat(component):` 形式（詳細は「コミットメッセージと main の履歴」）
-5. テストは対象コードの隣ではなく `tests/<component>/` に置く（例: `tests/claude/`）。`claude/` 配下に置くと `link_claude_files` が `~/.claude/` へ配ってしまい、除外の追加が必要になる
+1. 新しい dotfiles はインストーラに追加（対象ディレクトリの `install.sh`。無ければルートの `install.sh`）
+2. コミットメッセージは `feat(component):` 形式（詳細は「コミットメッセージと main の履歴」）
+3. テストは対象コードの隣ではなく `tests/<component>/` に置く（例: `tests/claude/`）。`claude/` 配下に置くと `link_claude_files` が `~/.claude/` へ配ってしまい、除外の追加が必要になる
 
 ## 参考資料
 - [README.md](../README.md)
-- ユーザーメモリ: zsh の $ZDOTDIR 設定
