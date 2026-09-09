@@ -26,29 +26,7 @@
       "Bash(git show * --output*)",
       "Bash(git show --output*)"
     ],
-    "allow": [
-      "Bash(python manage.py test *)",
-      "Bash(uv run ruff check)",
-      "mcp__playwright__browser_take_screenshot",
-      "mcp__playwright__browser_snapshot",
-      "mcp__backlog__get_issue",
-      "Bash(gh pr *)",
-      "Bash(git log *)",
-      "Bash(git diff *)",
-      "Bash(gh issue *)",
-      "Bash(rg *)",
-      "Bash(git show *)",
-      "Bash(grep *)",
-      "Bash(gh run *)",
-      "Bash(find *)",
-      "Bash(npm run lint)",
-      "Bash(npm run test)",
-      "Bash(jq *)",
-      "Bash(npm list *)",
-      "Bash(docker ps *)",
-      "Bash(git worktree list)",
-      "Bash(dwt:*)"
-    ]
+    "allow": []
   },
   "model": "opus[1m]",
   "statusLine": {
