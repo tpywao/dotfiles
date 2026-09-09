@@ -1,8 +1,22 @@
 {
   "mcpServers": {
+    "codegraph": {
+      "type": "stdio",
+      "command": "codegraph",
+      "args": ["serve", "--mcp"]
+    },
     "context7": {
       "type": "http",
       "url": "https://mcp.context7.com/mcp"
+    },
+    "deepwiki": {
+      "type": "http",
+      "url": "https://mcp.deepwiki.com/mcp"
+    },
+    "nixos": {
+      "type": "stdio",
+      "command": "mcp-nixos",
+      "args": []
     }
   }
 }

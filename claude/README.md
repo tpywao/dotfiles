@@ -31,7 +31,8 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 
 MCP サーバーの登録先 `~/.claude.json` は、Claude Code 自身がセッション状態やプロジェクト履歴を書き込むマシンローカルのファイルで、`settings.json` と同じ理由でリンクできない。`claude/install.sh` の `merge_claude_mcp_servers` が `claude/mcp-servers.json` の内容を `~/.claude.json` へ既定の再帰マージで反映する。
 
-- dotfiles 側に置くのはマシン間で共有したいサーバーのみ（現状は `context7`）
+- dotfiles 側に置くのはマシン間で共有したいサーバーのみ。現状は `context7`（ライブラリ公式ドキュメント取得）、`deepwiki`（公開 GitHub リポジトリへの質問応答）、`nixos`（nixpkgs・home-manager オプション検索）、`codegraph`（コード知識グラフ）
+- stdio サーバーはコマンドが PATH に要る。`codegraph` は `ai-tools/`、`nixos`（コマンド名 `mcp-nixos`）は `nix/packages.nix` で入り、いずれも home-manager が導入する
 - マシン固有のサーバー（ローカルの環境変数やバイナリに依存する stdio サーバー等）は各マシンで `claude mcp add -s user` したままで保持される
 - マシン側で共有サーバーに追記したキーも `dst` にしか無いキーとして保持される（例: レート制限緩和のため `headers` に API キーを足す）
 - API キーやトークンの値そのものは dotfiles 側に書かない。各マシンの `~/.claude.json` 側で `headers` に追記するか、stdio サーバーなら `env` の変数参照（`${VAR}`）を使う
