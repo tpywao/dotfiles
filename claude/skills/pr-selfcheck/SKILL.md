@@ -19,7 +19,7 @@ description: Use when 自分の PR を出す直前 — gh pr create / gh pr edit
 - PR 本文を書き終えたとき
 - レビューが重いと指摘された PR の本文を後から補強するとき
 
-使わないとき: 他人の PR のレビュー（`review-strict` / `code-review` を使う）。
+使わないとき: 他人の PR のレビュー（`code-review` を使う）。
 
 ## 手順
 
