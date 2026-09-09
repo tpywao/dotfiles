@@ -9,5 +9,13 @@
   },
   "enabledPlugins": {
     "genshijin@genshijin": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(ccusage *)",
+      "Bash(ghostty +show-config *)",
+      "Bash(ghostty +validate-config *)",
+      "Bash(shellcheck *)"
+    ]
   }
 }
