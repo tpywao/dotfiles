@@ -1,0 +1,77 @@
+name: Update flake.lock
+
+on:
+  schedule:
+    # 毎週土曜 06:00 JST (金曜 21:00 UTC)
+    - cron: "0 21 * * 5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-flake-lock:
+    runs-on: ubuntu-latest
+    env:
+      # nix/home.nix が builtins.getEnv "USER" を参照するため明示的に設定する
+      USER: runner
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: DeterminateSystems/nix-installer-action@v22
+
+      # 両 flake がそれぞれ lock を持つため両方更新する
+      # （root は ai-tools の依存を root 側 lock で独自に固定しており、更新順序は無関係。
+      #   ai-tools/flake.lock は ai-tools 単体でビルドする場合に使われる）
+      - name: Update ai-tools flake.lock
+        run: nix flake update --flake ./ai-tools
+
+      - name: Update root flake.lock
+        run: nix flake update
+
+      # --impure 必須: home.nix が builtins.getEnv "USER" を参照するため
+      - name: Check flakes
+        run: |
+          nix flake check --impure
+          nix flake check ./ai-tools
+
+      # homeConfigurations は flake check の対象外なので明示的に評価する
+      # （評価のみなので Linux runner 上でも darwin 構成を検証できる）
+      - name: Evaluate home configurations
+        run: |
+          nix eval --impure .#homeConfigurations.work-mac.activationPackage.drvPath
+          nix eval --impure .#homeConfigurations.personal-mac.activationPackage.drvPath
+
+      # nixpkgs 更新で prefetch-npm-deps の fetcher 形式が変わると
+      # npmDepsHash が不一致になるため、実ビルドで検出する
+      - name: Build ai-tools package
+        run: nix build ./ai-tools#ai-tools
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: auto/update-flake-lock
+          delete-branch: true
+          commit-message: "chore(nix): flake.lock を更新"
+          title: "chore(nix): flake.lock を更新"
+          labels: dependencies
+          body: |
+            ## 概要
+
+            定期実行の GitHub Actions による flake.lock の自動更新。
+
+            - `ai-tools/flake.lock` と root の `flake.lock` を `nix flake update` で更新
+            - CI で通過済みの検証:
+              - `nix flake check`（root / ai-tools）
+              - homeConfigurations の評価（評価のみ。ビルドは未実施）
+              - ai-tools のビルド（x86_64-linux のみ。npmDepsHash 不一致の検出が目的で、
+                実際に使う aarch64-darwin のビルドは未検証）
+
+            ## 反映方法
+
+            マージ後、各マシンで以下を実行:
+
+            ```sh
+            home-manager switch --flake .#$DOTFILES_MACHINE --impure
+            ```
