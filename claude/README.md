@@ -79,7 +79,6 @@ MCP サーバーの登録先 `~/.claude.json` は、Claude Code 自身がセッ�
 | `mb-reorder-params` | Metabase カードのパラメータ並び替え |
 | `pr-format` | PR タイトル・本文のフォーマット |
 | `pr-selfcheck` | PR を出す前に diff を走査し、レビュー負荷を上げる要因を本文の追記案にする |
-| `review-strict` | 同調しない厳格なコードレビュー |
 
 `complexity` は `settings.json` の `skillOverrides` で `name-only` にしている。Claude には名前だけが提示され、説明文は常駐しない（`/complexity` での呼び出しはそのまま使える）。
 
