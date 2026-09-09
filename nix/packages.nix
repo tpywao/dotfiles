@@ -44,6 +44,7 @@ pkgs: with pkgs; [
   # Dev tools
   clang-tools
   git-lfs
+  mcp-nixos  # nixpkgs・home-manager オプション検索の MCP サーバー（claude/mcp-servers.json が参照）
   vim
 
   # Misc CLI

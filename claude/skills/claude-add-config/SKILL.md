@@ -13,7 +13,7 @@ description: Use when ~/.claude/ に新しい skill・hook・agent・設定フ�
 
 - 編集は必ず dotfiles 側で行う。Claude Code の Edit は symlink 経由の書き込みを拒否する（`Refusing to write through symlink`）
 - **新規ファイルは `install.sh` を実行するまでリンクされない**。手動で張る場合も含め、下記の手順に従う
-- `settings.json` だけは例外でリンクしない（Claude Code 自身が書き込むため）。`claude/install.sh` の `merge_claude_settings` が共有キーのみを反映する。詳細は `claude/README.md`
+- `settings.json` と `mcp-servers.json` は例外でリンクしない（配布先を Claude Code 自身が書き込むため）。`claude/install.sh` の `merge_claude_settings` / `merge_claude_mcp_servers` が共有キーのみを反映する（後者の配布先は `~/.claude.json`）。詳細は `claude/README.md`
 
 ## 手順（新規追加）
 
