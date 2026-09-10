@@ -65,6 +65,18 @@ install_external_skills() {
     log_tag "$LOG_CHANGED" "[skipped]" "外部スキルの導入 (gh が無い)"
     return 0
   fi
+  # 未認証でも gh skill install は動くが、GitHub API の未認証レート制限
+  # (IP 単位で 60 req/h) にすぐ当たる。スキル 1 つにつきファイル数だけ blob を
+  # 引くため 1 つ導入する前に 403 になり、不完全なスキルが残る。
+  # status ではなく token で見るのは、毎回の実行でネットワーク往復させないため
+  # (失効したトークンは install の失敗として扱われる)
+  if ! gh auth token > /dev/null 2>&1; then
+    log_tag "$LOG_CHANGED" "[skipped]" "外部スキルの導入 (gh が未認証)"
+    notice "外部スキルを導入していない。gh の認証後に再実行する:
+  gh auth login
+  ./claude/install.sh"
+    return 0
+  fi
   while read -r repo skill pin; do
     case "$repo" in ''|\#*) continue ;; esac
     dst="$HOME/.claude/skills/$skill"
