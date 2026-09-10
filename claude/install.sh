@@ -60,6 +60,7 @@ merge_claude_mcp_servers() {
 # frontmatter の github-ref）が pin と食い違う場合も入れ直す（マニフェスト側が正）。
 install_external_skills() {
   manifest="$DOTFILES/claude/Skillfile"
+  failed=
   [ -f "$manifest" ] || return 0
   if ! command -v gh > /dev/null 2>&1; then
     log_tag "$LOG_CHANGED" "[skipped]" "外部スキルの導入 (gh が無い)"
@@ -92,8 +93,21 @@ install_external_skills() {
       log_tag "$LOG_UNCHANGED" "[installed]" "$skill $pin"
       continue
     fi
-    gh skill install "$repo" "$skill" --pin "$pin" --dir "$HOME/.claude/skills" --force
+    if gh skill install "$repo" "$skill" --pin "$pin" --dir "$HOME/.claude/skills" --force; then
+      log_tag "$LOG_CREATED" "[installed]" "$skill $pin"
+    else
+      # 途中で落ちても SKILL.md だけは書かれていることがある。残すと上の pin
+      # 判定が一致して次回以降スキップされ、壊れたスキルが固定される。
+      # 消せば --force で入り直し、Claude Code が読み込むこともなくなる
+      /bin/rm -f -- "$dst/SKILL.md"
+      log_tag "$LOG_FAILED" "[failed]" "$skill $pin"
+      failed=1
+    fi
   done < "$manifest"
+  if [ -n "$failed" ]; then
+    notice "導入に失敗した外部スキルがある。次を実行して入れ直す:
+  ./claude/install.sh"
+  fi
 }
 
 if ! command -v claude > /dev/null 2>&1; then
