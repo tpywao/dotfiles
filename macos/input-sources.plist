@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AppleEnabledInputSources</key>
+	<array>
+		<dict>
+			<key>Bundle ID</key>
+			<string>com.apple.inputmethod.Kotoeri.RomajiTyping</string>
+			<key>Input Mode</key>
+			<string>com.apple.inputmethod.Japanese</string>
+			<key>InputSourceKind</key>
+			<string>Input Mode</string>
+		</dict>
+		<dict>
+			<key>Bundle ID</key>
+			<string>com.apple.inputmethod.Kotoeri.RomajiTyping</string>
+			<key>InputSourceKind</key>
+			<string>Keyboard Input Method</string>
+		</dict>
+		<dict>
+			<key>Bundle ID</key>
+			<string>com.apple.CharacterPaletteIM</string>
+			<key>InputSourceKind</key>
+			<string>Non Keyboard Input Method</string>
+		</dict>
+		<dict>
+			<key>Bundle ID</key>
+			<string>com.apple.50onPaletteIM</string>
+			<key>InputSourceKind</key>
+			<string>Non Keyboard Input Method</string>
+		</dict>
+		<dict>
+			<key>Bundle ID</key>
+			<string>com.apple.inputmethod.Kotoeri.RomajiTyping</string>
+			<key>Input Mode</key>
+			<string>com.apple.inputmethod.Roman</string>
+			<key>InputSourceKind</key>
+			<string>Input Mode</string>
+		</dict>
+		<dict>
+			<key>Bundle ID</key>
+			<string>com.apple.inputmethod.EmojiFunctionRowItem</string>
+			<key>InputSourceKind</key>
+			<string>Non Keyboard Input Method</string>
+		</dict>
+	</array>
+	<key>AppleSelectedInputSources</key>
+	<array>
+		<dict>
+			<key>Bundle ID</key>
+			<string>com.apple.inputmethod.EmojiFunctionRowItem</string>
+			<key>InputSourceKind</key>
+			<string>Non Keyboard Input Method</string>
+		</dict>
+		<dict>
+			<key>Bundle ID</key>
+			<string>com.apple.inputmethod.Kotoeri.RomajiTyping</string>
+			<key>Input Mode</key>
+			<string>com.apple.inputmethod.Roman</string>
+			<key>InputSourceKind</key>
+			<string>Input Mode</string>
+		</dict>
+	</array>
+</dict>
+</plist>

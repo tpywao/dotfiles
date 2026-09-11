@@ -4,7 +4,7 @@
 
 ## プロジェクト概要
 - **用途**: macOS + Linux 向けの個人用 dotfiles リポジトリ
-- **管理対象**: zsh, git, nix, Homebrew, karabiner, fzf など
+- **管理対象**: zsh, git, nix, Homebrew, karabiner, fzf, macOS のシステム設定 など
 
 ## インストーラの構成
 
@@ -12,7 +12,7 @@
 
 - ルートの `install.sh`: 専用ディレクトリを持たない設定（`vimrc`, `tmux.conf`, `screenrc`, `sqliterc`, `direnvrc`, `editorconfig`, bash 用の `bashrc` / `aliases.bash`）の symlink と、各ディレクトリの `install.sh` の実行
   - `editorconfig`（ドットなし）が `~/.editorconfig` へ配布する設定。`.editorconfig`（ドットあり）はこのリポジトリ自身に効かせる設定で、配布対象ではない
-- 各ディレクトリの `install.sh`（`git/`, `sheldon/`, `karabiner/`, `ghostty/`, `nix/`, `brew/`, `docker/`, `claude/`）: そのディレクトリに関する処理。ルートがこの順で実行する
+- 各ディレクトリの `install.sh`（`git/`, `sheldon/`, `karabiner/`, `ghostty/`, `macos/`, `nix/`, `brew/`, `docker/`, `claude/`）: そのディレクトリに関する処理。ルートがこの順で実行する
   - **順序の制約は「`nix/` より後に `docker/` と `claude/`」だけ。** この 2 つは設定を `jq` でマージし、`jq` は `nix/packages.nix` で入る（前に置くと jq が無いマシンの初回実行でマージがスキップされ、2 回目まで反映されない）。残りのディレクトリの順序に意味は無い
   - `docker/` と `claude/` の前で `nix-daemon.sh` を読み込む必要があるため、ループが 2 つに分かれている。**後半のループには制約のある 2 つだけを置く**（制約の無いものを混ぜると、そこにいる理由をコメントで説明できなくなる）
 - `zsh/install.sh` はループに入れず、`$SHELL` が zsh のときだけ case 分岐から実行する（`fish/`・bash 用のリンクも同じ分岐にある）
@@ -21,7 +21,7 @@
   - `merge_config <src> <dst> [<jq フィルタ>]` は JSON の共有キーだけを既存の設定へ上書き適用する（下の「アプリ自身が書き込む設定ファイル」を参照）。フィルタは `.[0]` を `dst`、`.[1]` を `src` として受け取り、既定は再帰マージ（`.[0] * .[1]`）
     - マージ結果を確定させる前に「`dst` にあって結果に無い配列要素」を洗い出し、見つかれば `[dropped]` で列挙して `.premerge.<ts>` へ退避する。`src` と突き合わせるのではなく**マージ結果**と突き合わせるので、呼び出し側が渡すフィルタが何をするかに依存しない
   - `utils/install-common.sh` を変更したら `sh tests/utils/link-config_test.sh` と `sh tests/utils/merge-config_test.sh` を流す。前者はリンク先の状態ごとに 6 経路、後者は `dst` の状態・フィルタの有無・配列要素の消失検出で 13 ケースあり、出力タグ・マージ後の内容・退避の中身をケースにしてある
-- 出力の書式は 2 系統に分ける。**対象ごとの結果**は `log_tag <色> <[タグ]> <対象>` でタグ付き 1 行にする（`[linked]` / `[new]` / `[relinked]` / `[replaced]` / `[dropped]` / `[backup]` / `[merged]` / `[installed]` / `[skipped]` / `[unlinked]` / `[failed]`）。色はシアン=変化なし、緑=新規、黄=既存を動かした、赤=失敗。**対象を持たない進行ログ**（`-----> Switching home-manager` など）は `----->` のままにする
+- 出力の書式は 2 系統に分ける。**対象ごとの結果**は `log_tag <色> <[タグ]> <対象>` でタグ付き 1 行にする（`[linked]` / `[new]` / `[relinked]` / `[replaced]` / `[dropped]` / `[backup]` / `[merged]` / `[imported]` / `[current]` / `[applied]` / `[installed]` / `[skipped]` / `[unlinked]` / `[failed]`）。色はシアン=変化なし、緑=新規、黄=既存を動かした、赤=失敗。**対象を持たない進行ログ**（`-----> Switching home-manager` など）は `----->` のままにする
 
 規約:
 
@@ -91,6 +91,14 @@
 
 ### AI ツール環境（ai-tools）
 - ccusage / codegraph を Nix flake で提供する。パッケージング方式と更新手順は `ai-tools/CLAUDE.md`
+
+### macOS システム設定（macos）
+- `macos/install.sh` が `defaults` でシステム設定を適用する。詳細は `macos/README.md`
+- **型は実機から読み取ったものをそのまま使う。** macOS は同じ意味のキーでもドメインごとに型を変えて書いており（トラックパッドの `Dragging` は内蔵が integer、Bluetooth が boolean）、揃えると元の状態を再現できない。型は `defaults export <ドメイン> - | plutil -convert xml1 -o - -` で確認する（`defaults read` では bool と int を区別できない）
+- **bool は `write_bool` を使う。** `defaults write -bool` が受け付けるのは `true/false/yes/no` だけで、`1` を渡すと usage を出して何も書かない。一方 `defaults read` は `1/0` を返すため、書き込みと比較で表記が違う
+- 値が入れ子の dict / array になるものは平文で書けないので plist から `defaults import` する（`symbolichotkeys.plist`、`input-sources.plist`）。**この 2 つは自動生成ファイル。** 手書きせず `macos/README.md` の生成コマンドを流す
+- **状態として書き換わる値は入れない**（Finder の `ShowSidebar` はサイドバーを開閉するたびに書き換わる）。追加前に時間を空けて 2 回 `defaults read` を取り、差分が出ないことを確かめる
+- `macos/install.sh` を変更したら `sh tests/macos/install_test.sh` を流す。`defaults` と `killall` をスタブに差し替えて実機の設定には触れず、1 回目に全 `write_*` 行が書き込むこと・2 回目に 1 件も書かないことをケースにしてある
 
 ## 保守性のルール
 1. 新しい dotfiles はインストーラに追加（対象ディレクトリの `install.sh`。無ければルートの `install.sh`）
