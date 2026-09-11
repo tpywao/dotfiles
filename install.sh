@@ -7,6 +7,8 @@ shell=${1:-$SHELL}
 # から親へ値は返せないため、ファイルを経由して集める
 DOTFILES_NOTICES=$(mktemp)
 export DOTFILES_NOTICES
+# 各ディレクトリの install.sh が失敗するとループの途中で exit するため、末尾に
+# 後始末を置くと消し漏れる。経路を問わず片付くよう trap に寄せる
 trap '/bin/rm -f -- "$DOTFILES_NOTICES"' EXIT
 
 case $shell in
