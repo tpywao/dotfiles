@@ -39,7 +39,7 @@ CLI ツールは Nix で宣言的に、GUI アプリは Homebrew で管理し、
 | [`nix/`](nix/README.md) | home-manager の設定。共通パッケージ（`packages.nix`）とマシン固有モジュール |
 | [`ai-tools/`](ai-tools/README.md) | AI 関連 CLI を `buildNpmPackage` で固定して提供する子 flake |
 | [`claude/`](claude/README.md) | Claude Code の設定（CLAUDE.md、settings.json、hooks、skills、agents） |
-| `brew/` | Homebrew の管理リスト（`Brewfile` = CLI 例外 / `Brewfile.gui` = 常用 GUI / `Brewfile.gui.opt` = オプション GUI） |
+| `brew/` | Homebrew の管理リスト（`Brewfile` = CLI 例外 / `Brewfile.gui` = 常用 GUI / `Brewfile.gui.opt` = オプション GUI / `Brewfile.gui.work` = 業務用マシンの GUI） |
 | [`ahk/`](ahk/README.md) | Windows 用 AutoHotkey 設定 |
 | `fzf/`、`sheldon/`、`ghostty/`、`karabiner/`、`tmux.conf`、`vimrc` ほか | 各ツールの設定ファイル |
 
@@ -131,7 +131,7 @@ git pull
 .
 ├── install.sh              セットアップ用インストーラ（冪等）。各ディレクトリの install.sh を呼ぶ
 ├── flake.nix / flake.lock  home-manager の flake（system は aarch64-darwin 固定）
-├── brew/                   Homebrew の管理リスト（Brewfile / Brewfile.gui / Brewfile.gui.opt）
+├── brew/                   Homebrew の管理リスト（Brewfile / Brewfile.gui / Brewfile.gui.opt / Brewfile.gui.work）
 ├── nix/                    home-manager 設定（home.nix, common.nix, packages.nix, <machine>.nix）
 ├── ai-tools/               AI CLI ツールを固定する子 flake（buildNpmPackage）
 ├── zsh/                    $ZDOTDIR 配下の zsh 設定
@@ -166,7 +166,8 @@ git pull
 
   ```sh
   brew bundle --file=brew/Brewfile.gui
-  brew bundle --file=brew/Brewfile.gui.opt   # 必要なときだけ
+  brew bundle --file=brew/Brewfile.gui.opt    # 必要なときだけ
+  brew bundle --file=brew/Brewfile.gui.work   # 業務用マシンのみ
   ```
 
 - **Claude Code のプラグイン** — marketplace の登録までは `settings.json` の同期で入るが、プラグイン本体は自動インストールされない。起動時に表示される `claude plugin install <name>` を一度実行する
