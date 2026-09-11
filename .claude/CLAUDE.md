@@ -84,6 +84,7 @@
 - MCP サーバーをマシン間で共有するには `claude/mcp-servers.json` に書く。`merge_claude_mcp_servers` が `~/.claude.json` へ再帰マージする。マシン固有のサーバーや API キー等のマシン側追記キーは保持される。API キーの値は dotfiles 側に書かない
 - 仕組みの詳細は `claude/README.md`
 - `claude/hooks/block-dangerous.sh` を変更したら `sh tests/claude/block-dangerous_test.sh` を流す。止めるべきコマンドと通すべきコマンドの両方をケースにしてある
+- `claude/install.sh` の `install_external_skills` を変更したら `sh tests/claude/install-external-skills_test.sh` を流す。`gh` をスタブに差し替えて認証状態と導入の成否ごとの経路をケースにしてあり、ネットワークへは出ず実際の `~/.claude/` も触らない
 
 ### AI ツール環境（ai-tools）
 - ccusage / codegraph を Nix flake で提供する。パッケージング方式と更新手順は `ai-tools/CLAUDE.md`
