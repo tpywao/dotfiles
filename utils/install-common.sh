@@ -116,10 +116,58 @@ merge_config() {
 
   [ -f "$dst" ] || echo '{}' > "$dst"
   tmp="$dst.merging.$$"
-  if jq -s "$filter" "$dst" "$src" > "$tmp"; then
-    mv "$tmp" "$dst"
-    log_tag "$LOG_UNCHANGED" "[merged]" "$dst"
-  else
+  if ! jq -s "$filter" "$dst" "$src" > "$tmp"; then
     log_tag "$LOG_FAILED" "[failed]" "$dst (マージ失敗。$tmp を確認)"
+    return 0
   fi
+
+  # マージで消える配列要素を、結果を確定させる前に洗い出す。
+  #
+  # jq の `*` はオブジェクトだけを再帰マージし、配列は右辺（src）で置換する。
+  # dst 側にしか無い要素は黙って失われる。アプリがこのファイルへ書き込む値
+  # （Claude Code の「常に許可」など）が配列なら、次の install で消える。
+  #
+  # src と突き合わせるのではなくマージ結果と突き合わせるのは、呼び出し側が渡す
+  # フィルタが何をするかを検出側から知れないため。結果と比べれば、丸ごと差し替え
+  # のようなフィルタ固有の振る舞いも含めて実際に失われるものだけを拾える。
+  dropped=$(jq -r -s '
+    .[0] as $before | .[1] as $after
+    | [$before | paths(type == "array")]
+    | reduce .[] as $p ({reported: [], out: []};
+        # 親を報告したら子孫は報告しない（同じ消失を二重に出さない）
+        if (.reported | any(. as $r | $p[0:($r | length)] == $r)) then .
+        else
+          (($after | getpath($p)) as $a
+            | if ($a | type) == "array" then $a else [] end) as $kept
+          | (($before | getpath($p)) - $kept) as $lost
+          | if ($lost | length) > 0
+            then .reported += [$p] | .out += [{path: $p, lost: $lost}]
+            else . end
+        end)
+    | .out[]
+    | "#\(.lost | length) \(.path | map(tostring) | join("."))",
+      (.lost[] | tojson)
+  ' "$dst" "$tmp" 2> /dev/null)
+
+  if [ -n "$dropped" ]; then
+    backup="$dst.premerge.$(date +%Y%m%d-%H%M%S)"
+    cp -p "$dst" "$backup"
+    # `#<件数> <パス>` が見出し行、それ以外は失われる要素そのもの。
+    # 要素は tojson なので `#` で始まることはなく、見出しと衝突しない
+    printf '%s\n' "$dropped" | while IFS= read -r line; do
+      case "$line" in
+        '#'*)
+          rest=${line#\#}
+          log_tag "$LOG_CHANGED" "[dropped]" "$dst (${rest#* }: ${rest%% *} 件)"
+          ;;
+        *) printf '%12s%s\n' '' "$line" ;;
+      esac
+    done
+    log_tag "$LOG_CHANGED" "[backup]" "$dst -> $backup (マージ前の内容)"
+    printf '%12s恒久化: 残したい要素を %s に追記して再実行する\n' '' "$src"
+    printf '%12s復旧:   cp %s %s で戻す（dotfiles 側の更新も巻き戻る）\n' '' "$backup" "$dst"
+  fi
+
+  mv "$tmp" "$dst"
+  log_tag "$LOG_UNCHANGED" "[merged]" "$dst"
 }

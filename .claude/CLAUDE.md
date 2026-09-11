@@ -19,8 +19,9 @@
 - `utils/install-common.sh`: 各 `install.sh` が source する共通部（`link_config()`、`merge_config()`、`log_tag()` と `utils/utils.bash` の読み込み）
   - `link_config()` はリンクの有無だけでなく**リンク先**を検証し、違う先を指していれば張り替える。リンク先に実体があるときは、ファイルは内容が一致すれば置き換え・分岐していれば `.presymlink.<ts>` へ退避、ディレクトリは内容を比較せず常に退避する。親ディレクトリの作成も関数内で行うので、呼び出し側に `mkdir -p` は要らない
   - `merge_config <src> <dst> [<jq フィルタ>]` は JSON の共有キーだけを既存の設定へ上書き適用する（下の「アプリ自身が書き込む設定ファイル」を参照）。フィルタは `.[0]` を `dst`、`.[1]` を `src` として受け取り、既定は再帰マージ（`.[0] * .[1]`）
-  - `utils/install-common.sh` を変更したら `sh tests/utils/link-config_test.sh` と `sh tests/utils/merge-config_test.sh` を流す。前者はリンク先の状態ごとに 6 経路、後者は `dst` の状態とフィルタの有無で 9 ケースあり、出力タグ・マージ後の内容・退避の中身をケースにしてある
-- 出力の書式は 2 系統に分ける。**対象ごとの結果**は `log_tag <色> <[タグ]> <対象>` でタグ付き 1 行にする（`[linked]` / `[new]` / `[relinked]` / `[replaced]` / `[backup]` / `[merged]` / `[imported]` / `[current]` / `[applied]` / `[installed]` / `[skipped]` / `[unlinked]` / `[failed]`）。色はシアン=変化なし、緑=新規、黄=既存を動かした、赤=失敗。**対象を持たない進行ログ**（`-----> Switching home-manager` など）は `----->` のままにする
+    - マージ結果を確定させる前に「`dst` にあって結果に無い配列要素」を洗い出し、見つかれば `[dropped]` で列挙して `.premerge.<ts>` へ退避する。`src` と突き合わせるのではなく**マージ結果**と突き合わせるので、呼び出し側が渡すフィルタが何をするかに依存しない
+  - `utils/install-common.sh` を変更したら `sh tests/utils/link-config_test.sh` と `sh tests/utils/merge-config_test.sh` を流す。前者はリンク先の状態ごとに 6 経路、後者は `dst` の状態・フィルタの有無・配列要素の消失検出で 13 ケースあり、出力タグ・マージ後の内容・退避の中身をケースにしてある
+- 出力の書式は 2 系統に分ける。**対象ごとの結果**は `log_tag <色> <[タグ]> <対象>` でタグ付き 1 行にする（`[linked]` / `[new]` / `[relinked]` / `[replaced]` / `[dropped]` / `[backup]` / `[merged]` / `[imported]` / `[current]` / `[applied]` / `[installed]` / `[skipped]` / `[unlinked]` / `[failed]`）。色はシアン=変化なし、緑=新規、黄=既存を動かした、赤=失敗。**対象を持たない進行ログ**（`-----> Switching home-manager` など）は `----->` のままにする
 
 規約:
 
@@ -35,6 +36,10 @@
   - `claude/settings.json`: Claude Code が `model` / `effortLevel` / `autoMode` を書き込む。`hooks` だけは dotfiles を唯一の正として差し替えたいので、`merge_claude_settings` が `merge_config` へフィルタを渡す（`jq` の `*` は再帰マージだけで削除を表現できず、dotfiles 側で消した hook が既存の設定に残ってしまう）
   - `claude/mcp-servers.json`: 配布先は `~/.claude.json`（Claude Code がセッション状態やプロジェクト履歴を書き込む）。dotfiles 側はマシン間で共有したい `mcpServers` のエントリだけを持ち、フィルタは既定のまま（差し替えるとマシン固有のサーバーが消える）。dotfiles 側で消したサーバーは各マシンで `claude mcp remove` する
   - `docker/config.json`: Docker Desktop が `credsStore` / `currentContext` / `plugins` / `features` を書き込む。dotfiles 側が持つのは `detachKeys` だけで、フィルタは既定のまま
+  - **配列は再帰マージされず `src` の内容で置換される。** `jq` の `*` はオブジェクトだけを再帰マージするため、`dst` にしか無い配列要素は失われる。アプリが書き込む値が配列に入るキー（`permissions.allow` に「常に許可」で追加されたルールなど）がこれに該当する。`merge_config` は消える要素を確定前に洗い出して `[dropped]` で列挙し、マージ前の `dst` を `.premerge.<ts>` へ退避する。復旧の選択肢は 2 つ
+    - **恒久化**: 残したい要素を dotfiles 側の `src` に追記して再実行する。dotfiles 側が正なので全マシンへ配布される
+    - **その場の復旧**: `.premerge.<ts>` を `dst` へ戻す。ただし dotfiles 側の更新も巻き戻り、次の実行で再び `[dropped]` になる
+    - そのマシンだけで使いたい許可は、グローバルではなくプロジェクトの `.claude/settings.local.json` に置く（`merge_config` の対象外なので消えない）
   - `merge_config` は以前のバージョンが張った symlink を見つけたら、内容を実体へコピーし直してからマージする（リンクのまま書き込むと `src` を書き換えるため）。これらのファイルを新たに symlink 管理へ戻さないこと
 
 ## 作業時の注意事項
