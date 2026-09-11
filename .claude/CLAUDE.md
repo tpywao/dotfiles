@@ -4,7 +4,7 @@
 
 ## プロジェクト概要
 - **用途**: macOS + Linux 向けの個人用 dotfiles リポジトリ
-- **管理対象**: zsh, git, nix, Homebrew, karabiner, fzf など
+- **管理対象**: zsh, git, nix, Homebrew, karabiner, fzf, macOS のシステム設定 など
 
 ## インストーラの構成
 
@@ -12,16 +12,17 @@
 
 - ルートの `install.sh`: 専用ディレクトリを持たない設定（`vimrc`, `tmux.conf`, `screenrc`, `sqliterc`, `direnvrc`, `editorconfig`, bash 用の `bashrc` / `aliases.bash`）の symlink と、各ディレクトリの `install.sh` の実行
   - `editorconfig`（ドットなし）が `~/.editorconfig` へ配布する設定。`.editorconfig`（ドットあり）はこのリポジトリ自身に効かせる設定で、配布対象ではない
-- 各ディレクトリの `install.sh`（`git/`, `sheldon/`, `karabiner/`, `ghostty/`, `nix/`, `brew/`, `docker/`, `claude/`）: そのディレクトリに関する処理。ルートがこの順で実行する
+- 各ディレクトリの `install.sh`（`git/`, `sheldon/`, `karabiner/`, `ghostty/`, `macos/`, `nix/`, `brew/`, `docker/`, `claude/`）: そのディレクトリに関する処理。ルートがこの順で実行する
   - **順序の制約は「`nix/` より後に `docker/` と `claude/`」だけ。** この 2 つは設定を `jq` でマージし、`jq` は `nix/packages.nix` で入る（前に置くと jq が無いマシンの初回実行でマージがスキップされ、2 回目まで反映されない）。残りのディレクトリの順序に意味は無い
   - `docker/` と `claude/` の前で `nix-daemon.sh` を読み込む必要があるため、ループが 2 つに分かれている。**後半のループには制約のある 2 つだけを置く**（制約の無いものを混ぜると、そこにいる理由をコメントで説明できなくなる）
 - `zsh/install.sh` はループに入れず、`$SHELL` が zsh のときだけ case 分岐から実行する（`fish/`・bash 用のリンクも同じ分岐にある）
 - `utils/install-common.sh`: 各 `install.sh` が source する共通部（`link_config()`、`merge_config()`、`log_tag()`、`notice()` と `utils/utils.bash` の読み込み）
   - `link_config()` はリンクの有無だけでなく**リンク先**を検証し、違う先を指していれば張り替える。リンク先に実体があるときは、ファイルは内容が一致すれば置き換え・分岐していれば `.presymlink.<ts>` へ退避、ディレクトリは内容を比較せず常に退避する。親ディレクトリの作成も関数内で行うので、呼び出し側に `mkdir -p` は要らない
   - `merge_config <src> <dst> [<jq フィルタ>]` は JSON の共有キーだけを既存の設定へ上書き適用する（下の「アプリ自身が書き込む設定ファイル」を参照）。フィルタは `.[0]` を `dst`、`.[1]` を `src` として受け取り、既定は再帰マージ（`.[0] * .[1]`）
+    - マージ結果を確定させる前に「`dst` にあって結果に無い配列要素」を洗い出し、見つかれば `[dropped]` で列挙して `.premerge.<ts>` へ退避する。`src` と突き合わせるのではなく**マージ結果**と突き合わせるので、呼び出し側が渡すフィルタが何をするかに依存しない
   - `notice() <文言>` はインストール後にユーザ自身が実行しないと解決しない作業を積む。ルートの `install.sh` が受け皿の一時ファイルのパスを `DOTFILES_NOTICES` で渡し、全ディレクトリの実行後に `-----> TODO` としてまとめて表示する。サブプロセスから親へ値を返せないためファイルを経由する（各 `install.sh` を単体で実行したときは変数が無いので、その場で出力する）
-  - `utils/install-common.sh` を変更したら `sh tests/utils/link-config_test.sh` と `sh tests/utils/merge-config_test.sh` と `sh tests/utils/notice_test.sh` を流す。1 つ目はリンク先の状態ごとに 6 経路、2 つ目は `dst` の状態とフィルタの有無で 9 ケースあり、出力タグ・マージ後の内容・退避の中身をケースにしてある。3 つ目は `DOTFILES_NOTICES` の有無で出力先が分かれる経路をケースにしてある
-- 出力の書式は 3 系統に分ける。**対象ごとの結果**は `log_tag <色> <[タグ]> <対象>` でタグ付き 1 行にする（`[linked]` / `[new]` / `[relinked]` / `[replaced]` / `[backup]` / `[merged]` / `[installed]` / `[skipped]` / `[unlinked]` / `[failed]`）。色はシアン=変化なし、緑=新規、黄=既存を動かした、赤=失敗。**対象を持たない進行ログ**（`-----> Switching home-manager` など）は `----->` のままにする。**ユーザ自身がコマンドを打つまで解決しない作業**は `notice()` で末尾へ回す（タグ 1 行は出力が長いと流れてしまい、残タスクの提示には向かない）
+  - `utils/install-common.sh` を変更したら `sh tests/utils/link-config_test.sh` と `sh tests/utils/merge-config_test.sh` と `sh tests/utils/notice_test.sh` を流す。1 つ目はリンク先の状態ごとに 6 経路、2 つ目は `dst` の状態・フィルタの有無・配列要素の消失検出で 13 ケースあり、出力タグ・マージ後の内容・退避の中身をケースにしてある。3 つ目は `DOTFILES_NOTICES` の有無で出力先が分かれる経路をケースにしてある
+- 出力の書式は 3 系統に分ける。**対象ごとの結果**は `log_tag <色> <[タグ]> <対象>` でタグ付き 1 行にする（`[linked]` / `[new]` / `[relinked]` / `[replaced]` / `[dropped]` / `[backup]` / `[merged]` / `[imported]` / `[current]` / `[applied]` / `[installed]` / `[skipped]` / `[unlinked]` / `[failed]`）。色はシアン=変化なし、緑=新規、黄=既存を動かした、赤=失敗。**対象を持たない進行ログ**（`-----> Switching home-manager` など）は `----->` のままにする。**ユーザ自身がコマンドを打つまで解決しない作業**は `notice()` で末尾へ回す（タグ 1 行は出力が長いと流れてしまい、残タスクの提示には向かない）
 
 規約:
 
@@ -36,6 +37,10 @@
   - `claude/settings.json`: Claude Code が `model` / `effortLevel` / `autoMode` を書き込む。`hooks` だけは dotfiles を唯一の正として差し替えたいので、`merge_claude_settings` が `merge_config` へフィルタを渡す（`jq` の `*` は再帰マージだけで削除を表現できず、dotfiles 側で消した hook が既存の設定に残ってしまう）
   - `claude/mcp-servers.json`: 配布先は `~/.claude.json`（Claude Code がセッション状態やプロジェクト履歴を書き込む）。dotfiles 側はマシン間で共有したい `mcpServers` のエントリだけを持ち、フィルタは既定のまま（差し替えるとマシン固有のサーバーが消える）。dotfiles 側で消したサーバーは各マシンで `claude mcp remove` する
   - `docker/config.json`: Docker Desktop が `credsStore` / `currentContext` / `plugins` / `features` を書き込む。dotfiles 側が持つのは `detachKeys` だけで、フィルタは既定のまま
+  - **配列は再帰マージされず `src` の内容で置換される。** `jq` の `*` はオブジェクトだけを再帰マージするため、`dst` にしか無い配列要素は失われる。アプリが書き込む値が配列に入るキー（`permissions.allow` に「常に許可」で追加されたルールなど）がこれに該当する。`merge_config` は消える要素を確定前に洗い出して `[dropped]` で列挙し、マージ前の `dst` を `.premerge.<ts>` へ退避する。復旧の選択肢は 2 つ
+    - **恒久化**: 残したい要素を dotfiles 側の `src` に追記して再実行する。dotfiles 側が正なので全マシンへ配布される
+    - **その場の復旧**: `.premerge.<ts>` を `dst` へ戻す。ただし dotfiles 側の更新も巻き戻り、次の実行で再び `[dropped]` になる
+    - そのマシンだけで使いたい許可は、グローバルではなくプロジェクトの `.claude/settings.local.json` に置く（`merge_config` の対象外なので消えない）
   - `merge_config` は以前のバージョンが張った symlink を見つけたら、内容を実体へコピーし直してからマージする（リンクのまま書き込むと `src` を書き換えるため）。これらのファイルを新たに symlink 管理へ戻さないこと
 
 ## 作業時の注意事項
@@ -48,11 +53,13 @@
 コミットメッセージは `feat(component):` 形式で記述する。サブジェクトは日本語で書く。
 
 - `type`: 履歴で使われているのは `feat` / `fix` / `docs` / `chore` / `perf` / `refactor`
-- `component`: 変更対象の領域名。`claude` / `zsh` / `install` / `nix` / `ai-tools` / `ghostty` / `utils`
+- `component`: 変更対象の領域名。`claude` / `zsh` / `install` / `nix` / `ai-tools` / `ghostty` / `utils` / `macos`
 
-**main の履歴は PR タイトルから生成される（squash）。** このリポジトリは squash マージのみを許可し（`allow_merge_commit` / `allow_rebase_merge` はいずれも false）、squash コミットのタイトルは PR タイトルから生成される（`squash_merge_commit_title: PR_TITLE`）。そのためブランチ側のコミットメッセージは main の履歴に残らず、main の文面を決めるのは PR タイトルである。PR タイトルの形式は `pr-format` スキル（日本語1行・50 字以内・プレフィックスなし）が正本。
+**ブランチ側のコミットがそのまま main の履歴に残る。** このリポジトリが許可するのは merge commit だけで（`allow_merge_commit: true`、`allow_squash_merge` と `allow_rebase_merge` はいずれも false）、マージすると `Merge pull request #<n> from <ブランチ>` の merge commit（`merge_commit_title: MERGE_MESSAGE`）が積まれ、その下にブランチ側のコミットが並ぶ。PR タイトルは main の履歴には現れない。
 
-`feat(component):` 形式は、PR レビュー時にコミット単位で変更の目的を追うために維持する。main の履歴を Conventional Commits に揃えたい場合は、この CLAUDE.md ではなく `pr-format` スキル側の規約を変える必要がある。
+そのため main の履歴の読みやすさを決めるのはコミットメッセージである。`feat(component):` 形式とコミットの分割は、PR レビューでコミット単位に変更の目的を追うためだけでなく、後から履歴を辿るときにも効く。PR タイトルの形式は `pr-format` スキル（日本語1行・50 字以内・プレフィックスなし）が正本で、こちらは PR 一覧とレビュー時の見出しとして機能する。
+
+`(#112)` のように PR 番号がサブジェクト末尾に付いたコミットは squash マージ時代のもの。運用を切り替える前の履歴なので、新しいコミットで真似しない。
 
 ### 固有文言の禁止
 - このリポジトリに追加するファイル（skills, hooks, 設定, ドキュメント等）には、**マシン・個人・勤務先プロジェクトに固有の文言を書かない**
@@ -88,6 +95,14 @@
 
 ### AI ツール環境（ai-tools）
 - ccusage / codegraph を Nix flake で提供する。パッケージング方式と更新手順は `ai-tools/CLAUDE.md`
+
+### macOS システム設定（macos）
+- `macos/install.sh` が `defaults` でシステム設定を適用する。詳細は `macos/README.md`
+- **型は実機から読み取ったものをそのまま使う。** macOS は同じ意味のキーでもドメインごとに型を変えて書いており（トラックパッドの `Dragging` は内蔵が integer、Bluetooth が boolean）、揃えると元の状態を再現できない。型は `defaults export <ドメイン> - | plutil -convert xml1 -o - -` で確認する（`defaults read` では bool と int を区別できない）
+- **bool は `write_bool` を使う。** `defaults write -bool` が受け付けるのは `true/false/yes/no` だけで、`1` を渡すと usage を出して何も書かない。一方 `defaults read` は `1/0` を返すため、書き込みと比較で表記が違う
+- 値が入れ子の dict / array になるものは平文で書けないので plist から `defaults import` する（`symbolichotkeys.plist`、`input-sources.plist`）。**この 2 つは自動生成ファイル。** 手書きせず `macos/README.md` の生成コマンドを流す
+- **状態として書き換わる値は入れない**（Finder の `ShowSidebar` はサイドバーを開閉するたびに書き換わる）。追加前に時間を空けて 2 回 `defaults read` を取り、差分が出ないことを確かめる
+- `macos/install.sh` を変更したら `sh tests/macos/install_test.sh` を流す。`defaults` と `killall` をスタブに差し替えて実機の設定には触れず、1 回目に全 `write_*` 行が書き込むこと・2 回目に 1 件も書かないことをケースにしてある
 
 ## 保守性のルール
 1. 新しい dotfiles はインストーラに追加（対象ディレクトリの `install.sh`。無ければルートの `install.sh`）

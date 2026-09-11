@@ -39,7 +39,8 @@ CLI ツールは Nix で宣言的に、GUI アプリは Homebrew で管理し、
 | [`nix/`](nix/README.md) | home-manager の設定。共通パッケージ（`packages.nix`）とマシン固有モジュール |
 | [`ai-tools/`](ai-tools/README.md) | AI 関連 CLI を `buildNpmPackage` で固定して提供する子 flake |
 | [`claude/`](claude/README.md) | Claude Code の設定（CLAUDE.md、settings.json、hooks、skills、agents） |
-| `brew/` | Homebrew の管理リスト（`Brewfile` = CLI 例外 / `Brewfile.gui` = 常用 GUI / `Brewfile.gui.opt` = オプション GUI） |
+| `brew/` | Homebrew の管理リスト（`Brewfile` = CLI 例外 / `Brewfile.gui` = 常用 GUI / `Brewfile.gui.opt` = オプション GUI / `Brewfile.gui.work` = 業務用マシンの GUI） |
+| [`macos/`](macos/README.md) | macOS のシステム設定（`defaults`。Dock / Finder / 外観 / トラックパッド / キーボード / ショートカット） |
 | [`ahk/`](ahk/README.md) | Windows 用 AutoHotkey 設定 |
 | `fzf/`、`sheldon/`、`ghostty/`、`karabiner/`、`tmux.conf`、`vimrc` ほか | 各ツールの設定ファイル |
 
@@ -89,7 +90,7 @@ clone 先は任意の場所でよい。`install.sh` は自身の位置から `$D
 
 1. シェル別の symlink（zsh なら `zsh/install.sh` が `~/.zshenv`、fish なら `~/.config/fish`、bash なら `~/.bashrc`）
 2. リポジトリ直下の設定を symlink（editorconfig / vim / tmux / screen / sqlite / direnv / fzf）
-3. `git/` `sheldon/` `karabiner/` `ghostty/` の各 `install.sh`（Karabiner-Elements と Ghostty は macOS のみ）
+3. `git/` `sheldon/` `karabiner/` `ghostty/` `macos/` の各 `install.sh`（Karabiner-Elements・Ghostty・`macos/` の system defaults は macOS のみ）
 4. `nix/install.sh` — nix.conf をリンク。Nix が無ければインストールを確認 → `DOTFILES_MACHINE` を解決 → `home-manager switch --flake "$DOTFILES#$DOTFILES_MACHINE" --impure`
 5. `brew/install.sh` — Homebrew が無ければインストールを確認 → `brew bundle --file=brew/Brewfile`
 6. `docker/install.sh` — `docker/config.json` の共有キーを `jq` で `~/.docker/config.json` へマージ（このファイルはリンクしない）
@@ -131,7 +132,7 @@ git pull
 .
 ├── install.sh              セットアップ用インストーラ（冪等）。各ディレクトリの install.sh を呼ぶ
 ├── flake.nix / flake.lock  home-manager の flake（system は aarch64-darwin 固定）
-├── brew/                   Homebrew の管理リスト（Brewfile / Brewfile.gui / Brewfile.gui.opt）
+├── brew/                   Homebrew の管理リスト（Brewfile / Brewfile.gui / Brewfile.gui.opt / Brewfile.gui.work）
 ├── nix/                    home-manager 設定（home.nix, common.nix, packages.nix, <machine>.nix）
 ├── ai-tools/               AI CLI ツールを固定する子 flake（buildNpmPackage）
 ├── zsh/                    $ZDOTDIR 配下の zsh 設定
@@ -142,6 +143,7 @@ git pull
 ├── sheldon/                zsh プラグイン定義（plugins.toml）
 ├── ghostty/                Ghostty の設定（macOS）
 ├── karabiner/              Karabiner-Elements の complex modifications（薙刀式・macOS）
+├── macos/                  macOS のシステム設定（defaults・macOS）
 ├── ahk/                    Windows 用 AutoHotkey 設定
 ├── utils/                  シェル共通のユーティリティ（OS 判定関数、インストーラ共通部）
 ├── docker/                 Docker CLI の config.json
@@ -166,7 +168,8 @@ git pull
 
   ```sh
   brew bundle --file=brew/Brewfile.gui
-  brew bundle --file=brew/Brewfile.gui.opt   # 必要なときだけ
+  brew bundle --file=brew/Brewfile.gui.opt    # 必要なときだけ
+  brew bundle --file=brew/Brewfile.gui.work   # 業務用マシンのみ
   ```
 
 - **Claude Code のプラグイン** — marketplace の登録までは `settings.json` の同期で入るが、プラグイン本体は自動インストールされない。起動時に表示される `claude plugin install <name>` を一度実行する
