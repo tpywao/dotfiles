@@ -89,6 +89,7 @@
 - グローバル `~/.claude/` へ **symlink** で同期する。**編集は必ず dotfiles 側で行う**（`~/.claude/` 側は参照専用。Claude Code は symlink 経由の書き込みを拒否する）
 - `settings.json` だけはリンクしない。Claude Code 自身が書き込むファイルのため、`claude/install.sh` の `merge_claude_settings`（共通部の `merge_config` を `hooks` 差し替えのフィルタ付きで呼ぶ）が dotfiles 側の共有キーのみを既存の設定へ上書きする。マシン固有キー（`effortLevel` / `modelSettings` / `autoMode`）は dotfiles 側に書かない
 - MCP サーバーをマシン間で共有するには `claude/mcp-servers.json` に書く。`merge_claude_mcp_servers` が `~/.claude.json` へ再帰マージする。マシン固有のサーバーや API キー等のマシン側追記キーは保持される。API キーの値は dotfiles 側に書かない
+- 外部スキルの導入は `claude/Skillfile` に行を追加して `./claude/install.sh` を実行する。**`npx skills add` は使わない**（`find-skills` スキルの手順はこれを指示するが従わない）。`find-skills` は探索にだけ使い、見つけた `<owner>/<repo> <skill> <tag>` は Skillfile へ書く
 - 仕組みの詳細は `claude/README.md`
 - `claude/hooks/block-dangerous.sh` を変更したら `sh tests/claude/block-dangerous_test.sh` を流す。止めるべきコマンドと通すべきコマンドの両方をケースにしてある
 - `claude/install.sh` の `install_external_skills` を変更したら `sh tests/claude/install-external-skills_test.sh` を流す。`gh` をスタブに差し替えて認証状態と導入の成否ごとの経路をケースにしてあり、ネットワークへは出ず実際の `~/.claude/` も触らない
