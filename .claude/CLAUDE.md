@@ -16,11 +16,12 @@
   - **順序の制約は「`nix/` より後に `docker/` と `claude/`」だけ。** この 2 つは設定を `jq` でマージし、`jq` は `nix/packages.nix` で入る（前に置くと jq が無いマシンの初回実行でマージがスキップされ、2 回目まで反映されない）。残りのディレクトリの順序に意味は無い
   - `docker/` と `claude/` の前で `nix-daemon.sh` を読み込む必要があるため、ループが 2 つに分かれている。**後半のループには制約のある 2 つだけを置く**（制約の無いものを混ぜると、そこにいる理由をコメントで説明できなくなる）
 - `zsh/install.sh` はループに入れず、`$SHELL` が zsh のときだけ case 分岐から実行する（`fish/`・bash 用のリンクも同じ分岐にある）
-- `utils/install-common.sh`: 各 `install.sh` が source する共通部（`link_config()`、`merge_config()`、`log_tag()` と `utils/utils.bash` の読み込み）
+- `utils/install-common.sh`: 各 `install.sh` が source する共通部（`link_config()`、`merge_config()`、`log_tag()`、`notice()` と `utils/utils.bash` の読み込み）
   - `link_config()` はリンクの有無だけでなく**リンク先**を検証し、違う先を指していれば張り替える。リンク先に実体があるときは、ファイルは内容が一致すれば置き換え・分岐していれば `.presymlink.<ts>` へ退避、ディレクトリは内容を比較せず常に退避する。親ディレクトリの作成も関数内で行うので、呼び出し側に `mkdir -p` は要らない
   - `merge_config <src> <dst> [<jq フィルタ>]` は JSON の共有キーだけを既存の設定へ上書き適用する（下の「アプリ自身が書き込む設定ファイル」を参照）。フィルタは `.[0]` を `dst`、`.[1]` を `src` として受け取り、既定は再帰マージ（`.[0] * .[1]`）
-  - `utils/install-common.sh` を変更したら `sh tests/utils/link-config_test.sh` と `sh tests/utils/merge-config_test.sh` を流す。前者はリンク先の状態ごとに 6 経路、後者は `dst` の状態とフィルタの有無で 9 ケースあり、出力タグ・マージ後の内容・退避の中身をケースにしてある
-- 出力の書式は 2 系統に分ける。**対象ごとの結果**は `log_tag <色> <[タグ]> <対象>` でタグ付き 1 行にする（`[linked]` / `[new]` / `[relinked]` / `[replaced]` / `[backup]` / `[merged]` / `[installed]` / `[skipped]` / `[unlinked]` / `[failed]`）。色はシアン=変化なし、緑=新規、黄=既存を動かした、赤=失敗。**対象を持たない進行ログ**（`-----> Switching home-manager` など）は `----->` のままにする
+  - `notice() <文言>` はインストール後にユーザ自身が実行しないと解決しない作業を積む。ルートの `install.sh` が受け皿の一時ファイルのパスを `DOTFILES_NOTICES` で渡し、全ディレクトリの実行後に `-----> TODO` としてまとめて表示する。サブプロセスから親へ値を返せないためファイルを経由する（各 `install.sh` を単体で実行したときは変数が無いので、その場で出力する）
+  - `utils/install-common.sh` を変更したら `sh tests/utils/link-config_test.sh` と `sh tests/utils/merge-config_test.sh` と `sh tests/utils/notice_test.sh` を流す。1 つ目はリンク先の状態ごとに 6 経路、2 つ目は `dst` の状態とフィルタの有無で 9 ケースあり、出力タグ・マージ後の内容・退避の中身をケースにしてある。3 つ目は `DOTFILES_NOTICES` の有無で出力先が分かれる経路をケースにしてある
+- 出力の書式は 3 系統に分ける。**対象ごとの結果**は `log_tag <色> <[タグ]> <対象>` でタグ付き 1 行にする（`[linked]` / `[new]` / `[relinked]` / `[replaced]` / `[backup]` / `[merged]` / `[installed]` / `[skipped]` / `[unlinked]` / `[failed]`）。色はシアン=変化なし、緑=新規、黄=既存を動かした、赤=失敗。**対象を持たない進行ログ**（`-----> Switching home-manager` など）は `----->` のままにする。**ユーザ自身がコマンドを打つまで解決しない作業**は `notice()` で末尾へ回す（タグ 1 行は出力が長いと流れてしまい、残タスクの提示には向かない）
 
 規約:
 

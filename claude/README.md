@@ -96,6 +96,8 @@ MCP サーバーの登録先 `~/.claude.json` は、Claude Code 自身がセッ�
 
 - バージョンは `Skillfile` の pin（タグ）で固定する。どのマシンでも同じ版が入ることは pin が保証する。スキルの実体は git 管理外なので、更新しても diff レビューは発生しない（内容を確認したいときは pin を上げる前に `gh skill preview <owner>/<repo> <skill>` か上流の compare を読む）
 - pin されたスキルは `gh skill update` の対象外（gh の仕様。update を実行すると notice 付きでスキップされる）。うっかり `--unpin` などで導入済みの版が pin とずれても、`claude/install.sh` が SKILL.md frontmatter の `github-ref` と pin を突き合わせて入れ直すため、次回の `./install.sh` 実行時に `Skillfile` の pin の版へ戻る
+- 導入には `gh` の認証が要る。未認証でも `gh skill install` は動くが、GitHub API の未認証レート制限（IP 単位で 60 req/h）にすぐ当たる。スキル 1 つにつきファイル数だけ blob を引くため、1 つ導入し終える前に 403 になり不完全なスキルが残る。`install_external_skills` は `gh auth token` で未認証を検出したら導入を丸ごと飛ばし、`notice()` で `gh auth login` を末尾に案内する
+- 導入に失敗したときは `~/.claude/skills/<skill>/SKILL.md` を消してから `[failed]` を出す。`gh skill install` は途中で落ちても SKILL.md だけは書いていることがあり、残すと frontmatter の `github-ref` が pin と一致して次回以降「導入済み」と判定され、壊れたスキルが固定されるため。消せば次回 `--force` で入り直し、それまでの間 Claude Code に読み込まれることもなくなる
 - インストーラは `gh skill` に一本化する。`npx skills` は使わない（pin・メタデータの仕組みが gh skill と別系統になるため）。`npx skills` は実体を `~/.agents/skills/`（store）に置き、各エージェントのスキルディレクトリからそこへディレクトリ symlink を張る方式。過去に導入した分の store と他エージェント向け symlink は他ツールが参照している可能性があるため触らないが、`~/.claude/skills/<name>` へ張られたディレクトリ symlink だけは `install_external_skills` が除去する（残したまま gh skill install すると、symlink を辿って store 側の実体を書き換えかねないため）
 - 外部スキルは `~/.claude/skills/` 側の実ファイルであり dotfiles の symlink 同期対象外。手編集しない（版が pin とずれたと判定された時点で `claude/install.sh` が入れ直し、編集が上書きされて消える）。カスタムしたい場合は別名の自作スキルとして dotfiles 側に fork する
 
