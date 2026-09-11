@@ -3,6 +3,10 @@
 # 形式: <owner>/<repo> <skill> <pin>
 # pin には上流のリリースタグを書く。更新するときは該当行の pin を新しいタグへ
 # 書き換えてから ./install.sh を実行する。
+# skill には名前の代わりにリポジトリ内のパスも書ける。隠しディレクトリ
+# （.agents/skills/ や .claude/skills/）配下のスキルは名前では解決できないため、
+# SKILL.md までのパスで指定する。
 tt-a1i/archify archify v2.16.0
 vercel-labs/skills find-skills v1.5.23
 github/gh-stack gh-stack v0.1.1
+bamboo-nova/meiseki .agents/skills/meiseki/SKILL.md v0.5.0

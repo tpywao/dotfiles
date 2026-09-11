@@ -94,7 +94,12 @@ install_external_skills() {
   fi
   while read -r repo skill pin; do
     case "$repo" in ''|\#*) continue ;; esac
-    dst="$HOME/.claude/skills/$skill"
+    # skill 列にはリポジトリ内のパスも入る（隠しディレクトリ配下のスキルは
+    # 名前で解決できず、SKILL.md までのパス指定でしか掴めない）。導入先の
+    # ディレクトリ名はパスの末尾要素になるため、そこを取り出して照合に使う
+    name=${skill%/SKILL.md}
+    name=${name##*/}
+    dst="$HOME/.claude/skills/$name"
     # 別の skill インストーラ（npx skills 等）が自前 store へのディレクトリ symlink を
     # 張っていることがある。残したまま gh skill install すると symlink を辿って
     # 別ツールの store を書き換えかねないため、先に symlink 自体を外す（store は残る）
@@ -104,7 +109,7 @@ install_external_skills() {
     fi
     current=$(sed -n 's|.*github-ref: *refs/tags/||p' "$dst/SKILL.md" 2>/dev/null | head -n 1)
     if [ "$current" = "$pin" ]; then
-      printf "\033[0;36m[installed]\033[0m %s %s\n" "$skill" "$pin"
+      printf "\033[0;36m[installed]\033[0m %s %s\n" "$name" "$pin"
       continue
     fi
     gh skill install "$repo" "$skill" --pin "$pin" --dir "$HOME/.claude/skills" --force
