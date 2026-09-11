@@ -52,11 +52,13 @@
 コミットメッセージは `feat(component):` 形式で記述する。サブジェクトは日本語で書く。
 
 - `type`: 履歴で使われているのは `feat` / `fix` / `docs` / `chore` / `perf` / `refactor`
-- `component`: 変更対象の領域名。`claude` / `zsh` / `install` / `nix` / `ai-tools` / `ghostty` / `utils`
+- `component`: 変更対象の領域名。`claude` / `zsh` / `install` / `nix` / `ai-tools` / `ghostty` / `utils` / `macos`
 
-**main の履歴は PR タイトルから生成される（squash）。** このリポジトリは squash マージのみを許可し（`allow_merge_commit` / `allow_rebase_merge` はいずれも false）、squash コミットのタイトルは PR タイトルから生成される（`squash_merge_commit_title: PR_TITLE`）。そのためブランチ側のコミットメッセージは main の履歴に残らず、main の文面を決めるのは PR タイトルである。PR タイトルの形式は `pr-format` スキル（日本語1行・50 字以内・プレフィックスなし）が正本。
+**ブランチ側のコミットがそのまま main の履歴に残る。** このリポジトリが許可するのは merge commit だけで（`allow_merge_commit: true`、`allow_squash_merge` と `allow_rebase_merge` はいずれも false）、マージすると `Merge pull request #<n> from <ブランチ>` の merge commit（`merge_commit_title: MERGE_MESSAGE`）が積まれ、その下にブランチ側のコミットが並ぶ。PR タイトルは main の履歴には現れない。
 
-`feat(component):` 形式は、PR レビュー時にコミット単位で変更の目的を追うために維持する。main の履歴を Conventional Commits に揃えたい場合は、この CLAUDE.md ではなく `pr-format` スキル側の規約を変える必要がある。
+そのため main の履歴の読みやすさを決めるのはコミットメッセージである。`feat(component):` 形式とコミットの分割は、PR レビューでコミット単位に変更の目的を追うためだけでなく、後から履歴を辿るときにも効く。PR タイトルの形式は `pr-format` スキル（日本語1行・50 字以内・プレフィックスなし）が正本で、こちらは PR 一覧とレビュー時の見出しとして機能する。
+
+`(#112)` のように PR 番号がサブジェクト末尾に付いたコミットは squash マージ時代のもの。運用を切り替える前の履歴なので、新しいコミットで真似しない。
 
 ### 固有文言の禁止
 - このリポジトリに追加するファイル（skills, hooks, 設定, ドキュメント等）には、**マシン・個人・勤務先プロジェクトに固有の文言を書かない**
