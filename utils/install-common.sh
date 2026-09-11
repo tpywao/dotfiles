@@ -29,6 +29,21 @@ log_tag() {
   printf "\033[0;%sm%-11s\033[0m %s\n" "$color" "$tag" "$*"
 }
 
+# インストール後にユーザ自身が実行しないと解決しない作業を末尾へまとめる。
+# log_tag の 1 行は出力が長いと流れて気づけないため、コマンドを打つまで残る
+# TODO だけは対象ごとの結果から切り離す。
+#
+# ルートの install.sh が DOTFILES_NOTICES にファイルのパスを export している
+# ときはそこへ溜め、全ディレクトリの実行後にまとめて表示される。各 install.sh を
+# 単体で実行したときは export されていないので、その場で出す。
+notice() {
+  if [ -n "$DOTFILES_NOTICES" ]; then
+    printf '%s\n' "$*" >> "$DOTFILES_NOTICES"
+  else
+    printf '\n%s\n' "$*"
+  fi
+}
+
 # 設定ファイル/ディレクトリを symlink で配置する。親ディレクトリは自動で作る。
 #
 # リンクの有無だけでなく**リンク先**を検証する。リンク先を見ない実装では、

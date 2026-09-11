@@ -3,6 +3,14 @@ DOTFILES=$(cd "$(dirname "$0")" && pwd -P)
 . "$DOTFILES/utils/install-common.sh"
 shell=${1:-$SHELL}
 
+# 各 install.sh が notice() で積む「ユーザ自身がやる作業」の受け皿。サブプロセス
+# から親へ値は返せないため、ファイルを経由して集める
+DOTFILES_NOTICES=$(mktemp)
+export DOTFILES_NOTICES
+# 各ディレクトリの install.sh が失敗するとループの途中で exit するため、末尾に
+# 後始末を置くと消し漏れる。経路を問わず片付くよう trap に寄せる
+trap '/bin/rm -f -- "$DOTFILES_NOTICES"' EXIT
+
 case $shell in
   *fish )
     # fish/ はディレクトリごと ~/.config/fish へリンクするため、fish/install.sh を
@@ -49,3 +57,9 @@ done
 # 再実行のたびにシェルが入れ子になる
 echo ""
 echo "-----> Done. Open a new shell to load the new configuration."
+
+if [ -s "$DOTFILES_NOTICES" ]; then
+  echo ""
+  echo "-----> TODO"
+  cat "$DOTFILES_NOTICES"
+fi

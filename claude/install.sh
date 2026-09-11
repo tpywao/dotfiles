@@ -60,9 +60,22 @@ merge_claude_mcp_servers() {
 # frontmatter の github-ref）が pin と食い違う場合も入れ直す（マニフェスト側が正）。
 install_external_skills() {
   manifest="$DOTFILES/claude/Skillfile"
+  failed=
   [ -f "$manifest" ] || return 0
   if ! command -v gh > /dev/null 2>&1; then
     log_tag "$LOG_CHANGED" "[skipped]" "外部スキルの導入 (gh が無い)"
+    return 0
+  fi
+  # 未認証でも gh skill install は動くが、GitHub API の未認証レート制限
+  # (IP 単位で 60 req/h) にすぐ当たる。スキル 1 つにつきファイル数だけ blob を
+  # 引くため 1 つ導入する前に 403 になり、不完全なスキルが残る。
+  # status ではなく token で見るのは、毎回の実行でネットワーク往復させないため
+  # (失効したトークンは install の失敗として扱われる)
+  if ! gh auth token > /dev/null 2>&1; then
+    log_tag "$LOG_CHANGED" "[skipped]" "外部スキルの導入 (gh が未認証)"
+    notice "外部スキルを導入していない。gh の認証後に再実行する:
+  gh auth login
+  ./claude/install.sh"
     return 0
   fi
   while read -r repo skill pin; do
@@ -80,8 +93,21 @@ install_external_skills() {
       log_tag "$LOG_UNCHANGED" "[installed]" "$skill $pin"
       continue
     fi
-    gh skill install "$repo" "$skill" --pin "$pin" --dir "$HOME/.claude/skills" --force
+    if gh skill install "$repo" "$skill" --pin "$pin" --dir "$HOME/.claude/skills" --force; then
+      log_tag "$LOG_CREATED" "[installed]" "$skill $pin"
+    else
+      # 途中で落ちても SKILL.md だけは書かれていることがある。残すと上の pin
+      # 判定が一致して次回以降スキップされ、壊れたスキルが固定される。
+      # 消せば --force で入り直し、Claude Code が読み込むこともなくなる
+      /bin/rm -f -- "$dst/SKILL.md"
+      log_tag "$LOG_FAILED" "[failed]" "$skill $pin"
+      failed=1
+    fi
   done < "$manifest"
+  if [ -n "$failed" ]; then
+    notice "導入に失敗した外部スキルがある。次を実行して入れ直す:
+  ./claude/install.sh"
+  fi
 }
 
 if ! command -v claude > /dev/null 2>&1; then
