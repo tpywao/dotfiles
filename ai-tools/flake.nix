@@ -36,7 +36,7 @@
             ];
           };
 
-          npmDepsHash = "sha256-z9L11eszmhKAIRBkE8YlRX2TyfeMFWKh4u7NwgkMlh8=";
+          npmDepsHash = "sha256-XtwwX4O2idiBIGj6tsy5XAr7ME+hrVIXsMfh2ae2+10=";
           # fetcher 形式を明示(lockfile 更新時は npmDepsHash と合わせて再計算)
           npmDepsFetcherVersion = 2;
 
@@ -58,7 +58,7 @@
             # 実行時 chmod が EPERM になるため、ビルド時に付与する
             chmod +x $out/lib/node_modules/@ccusage/ccusage-*/bin/*
 
-            for tool in ccusage codegraph; do
+            for tool in ccusage codegraph textlint; do
               makeWrapper "$out/lib/node_modules/.bin/$tool" "$out/bin/$tool" \
                 --prefix PATH : "${pkgs.nodejs}/bin"
             done
