@@ -71,7 +71,6 @@ MCP サーバーの登録先 `~/.claude.json` は、Claude Code 自身がセッ�
 | `claude-env-audit` | Claude Code 環境の定期監査 |
 | `claude-learn` | 会話で得た学びをメモリ / CLAUDE.md / スキルへ反映 |
 | `complexity` | 計算量を O 記法で解析・比較 |
-| `create-ticket` | Backlog にチケット起票 |
 | `daily-recap` | 特定日の作業サマリ |
 | `def` | Backlog チケットから実装方針をまとめる |
 | `fix-tests` | Django テストを緑になるまで修正する反復ループ |
