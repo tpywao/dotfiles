@@ -129,6 +129,16 @@ PR も同じ基準で分ける。障害対応・性能改善・リファクタ�
 
 Bash ツールの cwd は呼び出しごとにリセットされるため、`cd` は毎回のコマンドに含める。
 
+### worktree に隔離されたセッションでは複合コマンドを分割する
+
+worktree セッションでは、Bash ツールが「そのコマンドが worktree の外の git を触らないこと」を実行前に検証する。検証できない形は拒否される。次のような形が該当する。
+
+- 実行時に決まる値（変数・コマンド置換）を後続のコマンドへ渡す: `CID=$(docker run -d ...); docker stop "$CID"`
+- 変数で移動してから実行する: `cd "$D" && ls ...`
+- 長い式を引数へ埋め込む: `nix build --expr '(builtins.getFlake (toString ...))'`
+
+拒否されたら、値を確定させる回と使う回に分けて、プレーンな単一コマンドにする。**git と無関係なコマンド（docker / nix など）でも形が複雑なら拒否される**ので、最初から分けて書くほうが速い。
+
 ### sed のインプレース編集は -i.bak を使う
 
 `sed -i '' 'script' file`（BSD sed の空 suffix 形式）は Bash ツール経由では通らない。空文字列の引数が欠落し、script がファイル名として扱われて `sed: can't read <script>: No such file or directory` になる。script の内容とは無関係で、`/a/d` のような単純なものでも再現する。
