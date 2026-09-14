@@ -73,7 +73,6 @@ MCP サーバーの登録先 `~/.claude.json` は、Claude Code 自身がセッ�
 | `complexity` | 計算量を O 記法で解析・比較 |
 | `daily-recap` | 特定日の作業サマリ |
 | `def` | Backlog チケットから実装方針をまとめる |
-| `fix-tests` | Django テストを緑になるまで修正する反復ループ |
 | `impl` | チケット ID から feature ブランチを作って実装開始 |
 | `mb-reorder-params` | Metabase カードのパラメータ並び替え |
 | `pr-format` | PR タイトル・本文のフォーマット |
