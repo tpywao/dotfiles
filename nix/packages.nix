@@ -58,6 +58,18 @@ pkgs: with pkgs; [
   pkg-config
   openldap
 
+  # Container
+  # daemon の供給元は Docker Desktop ではなく colima にする。Docker Desktop は
+  # Linux VM に加えて Electron の管理画面と常駐サービスを抱えるため、コンテナを
+  # 動かしていない間もその分のメモリを占める。colima は GUI を持たず、VM も
+  # 使うときだけ手動で起動する。商用利用が無償（MIT）な点も条件に入る。
+  #
+  # daemon は colima が立てる VM の中で動くので、ホスト側には CLI だけ入れる。
+  # compose と buildx は docker-client がプラグインとして同梱するため、
+  # 別途 docker-compose / docker-buildx を並べる必要はない。
+  colima
+  docker-client  # docker CLI（daemon は含まない）
+
   # Node.js ecosystem
   nodejs
   devcontainer
