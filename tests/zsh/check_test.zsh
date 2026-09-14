@@ -85,10 +85,17 @@ cat > "$tmp/repo/flake.lock" <<'LOCK'
 LOCK
 
 # スタブ。呼び出し引数を 1 行 1 回で記録し、STUB_REV を rev として返す。
+# STUB_EMPTY_FOR に指定したオプションを含む呼び出しだけは空を返す。branch を
+# 引いて空だったときに tag へフォールバックする経路を再現するため。
 mkdir -p "$tmp/bin"
 cat > "$tmp/bin/git" <<'STUB'
 #! /bin/sh
 printf '%s\n' "$*" >> "$STUB_CALLS"
+if [ -n "$STUB_EMPTY_FOR" ]; then
+  case " $* " in
+    *" $STUB_EMPTY_FOR "*) exit 0 ;;
+  esac
+fi
 [ -n "$STUB_REV" ] || exit 0
 printf '%s\trefs/heads/stub\n' "$STUB_REV"
 STUB
@@ -104,6 +111,7 @@ DOTFILES_CHECK_NO_AUTORUN=1 source "$DOTFILES/zsh/check.zsh"
 # --- ケース1: locked と remote が同一 → 更新なし。問い合わせは dedupe される ---
 : > "$STUB_CALLS"
 export STUB_REV=aaa
+export STUB_EMPTY_FOR=
 out=$(_dotfiles_check_nix_upstream_daily "$tmp/repo")
 
 assert_eq "" "$out" "同一 rev なら出力なし"
@@ -134,6 +142,40 @@ assert_eq "" "$out" "remote が取れないときは報告しない"
 out=$(_dotfiles_check_nix_upstream_daily "$tmp/missing")
 assert_eq "" "$out" "flake.lock がなければ出力なし"
 assert_eq 0 "$(grep -c . "$STUB_CALLS")" "flake.lock がなければ呼び出しなし"
+
+# --- ケース5: daily 群はバックグラウンドで走り、結果を次回表示用に書き出す ---
+# ここから先は各 daily 関数をスタブへ差し替えるので、上のケースより後に置く。
+_dotfiles_check_nix_daily()          { print -r -- "nix     → dummy-nix" }
+_dotfiles_check_nix_upstream_daily() { return }
+_dotfiles_check_sheldon_daily()      { print -r -- "sheldon → dummy-sheldon" }
+_dotfiles_check_brew_daily()         { return }
+
+mkdir -p "$tmp/cache"
+_dotfiles_check_daily_async "$tmp/repo" "$tmp/cache" 2026-09-11
+result=$(cat "$tmp/cache/dotfiles-check-result" 2>/dev/null)
+
+assert_contains "2026-09-11" "$result" "いつ走ったチェックか分かる"
+assert_contains "nix-upstream" "$result" "遅いチェックの名前が残る"
+assert_contains "sheldon" "$result" "全チェックの名前が残る"
+assert_contains "brew" "$result" "結果を返さないチェックも名前が残る"
+assert_contains "ms" "$result" "所要時間が残る"
+assert_contains "dummy-nix" "$result" "更新メッセージを引き継ぐ"
+assert_contains "dummy-sheldon" "$result" "複数の更新メッセージを引き継ぐ"
+
+# cache の日付は同日の重複起動を防ぐため呼び出し側が先に書く。async 側では書かない
+assert_eq "1" "$([[ -f "$tmp/cache/dotfiles-check-date" ]] && print 0 || print 1)" \
+  "日付ファイルは async 側では書かない"
+
+# --- ケース6: 更新が無ければ「更新が必要」を書かない ---
+_dotfiles_check_nix_daily()     { return }
+_dotfiles_check_sheldon_daily() { return }
+
+rm -f "$tmp/cache/dotfiles-check-result"
+_dotfiles_check_daily_async "$tmp/repo" "$tmp/cache" 2026-09-11
+result=$(cat "$tmp/cache/dotfiles-check-result" 2>/dev/null)
+
+assert_contains "nix-upstream" "$result" "更新が無くても所要時間は残す"
+assert_not_contains "更新が必要" "$result" "更新が無ければ見出しを出さない"
 
 printf '\n%d passed, %d failed\n' "$pass_count" "$fail_count"
 [[ $fail_count -eq 0 ]]

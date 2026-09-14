@@ -31,8 +31,8 @@ zsh の設定一式。`~/.zshenv` をこのディレクトリの `.zshenv` へ�
 | `abbr.zsh` | zsh-abbr の略語定義（`g`→`git`、`hms`→home-manager switch など）。`ABBR_USER_ABBREVIATIONS_FILE` として zsh-abbr が直接読む |
 | `aliases.zsh` | alias と小物関数。eza/bat への置き換え、`mkcd`、ファイルパスを許容する `cd` ラッパー、グローバルエイリアス（`L`, `G`, `C` など）、WSL/Linux のクリップボード |
 | `keybinds.zsh` | キーバインドの集約先（emacs ベース）。fzf ウィジェットや zsh-abbr 展開のバインドもここに置く |
-| `check.zsh` | シェル起動時の更新チェック。sheldon/brew は週次で自動更新チェック、nix（flake.lock と home-manager profile の差・上流の新コミット）・sheldon・brew の要更新通知は日次 |
-| `load-log.zsh` | `_load_begin` / `_load_end`。対話シェルでのみ、各初期化ブロックの読み込み時間をログ出力する |
+| `check.zsh` | シェル起動時の更新チェック。sheldon/brew は週次で自動更新チェック（同期・進行ログあり）、nix（flake.lock と home-manager profile の差・上流の新コミット）・sheldon・brew の要更新通知は日次（バックグラウンド実行。所要時間と結果は次回の起動で表示する） |
+| `load-log.zsh` | `_load_begin` / `_load_end`。対話シェルでのみ、各初期化ブロックの所要時間をログ出力する。第 2・第 3 引数で表示語を差し替えられる（既定は `loading` / `loaded`） |
 | `mac.zsh` | macOS 専用。Homebrew shellenv・site-functions、iTerm2 shell integration |
 | `wsl.zsh` | WSL 専用。`open` コマンドの Windows 連携 |
 | `langs/` | 言語ごとの環境設定。現在 source しているのは `rust.zsh` のみで、`ruby.zsh`（rbenv）・`python.zsh`（pyenv）・`go.zsh` は `.zshrc` でコメントアウト中 |
