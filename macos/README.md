@@ -82,6 +82,26 @@ Finder の `ShowSidebar` は入れていない。サイドバーの表示/非表
 - **ロック画面のパスワード要求**: `sysadminctl -screenLock immediate -password <パスワード>`。対話でパスワードを求められるためスクリプト化できない。現在値は `sysadminctl -screenLock status` で確認する
 - **Dock に並べるアプリ**: `persistent-apps` は絶対パスを持つ。マシンによって入っているアプリが違うため入れていない
 
+### TCC 保護ドメイン
+
+`com.apple.universalaccess`（アクセシビリティ）は TCC で保護されており、`defaults write` が拒否される。
+
+```
+Could not write domain com.apple.universalaccess; exiting
+```
+
+書き込みを通すには、実行中のターミナルにフルディスクアクセスを与えるしかない。この権限はターミナル本体に付くため、そこから走る任意のコマンド（スクリプト、パッケージの postinstall など）へ継承され、全ユーザーデータへの読み書きが開く。設定数件と引き換えにするには広すぎるため、`install.sh` はこのドメインを書かず `[skipped]` を出し、設定する項目を `notice()` で末尾の TODO に積む。
+
+手動で設定するのは次の 5 項目（システム設定 > アクセシビリティ）。
+
+| 項目 | 状態 | 対応するキー |
+| --- | --- | --- |
+| 視差効果を減らす | オン | `reduceMotion` |
+| カラー以外で区別 | オン | `differentiateWithoutColor` |
+| ツールバーボタンに輪郭を表示 | オフ | `showToolbarButtonShapes` |
+| ウインドウタイトルにアイコンを表示 | オフ | `showWindowTitlebarIcons` |
+| キーボードショートカットを使って拡大縮小 | オフ | `closeViewHotkeysEnabled` |
+
 ## 反映のタイミング
 
 `defaults write` の結果は、対象のプロセスを再起動するまで画面に出ない。`install.sh` の末尾で `killall Dock Finder SystemUIServer` を実行している。
