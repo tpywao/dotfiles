@@ -188,12 +188,20 @@ write_default com.apple.driver.AppleBluetoothMultitouch.trackpad USBMouseStopsTr
 report_domain com.apple.driver.AppleBluetoothMultitouch.trackpad
 
 # ---- アクセシビリティ ----
-write_bool com.apple.universalaccess reduceMotion true
-write_bool com.apple.universalaccess differentiateWithoutColor true
-write_bool com.apple.universalaccess showToolbarButtonShapes false
-write_bool com.apple.universalaccess showWindowTitlebarIcons false
-write_bool com.apple.universalaccess closeViewHotkeysEnabled false
-report_domain com.apple.universalaccess
+# com.apple.universalaccess は TCC 保護ドメインで、defaults write が
+# 「Could not write domain com.apple.universalaccess; exiting」で拒否される。
+# 通すには実行中のターミナルへフルディスクアクセスを与えるしかなく、その権限は
+# ここから走る任意のコマンド（スクリプト、パッケージの postinstall など）へ
+# 継承される。設定数件と引き換えに全ユーザーデータを開くことになるため、
+# スクリプトからは書かずに手動設定として案内する
+log_tag "$LOG_CHANGED" "[skipped]" "com.apple.universalaccess (TCC 保護のため手動で設定する)"
+notice "アクセシビリティの設定は手動で入れる（com.apple.universalaccess は TCC 保護のため defaults から書けない）。
+  システム設定 > アクセシビリティ で次を設定する:
+    「視差効果を減らす」をオン
+    「カラー以外で区別」をオン
+    「ツールバーボタンに輪郭を表示」をオフ
+    「ウインドウタイトルにアイコンを表示」をオフ
+    「キーボードショートカットを使って拡大縮小」をオフ"
 
 # ---- 入力 ----
 write_default com.apple.HIToolbox AppleFnUsageType -int 0

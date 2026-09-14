@@ -8,8 +8,9 @@
 # `-bool` に 1/0 を渡されたら usage を出して失敗するので、書き込みの型が
 # 間違っていればここで落ちる。
 #
-# 見るのは 2 点。1 回目に全ての write_* 行が実際に書き込むこと、2 回目に
-# 1 件も書かないこと（現在値との比較が効いていること）。
+# 見るのは 3 点。1 回目に全ての write_* 行が実際に書き込むこと、2 回目に
+# 1 件も書かないこと（現在値との比較が効いていること）、そして TCC 保護で
+# 手動設定にしているドメインが毎回 [skipped] と手順の案内を出すこと。
 
 DOTFILES=$(cd "$(dirname "$0")/../.." && pwd -P)
 . "$DOTFILES/utils/install-common.sh"
@@ -38,6 +39,14 @@ assert_eq() {
   else
     fail "$3: expected=$1 actual=$2"
   fi
+}
+
+# assert_contains <期待する部分文字列> <実際の文字列> <ラベル>
+assert_contains() {
+  case "$2" in
+    *"$1"*) pass ;;
+    *) fail "$3: expected to contain=$1" ;;
+  esac
 }
 
 # assert_count_tag <期待する個数> <タグ> <出力>
@@ -101,6 +110,8 @@ export PATH
 # install.sh が持つ write_* の行数。キーを増やしてもテスト側の修正は要らない
 expected_writes=$(grep -c '^write_bool \|^write_default ' "$DOTFILES/macos/install.sh")
 domain_count=$(grep -c '^report_domain ' "$DOTFILES/macos/install.sh")
+# TCC 保護で手動設定にしているドメイン。書き込みではなく案内だけを出す
+skipped_count=$(grep -c '^log_tag .*\[skipped\]' "$DOTFILES/macos/install.sh")
 import_count=$(grep -c '^import_defaults ' "$DOTFILES/macos/install.sh")
 
 # --- 1 回目: 値がまだ無いので全件書き込む ---
@@ -110,6 +121,8 @@ assert_count_tag "$domain_count" "\[applied\]" "$out"
 assert_count_tag 0 "\[current\]" "$out"
 assert_count_tag 0 "\[failed\]" "$out"
 assert_count_tag "$import_count" "\[imported\]" "$out"
+assert_count_tag "$skipped_count" "\[skipped\]" "$out"
+assert_contains "システム設定 > アクセシビリティ" "$out" "1 回目の手動設定の案内"
 
 # --- 2 回目: 現在値と一致するので 1 件も書かない ---
 : > "$STUB_STORE/.writes"
@@ -118,6 +131,19 @@ assert_eq 0 "$(wc -l < "$STUB_STORE/.writes" | tr -d ' ')" "2 回目の書き込
 assert_count_tag "$domain_count" "\[current\]" "$out"
 assert_count_tag 0 "\[applied\]" "$out"
 assert_count_tag 0 "\[failed\]" "$out"
+# 手動で設定するものは defaults から確認できない。書き込みの有無に関わらず毎回出す
+assert_count_tag "$skipped_count" "\[skipped\]" "$out"
+assert_contains "システム設定 > アクセシビリティ" "$out" "2 回目の手動設定の案内"
+
+# --- ルート経由（DOTFILES_NOTICES あり）: 案内は標準出力ではなく受け皿へ積む ---
+notices="$T/notices"
+: > "$notices"
+out=$(DOTFILES_NOTICES="$notices" sh "$DOTFILES/macos/install.sh")
+case "$out" in
+  *"システム設定 > アクセシビリティ"*) fail "ルート経由で案内が標準出力へ漏れている" ;;
+  *) pass ;;
+esac
+assert_contains "システム設定 > アクセシビリティ" "$(cat "$notices")" "受け皿の内容"
 
 # --- 1 件だけ値を変えると、そのドメインだけ [applied] に戻る ---
 : > "$STUB_STORE/.writes"
