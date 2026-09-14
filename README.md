@@ -71,8 +71,15 @@ clone 先は任意の場所でよい。`install.sh` は自身の位置から `$D
 1. clone する
 
    ```sh
-   gh repo clone tpywao/dotfiles ~/.dotfiles -- --depth 1 --branch main
+   gh repo clone tpywao/dotfiles ~/.dotfiles
    ```
+
+   **`--depth` と `--single-branch` は付けない。** どちらも後から症状が出る。
+
+   - `--depth`（shallow clone）— nix は flake の `revCount` を得るために履歴を全走査する。shallow clone では境界の先を読もうとして `getting Git object '<sha>': object not found` で失敗し、`nix flake check` も `home-manager switch` も通らなくなる。解消は `git fetch --unshallow`
+   - `--single-branch` — remote-tracking ref が clone 時のブランチ 1 本だけになり、以降の fetch もそれしか更新しない。feature ブランチに基準が無いため `git push --force-with-lease` が `stale info` で弾かれる。解消は `git config --replace-all remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'`
+
+   `--depth` は `--single-branch` を含意するので、`--depth` だけで両方が起きる。
 
 2. インストーラを実行する
 
