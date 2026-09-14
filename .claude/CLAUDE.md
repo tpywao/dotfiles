@@ -84,6 +84,10 @@
 - `nix flake check --impure` で構文確認可
   - `--impure` 必須: `nix/home.nix` が `builtins.getEnv` で `USER` / `HOME` を取得しているため、pure 評価では両者が空文字列になり `home.homeDirectory` の型エラー（`is not of type 'absolute path'`）で失敗する
   - `flake check` だけでなく `nix build` / `home-manager switch --flake .#$DOTFILES_MACHINE --impure` など評価を伴うコマンドすべてに `--impure` が要る
+- **このリポジトリを shallow clone で置かない。** nix は flake の `revCount` を得るために履歴を全走査するため、shallow clone では境界の先を読もうとして `getting Git object '<sha>': object not found` で失敗する。`nix flake check` も `home-manager switch` も通らなくなる
+  - nix のキャッシュに載っている rev では成功するので、しばらく気づかない。キャッシュに無い新しい rev ができた直後（コミットの組み直しなど）に露見する
+  - 判定は `git rev-parse --is-shallow-repository`、解消は `git fetch --unshallow`
+  - リポジトリ自体は壊れていないため `git fsck` では何も出ない。`nix flake check --impure "git+file:///path/to/repo"` と直接指定すると `is a shallow Git repository, so 'revCount' is not available` と出て原因が分かる
 
 ### git 設定
 - ローカル git 設定（.gitconfig.local）と結合される
