@@ -72,6 +72,8 @@ write_bool com.apple.dock autohide true           # true/false -> write_bool
 
 Finder の `ShowSidebar` は入れていない。サイドバーの表示/非表示を切り替えるたびに Finder が書き換えるため、インストール時点の状態を焼き付けるだけになる。同じ理由でウインドウ位置・最近使った項目・各種 `Upgraded*` フラグも対象外。
 
+ことえり（`com.apple.inputmethod.Kotoeri`）も、変換の学習が進むたびに書き換わる `JIMDictionaryTrainerLastProcessedFileID` / `JIMDictionaryTrainerLastProcessedRecordNumber` と、内部形式の番号である `JIMPrefVersionKey` は入れていない。
+
 新しいキーを足すときは、しばらく間を空けて 2 回 `defaults read <ドメイン>` を取り、差分が出ないことを確かめてからにする。
 
 ### `defaults` の管轄外

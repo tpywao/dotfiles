@@ -200,6 +200,17 @@ write_default com.apple.HIToolbox AppleFnUsageType -int 0
 write_default com.apple.HIToolbox AppleDictationAutoEnable -int 0
 report_domain com.apple.HIToolbox
 
+# ---- 日本語入力 (ことえり) ----
+# 辞書学習の進み具合を持つ JIMDictionaryTrainerLastProcessed* と、内部形式の
+# 番号である JIMPrefVersionKey は入れない。設定ではなく状態として書き換わる。
+# 候補ウィンドウのフォントは nix/firge.nix が全マシンへ入れるものを指す
+write_default com.apple.inputmethod.Kotoeri JIMPrefCandidateWindowFontKey -string Firge-Regular
+write_default com.apple.inputmethod.Kotoeri JIMPrefCharacterForSlashKey -int 0
+write_default com.apple.inputmethod.Kotoeri JIMPrefCharacterForYenKey -int 1
+write_bool com.apple.inputmethod.Kotoeri JIMPrefConvertWithPunctuationKey false
+write_bool com.apple.inputmethod.Kotoeri JIMPrefFullWidthNumeralCharactersKey false
+report_domain com.apple.inputmethod.Kotoeri
+
 # 入力ソースとキーボードショートカットは値が入れ子の dict / array で、平文では書けない。
 # ショートカットはキーが数値 ID で Apple が意味を公開していないため、平文化しても読めない。
 # 生成手順は macos/README.md
