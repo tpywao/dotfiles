@@ -38,6 +38,21 @@ worktree を作る前に、進行中の別作業と対象ファイルが衝突�
 
 理由: 未 PR のローカルブランチや別セッションの worktree が同じファイルを大きく書き換えていることがある。気づかずに origin/main 起点で着手すると conflict 解消で手戻りになり、相手側の変更で自分のタスク自体が不要になることもある。
 
+### マージ後の後片付け
+
+PR がマージされたら、**先にローカルの main を更新してから** worktree とブランチを消す。
+
+1. worktree から出る（EnterWorktree で作ったなら ExitWorktree の `keep`）
+2. main のチェックアウトで `git pull`（抜けた直後は通常すでに main にいる。別ブランチにいるときだけ切り替える）
+3. `git worktree remove <パス>` のあと `git worktree prune`
+4. `git branch -d <ブランチ>`
+
+ExitWorktree の `remove` で 3・4 をまとめることはできない。`remove` はその worktree を**作成したセッションが中にいるまま**でしか使えず、`EnterWorktree({path})` で入り直すと所有者でなくなって拒否される。ステップ 2 のために一度出る必要がある以上、この経路は取れない。
+
+ローカルの main を先に進めるのは `git branch -d` のため。判定は upstream、無ければ HEAD（＝チェックアウト中のローカル main）を基準にする。PR のマージはサーバ側で起きるので、ローカルの main は放っておくと古いままで、そこにコミットは含まれていない。`git fetch` は `origin/main` しか動かさないので足りない。
+
+古いまま `-D` や `discard_changes: true` に切り替えると、判定を無効化したまま消すことになる。本当に未マージだったとき（push し忘れ、push 後の amend、マージ先の間違い）にブランチの ref ごとコミットが到達不能になり、残るのは期限付きの reflog だけになる。
+
 ## 別リポジトリでの作業
 
 現在のセッションのプロジェクトと異なるリポジトリに変更を加える場合、着手前に**対象リポジトリの CLAUDE.md（`<repo>/CLAUDE.md`、`<repo>/.claude/CLAUDE.md`）や CONTRIBUTING を読み、そのリポジトリのフロー（ブランチ運用・worktree・コミット規約・PR 形式）に従う**。見つからない場合はどのフローで進めるかをユーザーに確認する。
