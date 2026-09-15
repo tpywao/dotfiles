@@ -38,7 +38,9 @@ link_config "$DOTFILES/direnvrc" "$HOME/.direnvrc"
 link_config "$DOTFILES/fzf" "$HOME/.fzf"
 
 # 各ディレクトリの install.sh。それぞれ単体でも実行できる (例: ./git/install.sh)
-for dir in git sheldon karabiner ghostty macos nix brew; do
+# macos は ことえりの候補ウィンドウに nix/firge.nix が入れるフォントを指定するため、
+# nix より後に置く
+for dir in git sheldon karabiner ghostty nix brew macos; do
   sh "$DOTFILES/$dir/install.sh" || exit $?
 done
 
