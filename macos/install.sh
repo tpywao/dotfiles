@@ -123,7 +123,9 @@ write_bool NSGlobalDomain AppleShowAllExtensions true
 write_default NSGlobalDomain AppleKeyboardUIMode -int 2
 write_bool NSGlobalDomain NSAutomaticSpellingCorrectionEnabled false
 write_bool NSGlobalDomain WebAutomaticSpellingCorrectionEnabled false
-write_bool NSGlobalDomain com.apple.keyboard.fnState true
+# false は「F1、F2 などのキーを標準のファンクションキーとして使用」がオフの状態。
+# キーを単押しすると輝度・音量などの特殊機能が働き、ファンクションキーは fn 併用で出す
+write_bool NSGlobalDomain com.apple.keyboard.fnState false
 write_default NSGlobalDomain com.apple.trackpad.scaling -float 0.875
 write_bool NSGlobalDomain com.apple.trackpad.forceClick true
 write_bool NSGlobalDomain com.apple.swipescrolldirection true
