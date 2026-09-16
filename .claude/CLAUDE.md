@@ -33,10 +33,11 @@
 - サブプロセスなので、サブ側の環境変数・PATH の変更はルートへ届かない。Nix を初めて入れた回に `docker/install.sh` と `claude/install.sh` が `jq` / `gh` を見つけられるよう、ルートは `nix` の直後に `nix-daemon.sh` を読み込む
 - `fish/` と `fzf/` はディレクトリごとリンク先（`~/.config/fish`, `~/.fzf`）へ symlink するため、中に `install.sh` を置くとインストーラまでリンク先に配られる。この 2 つはルートの `install.sh` でリンクする
 - `claude/install.sh` と `claude/Skillfile` は `link_claude_files` の `find` で除外している。除外しないと `~/.claude/` へリンクされる
-- **アプリ自身が書き込む設定ファイルは `link_config()` ではなく `merge_config()` を使う。** リンクを張るとアプリが書いたマシン固有の値が dotfiles 側へ流れ込み、逆に dotfiles 側の内容で置き換えるとその値が失われる。dotfiles 側は共有したいキーだけを持ち、`dst` にしか無いキーは触らない。該当するのは `claude/settings.json`、`claude/mcp-servers.json`、`docker/config.json` の 3 つ
+- **アプリ自身が書き込む設定ファイルは `link_config()` ではなく `merge_config()` を使う。** リンクを張るとアプリが書いたマシン固有の値が dotfiles 側へ流れ込み、逆に dotfiles 側の内容で置き換えるとその値が失われる。dotfiles 側は共有したいキーだけを持ち、`dst` にしか無いキーは触らない。該当するのは `claude/settings.json`、`claude/mcp-servers.json`、`docker/config.json`、`karabiner/profile-defaults.json` の 4 つ
   - `claude/settings.json`: Claude Code が `model` / `effortLevel` / `autoMode` を書き込む。`hooks` だけは dotfiles を唯一の正として差し替えたいので、`merge_claude_settings` が `merge_config` へフィルタを渡す（`jq` の `*` は再帰マージだけで削除を表現できず、dotfiles 側で消した hook が既存の設定に残ってしまう）
   - `claude/mcp-servers.json`: 配布先は `~/.claude.json`（Claude Code がセッション状態やプロジェクト履歴を書き込む）。dotfiles 側はマシン間で共有したい `mcpServers` のエントリだけを持ち、フィルタは既定のまま（差し替えるとマシン固有のサーバーが消える）。dotfiles 側で消したサーバーは各マシンで `claude mcp remove` する
   - `docker/config.json`: Docker Desktop が `credsStore` / `currentContext` / `plugins` / `features` を書き込む。dotfiles 側が持つのは `detachKeys` だけで、フィルタは既定のまま
+  - `karabiner/profile-defaults.json`: 配布先は `~/.config/karabiner/karabiner.json`。詳細は下の「Karabiner-Elements 設定」を参照
   - **配列は再帰マージされず `src` の内容で置換される。** `jq` の `*` はオブジェクトだけを再帰マージするため、`dst` にしか無い配列要素は失われる。アプリが書き込む値が配列に入るキー（`permissions.allow` に「常に許可」で追加されたルールなど）がこれに該当する。`merge_config` は消える要素を確定前に洗い出して `[dropped]` で列挙し、マージ前の `dst` を `.premerge.<ts>` へ退避する。復旧の選択肢は 2 つ
     - **恒久化**: 残したい要素を dotfiles 側の `src` に追記して再実行する。dotfiles 側が正なので全マシンへ配布される
     - **その場の復旧**: `.premerge.<ts>` を `dst` へ戻す。ただし dotfiles 側の更新も巻き戻り、次の実行で再び `[dropped]` になる
@@ -113,6 +114,15 @@
 - **状態として書き換わる値は入れない**（Finder の `ShowSidebar` はサイドバーを開閉するたびに書き換わる）。追加前に時間を空けて 2 回 `defaults read` を取り、差分が出ないことを確かめる
 - **TCC 保護ドメインは入れない**（`com.apple.universalaccess`）。`defaults write` が `Could not write domain <ドメイン>; exiting` で拒否される。通すには実行中のターミナルへフルディスクアクセスが要るが、その権限はターミナル本体に付いて配下の全コマンドへ継承されるため与えない。`[skipped]` を出し、設定する項目を `notice()` で末尾の TODO に積む（項目と対応するキーは `macos/README.md`）
 - `macos/install.sh` を変更したら `sh tests/macos/install_test.sh` を流す。`defaults` と `killall` をスタブに差し替えて実機の設定には触れず、1 回目に全 `write_*` 行が書き込むこと・2 回目に 1 件も書かないこと・TCC 保護ドメインが毎回 `[skipped]` と手順の案内を出すことをケースにしてある
+
+### Karabiner-Elements 設定（karabiner）
+- complex modifications（`Naginata.json`、`Personal.json`）は `~/.config/karabiner/assets/complex_modifications/` へ symlink する。Karabiner はこのディレクトリを読むだけで、リンクを壊さない（GUI のゴミ箱ボタンでルールを消したときだけ `unlink` する）
+- **`karabiner.json` は symlink 管理できない。** Karabiner-Elements は設定を保存するたびにこのファイルを書き直し、その際 symlink を実体で置き換える。symlink のままだと外部からの変更検知（自動リロード）も効かない。共有したいキーは `karabiner/profile-defaults.json` に持ち、`merge_karabiner_profile` が `merge_config` へフィルタを渡して適用する
+- `profile-defaults.json` が持つのは `name` / `devices` / `virtual_hid_keyboard` だけ。**`complex_modifications` の `rules` は持たない。** rules には assets/ 側のファイルを GUI で有効化した結果が入るため、両方から書くと二重管理になる
+- `devices` は配列なので dotfiles 側の内容で置換される。マシン固有のデバイス設定を足したマシンでは `merge_config` が `[dropped]` で知らせる
+- `name` をキーにプロファイルを特定する。プロファイル名を変えたマシンでは当たらず、`notice()` の TODO に出る
+- assets/ に置いただけでは complex modification は効かない。常時有効にしたいルールは `Personal.json` に入れる（未有効なら TODO に出る）。`Naginata.json` は必要なときに GUI から選ぶための置き場で、TODO の対象外
+- `karabiner/install.sh` を変更したら `sh tests/karabiner/install_test.sh` を流す。`$HOME` を一時ディレクトリへ差し替えて実機の `~/.config/karabiner` には触れず、`karabiner.json` の状態（未作成・プロファイル名違い・複数プロファイル・マシン固有デバイスあり）ごとの経路をケースにしてある
 
 ## 保守性のルール
 1. 新しい dotfiles はインストーラに追加（対象ディレクトリの `install.sh`。無ければルートの `install.sh`）
