@@ -40,6 +40,14 @@ $ defaults export com.apple.HIToolbox - \
 
 `AppleInputSourceHistory` などを落とすのは、これらが「最後に使った入力ソース」を持つ状態で、残すと配布先のマシンへ他マシンの利用履歴が流れ込むため。`AppleDictationAutoEnable` と `AppleFnUsageType` は `install.sh` 側に平文で書いてあるので plist からは外す。
 
+### 落とせていない状態値
+
+`input-sources.plist` には `com.apple.inputmethod.EmojiFunctionRowItem` が `AppleEnabledInputSources` と `AppleSelectedInputSources` の両方に入っている。この入力ソースは実機から消えるため、`install.sh` を流すたびに `defaults import` が書き戻し、しばらくすると消える往復になっている（実測では import 直後に 2 件、10 分後に 0 件）。消えるきっかけは切り分けていない。
+
+落とすには `plutil -remove` が使えない。上のキーはトップレベルにあるが、これは**配列の要素**で、`plutil` で指定できるのは `AppleEnabledInputSources.5` のようなインデックスだけであり、インデックスは生成のたびに変わる。名前で要素を落とすには `plistlib` を使うスクリプトが必要になる。
+
+入力ソースが `install.sh` の実行直後だけ 1 つ増え、あとは OS が消すだけなので、生成手順を複雑にする対価に見合わないと判断してそのままにしている。`[imported]` は差分を見ずに毎回出るため、この往復は出力からは分からない。
+
 ## 設定を足す手順
 
 1. 対象のキーの型を調べる。`defaults read` では bool と int が区別できないので XML で見る
