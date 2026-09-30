@@ -253,6 +253,36 @@ assert_tag "[dropped]" "$out"
 assert_tag_count 1 "[dropped]" "$out"
 assert_tag "outer" "$out"
 
+# --- 親の配列で要素の位置がずれる: 残っている要素の中身を消えたと報告しない ---
+# dst の outer[0] は結果では outer[1] にずれるが、値は同じまま残っている
+echo '{"outer":[{"inner":["machine"]}]}' > "$T/home/case16.json"
+echo '{"outer":[{"inner":["shared"]}]}' > "$T/src/shifted.json"
+# shellcheck disable=SC2016
+out=$(merge_config "$T/src/shifted.json" "$T/home/case16.json" '
+  .[0] as $live | .[1] as $shared | $live | .outer = $shared.outer + $live.outer
+')
+assert_tag "[merged]" "$out"
+assert_no_tag "[dropped]" "$out"
+assert_no_premerge "$T/home/case16.json"
+
+# --- 追加の入力ファイル: .[2] 以降としてフィルタに渡る ---
+echo '{"machineOnly":"keep-me"}' > "$T/home/case14.json"
+echo '{"extra":"from-extra"}' > "$T/src/extra.json"
+# shellcheck disable=SC2016
+out=$(merge_config "$SRC" "$T/home/case14.json" '
+  (.[0] * .[1]) + {extra: .[2].extra}
+' "$T/src/extra.json")
+assert_tag "[merged]" "$out"
+assert_jq "from-extra" '.extra' "$T/home/case14.json"
+assert_jq "keep-me" '.machineOnly' "$T/home/case14.json"
+
+# --- 追加の入力だけ渡してフィルタは空: 既定の再帰マージになる ---
+echo '{}' > "$T/home/case15.json"
+out=$(merge_config "$SRC" "$T/home/case15.json" '' "$T/src/extra.json")
+assert_tag "[merged]" "$out"
+assert_jq "from-dotfiles" '.shared' "$T/home/case15.json"
+assert_jq "null" '.extra' "$T/home/case15.json"
+
 # --- src は一度も書き換わっていない ---
 assert_jq "from-dotfiles" '.shared' "$SRC"
 assert_jq "null" '.machineOnly' "$SRC"
