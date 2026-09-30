@@ -253,6 +253,18 @@ assert_tag "[dropped]" "$out"
 assert_tag_count 1 "[dropped]" "$out"
 assert_tag "outer" "$out"
 
+# --- 親の配列で要素の位置がずれる: 残っている要素の中身を消えたと報告しない ---
+# dst の outer[0] は結果では outer[1] にずれるが、値は同じまま残っている
+echo '{"outer":[{"inner":["machine"]}]}' > "$T/home/case16.json"
+echo '{"outer":[{"inner":["shared"]}]}' > "$T/src/shifted.json"
+# shellcheck disable=SC2016
+out=$(merge_config "$T/src/shifted.json" "$T/home/case16.json" '
+  .[0] as $live | .[1] as $shared | $live | .outer = $shared.outer + $live.outer
+')
+assert_tag "[merged]" "$out"
+assert_no_tag "[dropped]" "$out"
+assert_no_premerge "$T/home/case16.json"
+
 # --- src は一度も書き換わっていない ---
 assert_jq "from-dotfiles" '.shared' "$SRC"
 assert_jq "null" '.machineOnly' "$SRC"
