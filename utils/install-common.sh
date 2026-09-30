@@ -97,7 +97,7 @@ link_config() {
 
 # JSON の設定ファイルを、dotfiles 側の共有キーだけ既存の設定へ上書き適用する。
 #
-#   merge_config <dotfiles 側の src> <配布先の dst> [<jq フィルタ>]
+#   merge_config <dotfiles 側の src> <配布先の dst> [<jq フィルタ> [<追加の入力>...]]
 #
 # アプリ自身が書き込む設定ファイルは link_config の対象にできない。リンクを張ると
 # アプリが書いたマシン固有の値が dotfiles 側へ流れ込み、逆に dotfiles 側の内容で
@@ -107,10 +107,15 @@ link_config() {
 # 既定は再帰マージのみ。jq の `*` はオブジェクトを再帰マージするだけで削除を
 # 表現できないため、dotfiles 側で消したキーを dst からも消したい場合は
 # 呼び出し側でフィルタを渡す。
+#
+# 追加の入力ファイルは .[2] 以降としてフィルタに渡る。dst と src だけでは決まらない
+# 判断（前回の実行で配ったものを覚えておく等）に使う。
 merge_config() {
   src=$1
   dst=$2
   filter="${3:-.[0] * .[1]}"
+  shift 2
+  [ $# -gt 0 ] && shift
   [ -f "$src" ] || return 0
   if ! command -v jq > /dev/null 2>&1; then
     log_tag "$LOG_CHANGED" "[skipped]" "$dst (jq が無い)"
@@ -131,7 +136,7 @@ merge_config() {
 
   [ -f "$dst" ] || echo '{}' > "$dst"
   tmp="$dst.merging.$$"
-  if ! jq -s "$filter" "$dst" "$src" > "$tmp"; then
+  if ! jq -s "$filter" "$dst" "$src" "$@" > "$tmp"; then
     log_tag "$LOG_FAILED" "[failed]" "$dst (マージ失敗。$tmp を確認)"
     return 0
   fi
