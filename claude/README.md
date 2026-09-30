@@ -22,7 +22,9 @@ Claude Code 自身が `model` / `effortLevel` / `modelSettings` / `autoMode` を
 - dotfiles 側に置くのは共有したいキーのみ（`permissions`、`hooks`、`statusLine`、`model`、`enabledMcpjsonServers`、`enabledPlugins`、`skillOverrides`、`extraKnownMarketplaces`、`language`、`theme` など）
 - マシン固有のキーは dotfiles 側に書かない（`effortLevel`、`modelSettings`、`autoMode`）
 - 配列（`permissions.allow` など）は結合ではなく置換になる。dotfiles 側で項目を削除すればそれも反映される
-- `hooks` は再帰マージのあとに dotfiles 側の値で**丸ごと差し替える**。残り続けた配線は実体を失ったスクリプトを呼び続けるため、削除も同期する必要がある。副作用として、マシン単位で hook を足すには `~/.claude/settings.json` への直書きではなくプロジェクトの `.claude/settings.local.json` を使う
+- `hooks` は **dotfiles が配った hook だけを入れ替える**。残り続けた配線は実体を失ったスクリプトを呼び続けるため削除も同期する一方、他のアプリ（エージェント管理ツール等）が `~/.claude/settings.json` に足した hook は残す
+  - 配った hook は `${XDG_STATE_HOME:-~/.local/state}/dotfiles/claude-hooks.json` に記録し、次の実行で既存の設定から取り除いてから dotfiles 側の hook を入れる。記録は積み増しで、消えるのは記録に載った hook だけ
+  - 記録が無いマシン（初回）では何も取り除かない。それより前に dotfiles 側で消した hook が残っていれば手で消す
 - `hooks` 以外のオブジェクト（`skillOverrides`、`enabledPlugins` など）は再帰マージなので、dotfiles 側でエントリを削除しても同期済みのマシンには残り続ける。取り消すには各マシンの `~/.claude/settings.json` から手で消す
 - CLI の「Yes, and don't ask again」はプロジェクトの `.claude/settings.local.json` に書かれるため、この方式で失われることはない
 - プラグイン（`enabledPlugins` / `extraKnownMarketplaces`）について、新マシンで自動なのは marketplace の登録まで。プラグイン本体は自動インストールされない。起動時に「未インストール」の警告と実行すべき `claude plugin install <name>` コマンドが表示されるので、それを自分で一度実行する（v2.1.195 時点の挙動）。バージョン固定を書ける場所（marketplace.json の `version` / `source.ref`）は上流 marketplace 側にしかないため、外部 marketplace のプラグインは版固定できず、インストールした時点の最新版が入る
