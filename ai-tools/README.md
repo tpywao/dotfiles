@@ -28,4 +28,4 @@ AI 関連 CLI ツール（ccusage / codegraph、ほか ax / actionlint）を Nix
    - `npmDepsFetcherVersion` を変えた場合も再計算が必要
 4. `home-manager switch --flake "$DOTFILES#$DOTFILES_MACHINE" --impure` で反映
 
-各ツールの使い方はリポジトリルートの [CLAUDE.md](../.claude/CLAUDE.md) の「AI ツール」セクションを参照。
+各ツールの使い方はリポジトリルートの [AGENTS.md](../AGENTS.md) の「AI ツール」セクションを参照。
