@@ -81,6 +81,7 @@
   - 第 2・第 3 引数で表示語を差し替えられる（既定は `loading` / `loaded`）。活用済みの形を渡す規約で、動詞から `-ing` / `-ed` を組み立てない
 
 ### Nix/Flake 管理
+- `nix/` 配下を変更するときは、先に `nix/AGENTS.md`（マシンごとの構成、パッケージの置き場所）を読む
 - `flake.lock` は自動生成。手書き編集せず `nix flake update` で更新する
 - `nix flake check --impure` で構文確認可
   - `--impure` 必須: `nix/home.nix` が `builtins.getEnv` で `USER` / `HOME` を取得しているため、pure 評価では両者が空文字列になり `home.homeDirectory` の型エラー（`is not of type 'absolute path'`）で失敗する
@@ -102,6 +103,7 @@
 - 仕組みの詳細は `claude/README.md`
 - このリポジトリ自身の指示ファイルは `AGENTS.md`（ルート・`ai-tools/`・`nix/`）。**ルートに `CLAUDE.md` / `.claude/CLAUDE.md` / `CLAUDE.local.md` を置かない。** cwd かその親にどれか 1 つでもあると、Claude Code は `AGENTS.md` を読まなくなる
   - `claude/CLAUDE.md` はグローバル指示（`~/.claude/CLAUDE.md`）の配布元で、例外的に `CLAUDE.md` の名前を持つ。`claude/` を cwd にしてセッションを始めるとこれがプロジェクトの `CLAUDE.md` として数えられ、ルートの `AGENTS.md` が読まれないので、セッションはリポジトリのルートで始める
+  - サブディレクトリの `AGENTS.md` は、ルートで起動したセッションに自動では載らないことがある。Claude Code はそのディレクトリのファイルを Read したときに読み足すが、Codex は起動時にルートから cwd までの分しか読まない。サブディレクトリに `AGENTS.md` を足したら、ルートのこのファイルの該当節から名指しで参照する
 - `claude/hooks/block-dangerous.sh` を変更したら `sh tests/claude/block-dangerous_test.sh` を流す。止めるべきコマンドと通すべきコマンドの両方をケースにしてある
 - `claude/install.sh` の `merge_claude_settings` を変更したら `sh tests/claude/merge-claude-settings_test.sh` を流す。既存の設定と状態ファイルの組み合わせ（他のアプリの hook あり・前回配った hook が残っている・状態ファイル無し・1 グループに混在）ごとの経路をケースにしてあり、期待値は実物の `claude/settings.json` から取る
 - `claude/install.sh` の `install_external_skills` を変更したら `sh tests/claude/install-external-skills_test.sh` を流す。`gh` をスタブに差し替えて認証状態と導入の成否ごとの経路をケースにしてあり、ネットワークへは出ず実際の `~/.claude/` も触らない
