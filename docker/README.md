@@ -98,4 +98,4 @@ Docker Desktop の自動起動・メニューバー常駐にあたるものは�
 
 ## install.sh が行うこと
 
-`config.json` のマージのみ。dotfiles 側が持つのは `detachKeys` だけで、`credsStore` など Docker が自分で書き込む値には触らない（`merge_config` を使う理由は `.claude/CLAUDE.md` を参照）。
+`config.json` のマージのみ。dotfiles 側が持つのは `detachKeys` だけで、`credsStore` など Docker が自分で書き込む値には触らない（`merge_config` を使う理由は ルートの `AGENTS.md` を参照）。

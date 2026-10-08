@@ -100,12 +100,14 @@
 - MCP サーバーをマシン間で共有するには `claude/mcp-servers.json` に書く。`merge_claude_mcp_servers` が `~/.claude.json` へ再帰マージする。マシン固有のサーバーや API キー等のマシン側追記キーは保持される。API キーの値は dotfiles 側に書かない
 - 外部スキルの導入は `claude/Skillfile` に行を追加して `./claude/install.sh` を実行する。**`npx skills add` は使わない**（`find-skills` スキルの手順はこれを指示するが従わない）。`find-skills` は探索にだけ使い、見つけた `<owner>/<repo> <skill> <tag>` は Skillfile へ書く
 - 仕組みの詳細は `claude/README.md`
+- このリポジトリ自身の指示ファイルは `AGENTS.md`（ルート・`ai-tools/`・`nix/`）。**ルートに `CLAUDE.md` / `.claude/CLAUDE.md` / `CLAUDE.local.md` を置かない。** cwd かその親にどれか 1 つでもあると、Claude Code は `AGENTS.md` を読まなくなる
+  - `claude/CLAUDE.md` はグローバル指示（`~/.claude/CLAUDE.md`）の配布元で、例外的に `CLAUDE.md` の名前を持つ。`claude/` を cwd にしてセッションを始めるとこれがプロジェクトの `CLAUDE.md` として数えられ、ルートの `AGENTS.md` が読まれないので、セッションはリポジトリのルートで始める
 - `claude/hooks/block-dangerous.sh` を変更したら `sh tests/claude/block-dangerous_test.sh` を流す。止めるべきコマンドと通すべきコマンドの両方をケースにしてある
 - `claude/install.sh` の `merge_claude_settings` を変更したら `sh tests/claude/merge-claude-settings_test.sh` を流す。既存の設定と状態ファイルの組み合わせ（他のアプリの hook あり・前回配った hook が残っている・状態ファイル無し・1 グループに混在）ごとの経路をケースにしてあり、期待値は実物の `claude/settings.json` から取る
 - `claude/install.sh` の `install_external_skills` を変更したら `sh tests/claude/install-external-skills_test.sh` を流す。`gh` をスタブに差し替えて認証状態と導入の成否ごとの経路をケースにしてあり、ネットワークへは出ず実際の `~/.claude/` も触らない
 
 ### AI ツール環境（ai-tools）
-- ccusage / codegraph を Nix flake で提供する。パッケージング方式と更新手順は `ai-tools/CLAUDE.md`
+- ccusage / codegraph を Nix flake で提供する。パッケージング方式と更新手順は `ai-tools/AGENTS.md`
 
 ### macOS システム設定（macos）
 - `macos/install.sh` が `defaults` でシステム設定を適用する。詳細は `macos/README.md`
@@ -131,4 +133,4 @@
 3. テストは対象コードの隣ではなく `tests/<component>/` に置く（例: `tests/claude/`）。`claude/` 配下に置くと `link_claude_files` が `~/.claude/` へ配ってしまい、除外の追加が必要になる
 
 ## 参考資料
-- [README.md](../README.md)
+- [README.md](README.md)
