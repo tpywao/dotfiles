@@ -24,20 +24,46 @@ link_claude_files() {
 # effortLevel、autoMode をこのファイルへ書き込むため、リンクを張るとマシン固有の
 # 値が dotfiles 側に流れ込む。
 #
-# hooks だけは dotfiles を唯一の正として丸ごと差し替えるため、既定の再帰マージ
-# ではなくフィルタを渡す。jq の `*` はオブジェクトを再帰マージするだけで削除を
-# 表現できず、再帰マージのままだと dotfiles 側で消したイベントが既存の設定に
-# 残り、実体を失ったスクリプトが呼ばれ続ける。差し替えの副作用として、マシン
-# 単位で hook を足したいときは ~/.claude/settings.json への直書きではなく
-# プロジェクトの .claude/settings.local.json を使う必要がある。
+# hooks は既定の再帰マージではなくフィルタで組み立てる。jq の `*` は削除を表現
+# できず、再帰マージのままだと dotfiles 側で消した hook が既存の設定に残り、実体を
+# 失ったスクリプトが呼ばれ続ける。一方で丸ごと差し替えると、他のアプリ（エージェント
+# 管理ツール等）が自分で足した hook まで毎回消してしまう。
+#
+# そこで dotfiles が配った hook だけを入れ替え、それ以外は残す。「配った」かどうかは
+# 設定の中身からは判別できない（command の形はまちまちで、パスで見分けられない）
+# ため、配った hook を状態ファイルに記録しておき、次の実行で既存の設定から取り除く。
+# 記録は和集合で積み増す。マージに失敗した回でも過去の記録を失わないため。
 merge_claude_settings() {
-  # $live / $shared は jq の変数。シェルに展開させない
+  src="$DOTFILES/claude/settings.json"
+  state="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/claude-hooks.json"
+  if [ -f "$state" ]; then set -- "$state"; else set --; fi
+
+  # $live などは jq の変数。シェルに展開させない
   # shellcheck disable=SC2016
-  merge_config "$DOTFILES/claude/settings.json" "$HOME/.claude/settings.json" '
-    .[0] as $live | .[1] as $shared
+  merge_config "$src" "$HOME/.claude/settings.json" '
+    .[0] as $live | .[1] as $shared | (.[2] // []) as $distributed
     | ($live * $shared)
-    | if ($shared | has("hooks")) then .hooks = $shared.hooks else . end
-  '
+    | if ($shared | has("hooks")) then
+        ([$shared.hooks[][] | .hooks // [] | .[]] + $distributed) as $owned
+        # 既存の設定から dotfiles 由来の hook を抜き、空になったグループ・イベントを落とす
+        | (($live.hooks // {})
+            | map_values(
+                map(.hooks = [(.hooks // [])[] | select(. as $h | $owned | any(. == $h) | not)])
+                | map(select(.hooks | length > 0)))
+            | with_entries(select(.value | length > 0))) as $foreign
+        | .hooks = reduce (($shared.hooks + $foreign) | keys_unsorted[]) as $event ({};
+            .[$event] = ($shared.hooks[$event] // []) + ($foreign[$event] // []))
+      else . end
+  ' "$@"
+
+  command -v jq > /dev/null 2>&1 || return 0
+  mkdir -p "$(dirname "$state")"
+  if jq -s '(.[1] // []) + [.[0].hooks // {} | .[][] | .hooks // [] | .[]] | unique' \
+    "$src" "$@" > "$state.tmp"; then
+    mv "$state.tmp" "$state"
+  else
+    /bin/rm -f -- "$state.tmp"
+  fi
 }
 
 # MCP サーバーの登録先 ~/.claude.json は、Claude Code 自身がセッション状態や

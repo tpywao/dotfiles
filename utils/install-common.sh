@@ -97,7 +97,7 @@ link_config() {
 
 # JSON の設定ファイルを、dotfiles 側の共有キーだけ既存の設定へ上書き適用する。
 #
-#   merge_config <dotfiles 側の src> <配布先の dst> [<jq フィルタ>]
+#   merge_config <dotfiles 側の src> <配布先の dst> [<jq フィルタ> [<追加の入力>...]]
 #
 # アプリ自身が書き込む設定ファイルは link_config の対象にできない。リンクを張ると
 # アプリが書いたマシン固有の値が dotfiles 側へ流れ込み、逆に dotfiles 側の内容で
@@ -107,10 +107,15 @@ link_config() {
 # 既定は再帰マージのみ。jq の `*` はオブジェクトを再帰マージするだけで削除を
 # 表現できないため、dotfiles 側で消したキーを dst からも消したい場合は
 # 呼び出し側でフィルタを渡す。
+#
+# 追加の入力ファイルは .[2] 以降としてフィルタに渡る。dst と src だけでは決まらない
+# 判断（前回の実行で配ったものを覚えておく等）に使う。
 merge_config() {
   src=$1
   dst=$2
   filter="${3:-.[0] * .[1]}"
+  shift 2
+  [ $# -gt 0 ] && shift
   [ -f "$src" ] || return 0
   if ! command -v jq > /dev/null 2>&1; then
     log_tag "$LOG_CHANGED" "[skipped]" "$dst (jq が無い)"
@@ -131,7 +136,7 @@ merge_config() {
 
   [ -f "$dst" ] || echo '{}' > "$dst"
   tmp="$dst.merging.$$"
-  if ! jq -s "$filter" "$dst" "$src" > "$tmp"; then
+  if ! jq -s "$filter" "$dst" "$src" "$@" > "$tmp"; then
     log_tag "$LOG_FAILED" "[failed]" "$dst (マージ失敗。$tmp を確認)"
     return 0
   fi
@@ -145,14 +150,25 @@ merge_config() {
   # src と突き合わせるのではなくマージ結果と突き合わせるのは、呼び出し側が渡す
   # フィルタが何をするかを検出側から知れないため。結果と比べれば、丸ごと差し替え
   # のようなフィルタ固有の振る舞いも含めて実際に失われるものだけを拾える。
+  #
+  # 入れ子の配列は位置で突き合わせるので、親の配列で要素の順序が変わると、残って
+  # いる要素の中身まで消えたように見える。通り道の配列要素が結果側の同じ配列に
+  # 同じ値で残っていれば、その下は報告しない。
   dropped=$(jq -r -s '
     .[0] as $before | .[1] as $after
-    | [$before | paths(type == "array")]
+    | def kept_on_the_way($p):
+        any(range(0; $p | length) as $i
+          | select(($p[$i] | type) == "number")
+          | ($before | getpath($p[0:$i + 1])) as $el
+          | (try ($after | getpath($p[0:$i])) catch null) as $arr
+          | ($arr | type) == "array" and any($arr[]; . == $el));
+      [$before | paths(type == "array")]
     | reduce .[] as $p ({reported: [], out: []};
         # 親を報告したら子孫は報告しない（同じ消失を二重に出さない）
         if (.reported | any(. as $r | $p[0:($r | length)] == $r)) then .
+        elif kept_on_the_way($p) then .
         else
-          (($after | getpath($p)) as $a
+          ((try ($after | getpath($p)) catch null) as $a
             | if ($a | type) == "array" then $a else [] end) as $kept
           | (($before | getpath($p)) - $kept) as $lost
           | if ($lost | length) > 0
