@@ -4,7 +4,6 @@
 
 ## プロジェクト概要
 - **用途**: macOS + Linux 向けの個人用 dotfiles リポジトリ
-- **管理対象**: zsh, git, nix, Homebrew, karabiner, fzf, macOS のシステム設定 など
 
 ## インストーラの構成
 
@@ -37,7 +36,7 @@
   - `claude/settings.json`: Claude Code が `model` / `effortLevel` / `autoMode` を書き込む。`hooks` は `merge_claude_settings` が `merge_config` へフィルタを渡して組み立てる。dotfiles が配った hook だけを入れ替え、他のアプリ（エージェント管理ツール等）が足した hook は残す。「配った」かは設定の中身から判別できないため、配った hook を `${XDG_STATE_HOME:-~/.local/state}/dotfiles/claude-hooks.json` に積み増しで記録し、`.[2]` として渡す（`jq` の `*` は再帰マージだけで削除を表現できず、丸ごと差し替えると他のアプリの hook が毎回消える）
   - `claude/mcp-servers.json`: 配布先は `~/.claude.json`（Claude Code がセッション状態やプロジェクト履歴を書き込む）。dotfiles 側はマシン間で共有したい `mcpServers` のエントリだけを持ち、フィルタは既定のまま（差し替えるとマシン固有のサーバーが消える）。dotfiles 側で消したサーバーは各マシンで `claude mcp remove` する
   - `docker/config.json`: Docker Desktop が `credsStore` / `currentContext` / `plugins` / `features` を書き込む。dotfiles 側が持つのは `detachKeys` だけで、フィルタは既定のまま
-  - `karabiner/profile-defaults.json`: 配布先は `~/.config/karabiner/karabiner.json`。詳細は下の「Karabiner-Elements 設定」を参照
+  - `karabiner/profile-defaults.json`: 配布先は `~/.config/karabiner/karabiner.json`。詳細は `karabiner/AGENTS.md` を参照
   - **配列は再帰マージされず `src` の内容で置換される。** `jq` の `*` はオブジェクトだけを再帰マージするため、`dst` にしか無い配列要素は失われる。アプリが書き込む値が配列に入るキー（`permissions.allow` に「常に許可」で追加されたルールなど）がこれに該当する。`merge_config` は消える要素を確定前に洗い出して `[dropped]` で列挙し、マージ前の `dst` を `.premerge.<ts>` へ退避する。復旧の選択肢は 2 つ
     - **恒久化**: 残したい要素を dotfiles 側の `src` に追記して再実行する。dotfiles 側が正なので全マシンへ配布される
     - **その場の復旧**: `.premerge.<ts>` を `dst` へ戻す。ただし dotfiles 側の更新も巻き戻り、次の実行で再び `[dropped]` になる
@@ -71,7 +70,6 @@
 ### 重要: zsh 設定
 - **重要**: ~/.zshrc は読まれません。$ZDOTDIR 配下（.dotfiles/zsh/）の設定を編集してください
 - 設定値: $ZDOTDIR=~/.dotfiles/zsh, no_global_rcs
-- zsh 設定ファイル: `zsh/.zshrc`, `zsh/.zprofile`, `zsh/.zlogout`
 - `zsh/check.zsh` を変更したら `zsh tests/zsh/check_test.zsh` を流す。`git` をスタブに差し替えて「flake.lock のどのノードを何回・どの ref 指定で問い合わせるか」をケースにしてあり、ネットワークへは出ない
   - 末尾の `_dotfiles_check` 自動実行は `DOTFILES_CHECK_NO_AUTORUN` で抑止できる。テストが関数定義だけを読み込むためにある
   - `ls-remote` は GitHub 側がそのリポジトリの ref アドバタイズを用意していないと 1 件で数分かかる（`torvalds/linux` で 384 秒、直後の再問い合わせは 0.8 秒）。**ref 指定の形（裸 / フルパス / `--heads`）では変わらない**。日に 1 回しか走らない daily 群は毎回この「冷えた」状態を引くため、速くするのではなくバックグラウンドへ逃がして解決している
@@ -91,17 +89,13 @@
   - 判定は `git rev-parse --is-shallow-repository`、解消は `git fetch --unshallow`
   - リポジトリ自体は壊れていないため `git fsck` では何も出ない。`nix flake check --impure "git+file:///path/to/repo"` と直接指定すると `is a shallow Git repository, so 'revCount' is not available` と出て原因が分かる
 
-### git 設定
-- ローカル git 設定（.gitconfig.local）と結合される
-
 ### Claude Code 設定
-- `claude/`: Claude Code 関連（hooks, skills など）
 - グローバル `~/.claude/` へ **symlink** で同期する。**編集は必ず dotfiles 側で行う**（`~/.claude/` 側は参照専用。Claude Code は symlink 経由の書き込みを拒否する）
 - `settings.json` だけはリンクしない。Claude Code 自身が書き込むファイルのため、`claude/install.sh` の `merge_claude_settings`（共通部の `merge_config` を `hooks` 用のフィルタ付きで呼ぶ）が dotfiles 側の共有キーのみを既存の設定へ上書きする。マシン固有キー（`effortLevel` / `modelSettings` / `autoMode`）は dotfiles 側に書かない
 - MCP サーバーをマシン間で共有するには `claude/mcp-servers.json` に書く。`merge_claude_mcp_servers` が `~/.claude.json` へ再帰マージする。マシン固有のサーバーや API キー等のマシン側追記キーは保持される。API キーの値は dotfiles 側に書かない
 - 外部スキルの導入は `claude/Skillfile` に行を追加して `./claude/install.sh` を実行する。**`npx skills add` は使わない**（`find-skills` スキルの手順はこれを指示するが従わない）。`find-skills` は探索にだけ使い、見つけた `<owner>/<repo> <skill> <tag>` は Skillfile へ書く
 - 仕組みの詳細は `claude/README.md`
-- このリポジトリ自身の指示ファイルは `AGENTS.md`（ルート・`ai-tools/`・`nix/`）。**ルートに `CLAUDE.md` / `.claude/CLAUDE.md` / `CLAUDE.local.md` を置かない。** cwd かその親にどれか 1 つでもあると、Claude Code は `AGENTS.md` を読まなくなる
+- このリポジトリ自身の指示ファイルは `AGENTS.md`（ルート・`ai-tools/`・`nix/`・`macos/`・`karabiner/`）。**ルートに `CLAUDE.md` / `.claude/CLAUDE.md` / `CLAUDE.local.md` を置かない。** cwd かその親にどれか 1 つでもあると、Claude Code は `AGENTS.md` を読まなくなる
   - `claude/CLAUDE.md` はグローバル指示（`~/.claude/CLAUDE.md`）の配布元で、例外的に `CLAUDE.md` の名前を持つ。`claude/` を cwd にしてセッションを始めるとこれがプロジェクトの `CLAUDE.md` として数えられ、ルートの `AGENTS.md` が読まれないので、セッションはリポジトリのルートで始める
   - サブディレクトリの `AGENTS.md` は、ルートで起動したセッションに自動では載らないことがある。Claude Code はそのディレクトリのファイルを Read したときに読み足すが、Codex は起動時にルートから cwd までの分しか読まない。サブディレクトリに `AGENTS.md` を足したら、ルートのこのファイルの該当節から名指しで参照する
 - `claude/hooks/block-dangerous.sh` を変更したら `sh tests/claude/block-dangerous_test.sh` を流す。止めるべきコマンドと通すべきコマンドの両方をケースにしてある
@@ -112,22 +106,10 @@
 - ccusage / codegraph を Nix flake で提供する。パッケージング方式と更新手順は `ai-tools/AGENTS.md`
 
 ### macOS システム設定（macos）
-- `macos/install.sh` が `defaults` でシステム設定を適用する。詳細は `macos/README.md`
-- **型は実機から読み取ったものをそのまま使う。** macOS は同じ意味のキーでもドメインごとに型を変えて書いており（トラックパッドの `Dragging` は内蔵が integer、Bluetooth が boolean）、揃えると元の状態を再現できない。型は `defaults export <ドメイン> - | plutil -convert xml1 -o - -` で確認する（`defaults read` では bool と int を区別できない）
-- **bool は `write_bool` を使う。** `defaults write -bool` が受け付けるのは `true/false/yes/no` だけで、`1` を渡すと usage を出して何も書かない。一方 `defaults read` は `1/0` を返すため、書き込みと比較で表記が違う
-- 値が入れ子の dict / array になるものは平文で書けないので plist から `defaults import` する（`symbolichotkeys.plist`、`input-sources.plist`）。**この 2 つは自動生成ファイル。** 手書きせず `macos/README.md` の生成コマンドを流す
-- **状態として書き換わる値は入れない**（Finder の `ShowSidebar` はサイドバーを開閉するたびに書き換わる）。追加前に時間を空けて 2 回 `defaults read` を取り、差分が出ないことを確かめる
-- **TCC 保護ドメインは入れない**（`com.apple.universalaccess`）。`defaults write` が `Could not write domain <ドメイン>; exiting` で拒否される。通すには実行中のターミナルへフルディスクアクセスが要るが、その権限はターミナル本体に付いて配下の全コマンドへ継承されるため与えない。`[skipped]` を出し、設定する項目を `notice()` で末尾の TODO に積む（項目と対応するキーは `macos/README.md`）
-- `macos/install.sh` を変更したら `sh tests/macos/install_test.sh` を流す。`defaults` と `killall` をスタブに差し替えて実機の設定には触れず、1 回目に全 `write_*` 行が書き込むこと・2 回目に 1 件も書かないこと・TCC 保護ドメインが毎回 `[skipped]` と手順の案内を出すことをケースにしてある
+- `macos/` 配下を変更するときは、先に `macos/AGENTS.md`（`defaults` の型・bool の書き方・入れてはいけない値・テスト）を読む
 
 ### Karabiner-Elements 設定（karabiner）
-- complex modifications（`Naginata.json`、`Personal.json`）は `~/.config/karabiner/assets/complex_modifications/` へ symlink する。Karabiner はこのディレクトリを読むだけで、リンクを壊さない（GUI のゴミ箱ボタンでルールを消したときだけ `unlink` する）
-- **`karabiner.json` は symlink 管理できない。** Karabiner-Elements は設定を保存するたびにこのファイルを書き直し、その際 symlink を実体で置き換える。symlink のままだと外部からの変更検知（自動リロード）も効かない。共有したいキーは `karabiner/profile-defaults.json` に持ち、`merge_karabiner_profile` が `merge_config` へフィルタを渡して適用する
-- `profile-defaults.json` が持つのは `name` / `devices` / `virtual_hid_keyboard` だけ。**`complex_modifications` の `rules` は持たない。** rules には assets/ 側のファイルを GUI で有効化した結果が入るため、両方から書くと二重管理になる
-- `devices` は配列なので dotfiles 側の内容で置換される。マシン固有のデバイス設定を足したマシンでは `merge_config` が `[dropped]` で知らせる
-- `name` をキーにプロファイルを特定する。プロファイル名を変えたマシンでは当たらず、`notice()` の TODO に出る
-- assets/ に置いただけでは complex modification は効かない。常時有効にしたいルールは `Personal.json` に入れる（未有効なら TODO に出る）。`Naginata.json` は必要なときに GUI から選ぶための置き場で、TODO の対象外
-- `karabiner/install.sh` を変更したら `sh tests/karabiner/install_test.sh` を流す。`$HOME` を一時ディレクトリへ差し替えて実機の `~/.config/karabiner` には触れず、`karabiner.json` の状態（未作成・プロファイル名違い・複数プロファイル・マシン固有デバイスあり）ごとの経路をケースにしてある
+- `karabiner/` 配下を変更するときは、先に `karabiner/AGENTS.md`（`karabiner.json` を symlink 管理できない理由・`profile-defaults.json` が持つキー・テスト）を読む
 
 ## 保守性のルール
 1. 新しい dotfiles はインストーラに追加（対象ディレクトリの `install.sh`。無ければルートの `install.sh`）
