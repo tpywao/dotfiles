@@ -4,7 +4,6 @@
 
 ## プロジェクト概要
 - **用途**: macOS + Linux 向けの個人用 dotfiles リポジトリ
-- **管理対象**: zsh, git, nix, Homebrew, karabiner, fzf, macOS のシステム設定 など
 
 ## インストーラの構成
 
@@ -71,7 +70,6 @@
 ### 重要: zsh 設定
 - **重要**: ~/.zshrc は読まれません。$ZDOTDIR 配下（.dotfiles/zsh/）の設定を編集してください
 - 設定値: $ZDOTDIR=~/.dotfiles/zsh, no_global_rcs
-- zsh 設定ファイル: `zsh/.zshrc`, `zsh/.zprofile`, `zsh/.zlogout`
 - `zsh/check.zsh` を変更したら `zsh tests/zsh/check_test.zsh` を流す。`git` をスタブに差し替えて「flake.lock のどのノードを何回・どの ref 指定で問い合わせるか」をケースにしてあり、ネットワークへは出ない
   - 末尾の `_dotfiles_check` 自動実行は `DOTFILES_CHECK_NO_AUTORUN` で抑止できる。テストが関数定義だけを読み込むためにある
   - `ls-remote` は GitHub 側がそのリポジトリの ref アドバタイズを用意していないと 1 件で数分かかる（`torvalds/linux` で 384 秒、直後の再問い合わせは 0.8 秒）。**ref 指定の形（裸 / フルパス / `--heads`）では変わらない**。日に 1 回しか走らない daily 群は毎回この「冷えた」状態を引くため、速くするのではなくバックグラウンドへ逃がして解決している
@@ -91,11 +89,7 @@
   - 判定は `git rev-parse --is-shallow-repository`、解消は `git fetch --unshallow`
   - リポジトリ自体は壊れていないため `git fsck` では何も出ない。`nix flake check --impure "git+file:///path/to/repo"` と直接指定すると `is a shallow Git repository, so 'revCount' is not available` と出て原因が分かる
 
-### git 設定
-- ローカル git 設定（.gitconfig.local）と結合される
-
 ### Claude Code 設定
-- `claude/`: Claude Code 関連（hooks, skills など）
 - グローバル `~/.claude/` へ **symlink** で同期する。**編集は必ず dotfiles 側で行う**（`~/.claude/` 側は参照専用。Claude Code は symlink 経由の書き込みを拒否する）
 - `settings.json` だけはリンクしない。Claude Code 自身が書き込むファイルのため、`claude/install.sh` の `merge_claude_settings`（共通部の `merge_config` を `hooks` 用のフィルタ付きで呼ぶ）が dotfiles 側の共有キーのみを既存の設定へ上書きする。マシン固有キー（`effortLevel` / `modelSettings` / `autoMode`）は dotfiles 側に書かない
 - MCP サーバーをマシン間で共有するには `claude/mcp-servers.json` に書く。`merge_claude_mcp_servers` が `~/.claude.json` へ再帰マージする。マシン固有のサーバーや API キー等のマシン側追記キーは保持される。API キーの値は dotfiles 側に書かない
