@@ -9,3 +9,7 @@ macos-option-as-alt = left
 # ASCII / CJK / Nerd アイコンすべて解決される（italic は合成）
 font-family = FirgeNerd Console
 font-size = 14
+
+# kitty keyboard protocol を有効にしたアプリでは ctrl+m が CSI u（\e[109;5u）で
+# 送られ、Enter として扱われない。プロトコルの状態に関係なく CR を送る
+keybind = ctrl+m=text:\r
