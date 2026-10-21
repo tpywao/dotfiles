@@ -18,6 +18,22 @@ link_claude_files() {
     rel="${src#$DOTFILES/claude/}"
     link_config "$src" "$HOME/.claude/$rel"
   done
+  prune_claude_links
+}
+
+# dotfiles 側で消したファイルへのリンクは、上の find に現れないので残り続ける。
+# 消すのは dotfiles の claude/ を指していてリンク先が無いものだけ。他のツールが
+# 張ったリンク（外部スキルの store 等）は、リンク先が無くても触らない
+prune_claude_links() {
+  find "$HOME/.claude" -type l 2>/dev/null | while read -r dst; do
+    case "$(readlink "$dst")" in
+      "$DOTFILES/claude/"*) ;;
+      *) continue ;;
+    esac
+    [ -e "$dst" ] && continue
+    /bin/rm -- "$dst"
+    log_tag "$LOG_CHANGED" "[unlinked]" "$dst (リンク先が消えた)"
+  done
 }
 
 # settings.json はリンクの対象にできない。Claude Code 自身が model や
