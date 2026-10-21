@@ -94,6 +94,7 @@
   - サブディレクトリの `AGENTS.md` は、ルートで起動したセッションに自動では載らないことがある。Claude Code はそのディレクトリのファイルを Read したときに読み足すが、Codex は起動時にルートから cwd までの分しか読まない。サブディレクトリに `AGENTS.md` を足したら、ルートのこのファイルの該当節から名指しで参照する
 - `claude/hooks/block-dangerous.sh` を変更したら `sh tests/claude/block-dangerous_test.sh` を流す。止めるべきコマンドと通すべきコマンドの両方をケースにしてある
 - `claude/install.sh` の `merge_claude_settings` を変更したら `sh tests/claude/merge-claude-settings_test.sh` を流す。既存の設定と状態ファイルの組み合わせ（他のアプリの hook あり・前回配った hook が残っている・状態ファイル無し・1 グループに混在）ごとの経路をケースにしてあり、期待値は実物の `claude/settings.json` から取る
+- `claude/install.sh` の `prune_claude_links` を変更したら `sh tests/claude/prune-claude-links_test.sh` を流す。消すリンク（dotfiles の `claude/` を指していてリンク先が無い）と、条件を片方しか満たさず残すリンクをケースにしてある
 - `claude/install.sh` の `install_external_skills` を変更したら `sh tests/claude/install-external-skills_test.sh` を流す。`gh` をスタブに差し替えて認証状態と導入の成否ごとの経路をケースにしてあり、ネットワークへは出ず実際の `~/.claude/` も触らない
 
 ### AI ツール環境（ai-tools）
