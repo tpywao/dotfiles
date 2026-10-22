@@ -13,7 +13,7 @@
     dwt = {
       # タグ固定: nix flake update で main に追従しないようにする。
       # 更新手順: dwt 側でタグを打つ → ここの参照タグを書き換える
-      url = "github:wao3299/dwt/v0.2.0";
+      url = "github:wao3299/dwt/v0.3.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
