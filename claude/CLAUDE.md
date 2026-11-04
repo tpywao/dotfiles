@@ -177,6 +177,10 @@ sed -i.bak '/pattern/d' file && rm file.bak
 
 `grep -v pattern file > tmp && mv tmp file` で代替すると、`mv` は元ファイルの mode を引き継がないためパーミッションが落ちる。実行ビット付きのファイルに使うと git diff に mode 変更が混ざる（`zsh/.zshrc` が 100755 → 100644 になった）。`-i.bak` は mode を保持する。
 
+### 変数の直後に `:` を続けるときは `${VAR}` と書く
+
+Bash ツールのシェルは zsh で、`$VAR:a` や `$VAR:h` の `:` 以降を変数の修飾子（`:a` は絶対パス化、`:h` は親ディレクトリ）として解釈する。`git show $REV:app/foo.py` は `$REV:a` が展開されて `<cwd>/<REV の値>pp/foo.py` になり、`fatal: ambiguous argument` で失敗する。`git show ${REV}:app/foo.py` と波括弧で区切る。
+
 ## コミットの組み直し
 
 自分のコミットを分け直す・まとめ直すときの `git reset --soft` の基点は `HEAD~<n>` を使い、`origin/main` を指定しない。
