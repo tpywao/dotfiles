@@ -59,8 +59,10 @@ skeptic の報告自体の事実主張を、2体目の独立エージェント�
 - skeptic の報告（部分報告ならその全文）を、**通知テキストの転記ではなく** skeptic の transcript（Agent 呼び出し結果の output_file）から機械抽出してスクラッチパッドの新しいファイルに保存する。通知経由の転記はハーネスのエスケープ（`>=` → `&gt;=` 等）やモデル再出力による劣化が入り、出力トークンも報告全文分かかるため使わない:
 
   ```bash
-  jq -rs '[.[] | select(.type=="assistant")] | last | .message.content | map(select(.type=="text") | .text) | join("\n")' <output_file> > <保存先ファイル>
+  jq -rs '[.[] | select(.type=="assistant") | .message.content | ((map(select(.type=="tool_use" and .name=="SubagentHandback") | .input.message) | last) // (map(select(.type=="text") | .text) | join("\n"))) | select(. != "")] | last // ""' <output_file> > <保存先ファイル>
   ```
+
+  報告は本文のテキストで返る場合と、`SubagentHandback` ツールの `message` 引数で返る場合がある。後者では最後の assistant メッセージに本文のテキストがなく、テキストだけを拾うと空になる。上の式は、assistant メッセージごとに `SubagentHandback` の `message` があればそれを、なければテキストを取り、空でない最後のものを出す。
 
   抽出後は `wc -c` と報告固有の文字列の `rg -c` で中身を確認する（`cat` で全文をコンテキストに載せない）
 - `skeptic` サブエージェント（利用不可なら `general-purpose`）に以下のプロンプトを渡して dispatch する。プロンプトは固定のため、呼び出し前のユーザー承認は不要
