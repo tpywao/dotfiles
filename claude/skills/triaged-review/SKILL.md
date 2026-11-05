@@ -98,6 +98,8 @@ BASE=$(git merge-base origin/<baseRefName> <headRefOid>)
 
 **PR**: 選ばれた指摘ごとにコメントの文面を作って見せ、判定（Approve / Comment / Request changes）と本文を確認してから、1 回のレビューとしてまとめて投稿する。文面は、冒頭に結論と修正の方向、続けて番号付きの節（何が起きるか / 再現手順 / 修正案 / 補足）にする。
 
+レビュー本文にインラインコメントの内容は繰り返さない。インラインコメントがあるときは「インラインで n 件コメントしたので確認をお願いします」と一言だけ添える。下書きのあとに投稿する指摘を絞ったときは、本文の件数をそれに合わせる。
+
 ```bash
 # 本文は JSON ファイルに書いてから渡す（コマンド引数に長文を埋め込まない）
 gh api repos/<owner>/<repo>/pulls/<N>/reviews --method POST --input review.json
