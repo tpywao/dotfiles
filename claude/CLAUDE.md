@@ -125,7 +125,14 @@ PR も同じ基準で分ける。障害対応・性能改善・リファクタ�
 
 ## lint・フォーマットの実行
 
-コミット前の lint・フォーマットは、**設定ファイルを読む入口から流す**（`pre-commit run --files <対象ファイル...>` など）。`.pre-commit-config.yaml` の hook を `ruff format` / `eslint` のような個別コマンドに書き写して流さない。手順書に書くときも同じ。
+コミット前の lint・フォーマットは、**どのツールを流すかを定義した設定ファイルを読む入口から流す**。リポジトリに次のような定義があれば、その入口を使う。
+
+- `.pre-commit-config.yaml` → `pre-commit run --files <対象ファイル...>`
+- `lefthook.yml` → `lefthook run pre-commit`
+- husky + lint-staged（`.husky/`、`package.json` の `lint-staged` など） → `npx lint-staged`
+- `package.json` の `scripts`、`Makefile`、`justfile`、`tox.ini` / `noxfile.py` などのタスク定義 → `npm run lint` / `make lint` のように定義済みのタスク名で呼ぶ
+
+定義の中身（`ruff format` / `eslint` のような個別コマンド）を書き写して流さない。手順書に書くときも同じ。複数の定義があるときは、コミット時に実際に走る側（git hook から呼ばれるもの）を優先する。
 
 hook が実行されない環境（hook が未インストール、コミットする場所と lint のツールが入っている場所が違う、など）では、入口のほうをその環境で動くようにする。個別コマンドで代用しない。
 
