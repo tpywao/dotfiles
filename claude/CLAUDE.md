@@ -136,6 +136,7 @@ PR も同じ基準で分ける。障害対応・性能改善・リファクタ�
 - `curl` / `wget` → `ax`（HTTP フェッチ。status/headers/body を JSON レポートで返す。`ax <url>` でフェッチ、`--body` で本文のみ出力）
   - **デフォルトで 20MB / 30 秒で打ち切られる**（`--body` を付けても取得側のキャップは効く）。これを超えるファイルは `--max-bytes` / `-m` を明示するか、別手段を使う（Nix の fixed-output derivation なら `nix-prefetch-url` 等）
   - 打ち切りは stderr に告知される。`2>/dev/null` で捨てると、途中で切れたファイルを正常なものとして掴んだまま気づけない
+  - **レスポンスヘッダも既定では一部しか返さない**（省略数は `headers_omitted` に出る）。`Content-Security-Policy` などセキュリティ系ヘッダを確かめるときは `--headers` を付ける。付け忘れると、実際には付いているヘッダを「無い」と誤判定する
 
 ただし専用ツール（Grep / Glob / Read / WebFetch）が使える場面ではそちらが最優先。これは Bash に降りる場合の選択規則。
 
