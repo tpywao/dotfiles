@@ -21,7 +21,7 @@ description: Use when PR・ブランチ・作業中の差分・ファイルや�
 |---|---|---|---|---|
 | PR 番号・URL | `headRefOid` | PR の base ブランチとの merge-base | PR 本文、コミットメッセージ、チケット | 投稿 |
 | ブランチ名 | `git rev-parse <ブランチ>` | 既定ブランチ（リポジトリの指示ファイルに開発用の base があればそれ）との merge-base | ブランチ名やコミットのチケット番号、コミットメッセージ | 報告し、直すか確認 |
-| 引数なし | 作業ツリー（`HEAD` に未コミットの変更を足したもの） | `HEAD` | 現在のブランチ名、会話の文脈 | 報告し、直すか確認 |
+| 引数なし | 作業ツリー（`HEAD` に未コミットの変更を足したもの） | upstream（無ければ既定ブランチ）との merge-base | 現在のブランチ名、会話の文脈 | 報告し、直すか確認 |
 | パス | なし | なし | 対象コードのコメント、関連する設計 doc | 報告のみ |
 
 ```bash
@@ -33,7 +33,12 @@ BASE=$(git merge-base origin/<baseRefName> <headRefOid>)
 # ブランチ
 git fetch origin <既定ブランチ>
 BASE=$(git merge-base origin/<既定ブランチ> <ブランチ>)
+
+# 引数なし
+BASE=$(git merge-base @{upstream} HEAD 2>/dev/null || git merge-base <既定ブランチ> HEAD)
 ```
+
+引数なしの `BASE` は、`code-review` が引数なしで見る範囲（`@{upstream}...HEAD`、upstream が無ければ `main...HEAD` に、作業ツリーの変更を足したもの）に合わせる。`A...B` の差分は A と B の merge-base から B までの差分なので、反証と `code-review` が同じ変更を見ることになり、手順 3 でコミット済みの変更が既存と判定されることもない。push 済みのブランチでは upstream が自分のリモートブランチになるので、まだ push していないコミットと作業ツリーの変更だけが対象になる。ブランチ全体を見たいときはブランチ名を渡す。
 
 前提として拾うのは次の 2 つ:
 
@@ -47,7 +52,7 @@ BASE=$(git merge-base origin/<既定ブランチ> <ブランチ>)
 1. 対象をスクラッチパッドの新しいファイルに保存する。先頭にリポジトリのパス、手順 1 で決めた head と `BASE`、作業ツリーの `HEAD` を書き、反証する側が周辺のコードを自分で読めるようにする。作業ツリーがレビュー対象の head と一致するとは限らない（他人の PR を手元のブランチのまま見るなど）ので、head と `BASE` は値として書く。引数なしは head を「作業ツリー（`HEAD` に未コミットの変更を足したもの）」と書く。
    - **PR**: `gh pr view <N> --json number,title,body,baseRefName,headRefOid,commits,files,url` と `gh pr diff <N>` の全文
    - **ブランチ**: ブランチ名、`git log ${BASE}..<ブランチ>` のコミットメッセージ、`git diff ${BASE} <ブランチ>` の全文
-   - **引数なし**: 現在のブランチ名、`git diff HEAD` の全文、未追跡の新規ファイルの中身（`git diff HEAD` には出ない）
+   - **引数なし**: 現在のブランチ名、`git log ${BASE}..HEAD` のコミットメッセージ、`git diff ${BASE}` の全文（コミット済みと未コミットの変更の両方が入る）、`git ls-files --others --exclude-standard` で挙がる未追跡の新規ファイルの中身（`git diff` には出ない）
    - **パス**: 保存せず、そのパスを次でそのまま渡す。先頭の情報も書かない（絶対パスでどのリポジトリかは分かる）
 2. 先に `skeptic` スキルを呼び、引数にはこのファイル（パス指定ならそのパス）だけを渡す。レビューの経緯は渡さない。`skeptic` スキルの手順どおり、エージェントは起動したら完了を待たずに戻るので、起動を確かめたらすぐ次へ進む。環境によってエージェントが完了まで戻らないときは、`skeptic` のあとに `code-review` が順に走るだけで、手順はそのまま進められる。
    - `skillOverrides` で無効にされていて呼べない（`disabled for model invocation`）ときは、エージェントを直接呼んで迂回しない。ユーザーに `/skeptic <ファイルのパス>` の実行を依頼し、反証の結果を待たずに次へ進む。このときは `skeptic` スキル自身が報告の全文を出すが、ユーザーが自分で呼んだ結果なのでそのままにする。このスキルは全文を繰り返さず、指摘を選別の材料にだけ使う。
