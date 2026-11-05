@@ -101,7 +101,7 @@ BASE=$(git merge-base origin/<baseRefName> <headRefOid>)
 
 **PR**: 選ばれた指摘ごとにコメントの文面を作って見せ、判定（Approve / Comment / Request changes）と本文を確認してから、1 回のレビューとしてまとめて投稿する。文面は、冒頭に結論と修正の方向、続けて番号付きの節（何が起きるか / 再現手順 / 修正案 / 補足）にする。
 
-インラインコメントは diff の hunk に含まれる行にしか置けない。指摘した行が hunk の外にあるとき（変更していない呼び出し側が壊れるなど）は、原因になった変更行にコメントを置き、影響が出る場所（`<path>:<line>`）を文面に書く。置ける変更行が無い指摘（足りないマイグレーションやテスト、設計の提案など）だけをレビュー本文に書く。
+インラインコメントは diff の hunk に含まれる行にしか置けない。指摘した行が hunk の外にあるとき（変更していない呼び出し側が壊れるなど）は、原因になった変更行にコメントを置き、影響が出る場所（`<path>:<line>`）を文面に書く。原因が削除した行なら、`side: "LEFT"` と変更前の行番号でその行に置く。置ける変更行が無い指摘（足りないマイグレーションやテスト、設計の提案など）だけをレビュー本文に書く。
 
 レビュー本文にインラインコメントの内容は繰り返さない。インラインコメントがあるときは「インラインで n 件コメントしたので確認をお願いします」と一言だけ添える。本文に書く指摘があるときは、その一言に「加えて以下 m 件」と続けて、指摘を並べる。下書きのあとに投稿する指摘を絞ったときは、n と m をそれに合わせる。
 
@@ -110,7 +110,7 @@ BASE=$(git merge-base origin/<baseRefName> <headRefOid>)
 gh api repos/<owner>/<repo>/pulls/<N>/reviews --method POST --input review.json
 ```
 
-`review.json` には `commit_id`（head の SHA）・`event`・`body`・`comments`（`path` / `line` / `side: "RIGHT"` / `body`）を入れる。`line` は diff の hunk に含まれる行でなければ受け付けられない。
+`review.json` には `commit_id`（head の SHA）・`event`・`body`・`comments`（`path` / `line` / `side` / `body`）を入れる。`side` は追加した行と変更のない行なら `"RIGHT"`（`line` は変更後の行番号）、削除した行なら `"LEFT"`（`line` は変更前の行番号）にする。`line` は diff の hunk に含まれる行でなければ受け付けられない。
 
 **ブランチ・作業中の差分**: 選ばれた指摘を直す。直したあとは、その指摘の再現方法で直ったことを確かめる。
 
