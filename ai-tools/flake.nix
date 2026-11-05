@@ -36,7 +36,7 @@
             ];
           };
 
-          npmDepsHash = "sha256-z9L11eszmhKAIRBkE8YlRX2TyfeMFWKh4u7NwgkMlh8=";
+          npmDepsHash = "sha256-ZKV5QHX5RwiraRlJ6E6qeKQp8C9C+dGTThAVyh5o3UE=";
           # fetcher 形式を明示(lockfile 更新時は npmDepsHash と合わせて再計算)
           npmDepsFetcherVersion = 2;
 
