@@ -37,7 +37,7 @@ BASE=$(git merge-base origin/<baseRefName> <headRefOid>)
 
 ### 2. 反証と `code-review` を並行して走らせる
 
-レビュー対象の変更そのものを `skeptic` で反証する。`code-review` の指摘や手順 3・4 の選別の判断は渡さない。渡すと反証が選別結果の確認にとどまり、`code-review` が拾わなかった問題や、範囲外・除外にした指摘が本当のバグである可能性を拾えない。結果に依存しないので、`code-review` を待たずに始める。
+レビュー対象の変更そのものを `skeptic` で反証する。`code-review` の指摘や手順 3・4 の選別の判断は渡さない。渡すと反証が選別結果の確認にとどまり、`code-review` が拾わなかった問題を拾えない。結果に依存しないので、`code-review` を待たずに始める。
 
 1. 対象をスクラッチパッドの新しいファイルに保存する。先頭にリポジトリのパス・head SHA・`BASE`・作業ツリーの `HEAD` を書き、反証する側が周辺のコードを自分で読めるようにする。作業ツリーがレビュー対象の head と一致するとは限らない（他人の PR を手元のブランチのまま見るなど）ので、head SHA と `BASE` は値として必ず書く。どちらも手順 1 の `git fetch` で手元にある。
    - **PR**: `gh pr view <N> --json number,title,body,baseRefName,headRefOid,commits,files,url` と `gh pr diff <N>` の全文
