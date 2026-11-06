@@ -1,0 +1,25 @@
+version: 2
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  # root と ai-tools はそれぞれ flake.lock を持つ
+  - package-ecosystem: "nix"
+    directories:
+      - "/"
+      - "/ai-tools"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(nix)"
+    groups:
+      flake-inputs:
+        patterns: ["*"]
