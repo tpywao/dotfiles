@@ -1,0 +1,67 @@
+name: Dependabot npmDepsHash
+
+# Dependabot は package.json / package-lock.json しか書き換えないため、
+# そのままでは ai-tools/flake.nix の npmDepsHash が古いまま残り fetchNpmDeps が失敗する。
+# Dependabot の PR に対して hash を再計算し、同じブランチへコミットを積む。
+on:
+  pull_request:
+    paths:
+      - "ai-tools/package.json"
+      - "ai-tools/package-lock.json"
+
+permissions:
+  contents: read
+
+jobs:
+  update-npm-deps-hash:
+    # 人が出す PR は手元で npmDepsHash を直す運用のまま。フォークからの PR には書き込まない
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    # ai-tools/flake.nix の nixpkgs は darwin チャンネルを追っているため、実際に使う環境に合わせて macOS で回す
+    runs-on: macos-latest
+    permissions:
+      # Dependabot が起動したワークフローの GITHUB_TOKEN は既定で読み取り専用。push のために引き上げる
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
+
+      - name: npmDepsHash を再計算する
+        working-directory: ai-tools
+        run: |
+          set -euo pipefail
+          log="$RUNNER_TEMP/npm-deps.log"
+
+          # fakeHash で npmDeps（fixed-output derivation）だけをビルドし、mismatch の got: から正しい値を得る
+          sed -i.bak -E 's|npmDepsHash = "[^"]*";|npmDepsHash = pkgs.lib.fakeHash;|' flake.nix && rm flake.nix.bak
+          if nix build --no-link .#ai-tools.npmDeps 2> "$log"; then
+            echo "fakeHash でビルドが通った。npmDepsHash の置換に失敗している" >&2
+            exit 1
+          fi
+          hash=$(sed -nE 's/^[[:space:]]*got:[[:space:]]*(sha256-[A-Za-z0-9+/=]+)[[:space:]]*$/\1/p' "$log" | head -n 1)
+          if [ -z "$hash" ]; then
+            cat "$log" >&2
+            echo "hash mismatch 以外の理由でビルドが失敗した" >&2
+            exit 1
+          fi
+          sed -i.bak -E "s|npmDepsHash = pkgs.lib.fakeHash;|npmDepsHash = \"$hash\";|" flake.nix && rm flake.nix.bak
+
+          # hash だけでなく、新しい依存でパッケージ全体がビルドできるかも確かめる
+          nix build --no-link .#ai-tools
+
+      - name: 変更があればコミットして push する
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- ai-tools/flake.nix; then
+            echo "npmDepsHash は最新"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ai-tools/flake.nix
+          git commit -m "chore(ai-tools): npmDepsHash を package-lock.json に合わせて更新"
+          git push
