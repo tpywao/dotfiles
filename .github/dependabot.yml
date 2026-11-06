@@ -23,3 +23,18 @@ updates:
     groups:
       flake-inputs:
         patterns: ["*"]
+
+  # ccusage / codegraph。flake.nix の npmDepsHash は
+  # .github/workflows/dependabot-npm-deps-hash.yml が PR 上で再計算する
+  - package-ecosystem: "npm"
+    directory: "/ai-tools"
+    schedule:
+      interval: "weekly"
+    # 公開直後のバージョンは乗っ取られたリリースが取り下げられる前のことがあるため、数日置いてから提案させる
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(ai-tools)"
+    groups:
+      ai-tools-npm:
+        patterns: ["*"]

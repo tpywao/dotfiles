@@ -10,4 +10,5 @@ Claude Code 周辺のツール（ccusage, codegraph）を Nix flake で提供す
   - `npmFlags = [ "--ignore-scripts" ]`: install スクリプト（npm マルウェアの主要経路）は実行しない。外さないこと
   - **`runCommand`+`npm install` に戻さないこと**: Nix ビルドサンドボックスはネットワーク不可で、空の derivation を「成功」として生成してしまう（失敗が握りつぶされる）。`fetchNpmDeps` は fixed-output derivation なのでネットワーク可
   - **ツールの更新手順**: `ai-tools/package.json` のバージョンを上げ → `cd ai-tools && npm install --ignore-scripts` で lockfile を再生成 → `flake.nix` の `npmDepsHash` を再計算（いったん `lib.fakeHash` にして `nix build` し、hash mismatch エラーの `got:` の値を転記）。`npmDepsFetcherVersion` を変えた場合も hash の再計算が必要
+  - **Dependabot 経由の更新**: `.github/dependabot.yml` の npm エントリが週次で `package.json` / `package-lock.json` を更新する PR を出す。Dependabot は `npmDepsHash` を書き換えないため、`.github/workflows/dependabot-npm-deps-hash.yml` が上の手順（`fakeHash` → `got:` の転記）を CI で行い、同じブランチへコミットを積む。人が出す PR では動かないので、手で更新するときは従来どおり手元で hash を直す
 - codegraph のフル再構築は `codegraph index`。`rebuild` というサブコマンドは無い
