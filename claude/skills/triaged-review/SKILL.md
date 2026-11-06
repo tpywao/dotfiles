@@ -21,7 +21,7 @@ description: Use when PR・ブランチ・作業中の差分・ファイルや�
 |---|---|---|---|---|
 | PR 番号・URL | `headRefOid` | PR の base ブランチとの merge-base | PR 本文、コミットメッセージ、チケット | 投稿 |
 | ブランチ名 | `git rev-parse <ブランチ>` | 既定ブランチ（リポジトリの指示ファイルに開発用の base があればそれ）との merge-base | ブランチ名やコミットのチケット番号、コミットメッセージ | 報告し、直すか確認 |
-| 引数なし | 作業ツリー（`HEAD` に未コミットの変更を足したもの） | upstream（無ければ既定ブランチ）との merge-base | 現在のブランチ名、会話の文脈 | 報告し、直すか確認 |
+| 引数なし | 作業ツリー（`HEAD` に未コミットの変更を足したもの） | upstream（無ければ `main`）との merge-base。どちらも無ければ `HEAD~1` | 現在のブランチ名、会話の文脈 | 報告し、直すか確認 |
 | パス | なし | なし | 対象コードのコメント、関連する設計 doc | 報告のみ |
 
 ```bash
@@ -35,10 +35,10 @@ git fetch origin <既定ブランチ>
 BASE=$(git merge-base origin/<既定ブランチ> <ブランチ>)
 
 # 引数なし
-BASE=$(git merge-base @{upstream} HEAD 2>/dev/null || git merge-base <既定ブランチ> HEAD)
+BASE=$(git merge-base @{upstream} HEAD 2>/dev/null || git merge-base main HEAD 2>/dev/null || git rev-parse HEAD~1)
 ```
 
-引数なしの `BASE` は、`code-review` が引数なしで見る範囲（`@{upstream}...HEAD`、upstream が無ければ `main...HEAD` に、作業ツリーの変更を足したもの）に合わせる。`A...B` の差分は A と B の merge-base から B までの差分なので、反証と `code-review` が同じ変更を見ることになり、手順 3 でコミット済みの変更が既存と判定されることもない。ただし未追跡の新規ファイルは `code-review` が見ないので、反証だけが見る。push 済みのブランチでは upstream が自分のリモートブランチになるので、まだ push していないコミットと作業ツリーの変更だけが対象になる。ブランチ全体を見たいときはブランチ名を渡す。
+引数なしの `BASE` は、`code-review` が引数なしで見る範囲（`@{upstream}...HEAD`、upstream が無ければ `main...HEAD`、`main` も無ければ `HEAD~1` に、作業ツリーの変更を足したもの）に合わせる。`code-review` は既定ブランチを調べず `main` という名前を決め打ちしているので、こちらも既定ブランチではなく `main` を使う。`A...B` の差分は A と B の merge-base から B までの差分なので、反証と `code-review` が同じ変更を見ることになり、手順 3 でコミット済みの変更が既存と判定されることもない。ただし未追跡の新規ファイルは `code-review` が見ないので、反証だけが見る。push 済みのブランチでは upstream が自分のリモートブランチになるので、まだ push していないコミットと作業ツリーの変更だけが対象になる。既定ブランチが `main` 以外で upstream も無いリポジトリでは、直前の 1 コミットと作業ツリーの変更だけが対象になる。ブランチ全体を見たいときはブランチ名を渡す。
 
 前提として拾うのは次の 2 つ:
 
