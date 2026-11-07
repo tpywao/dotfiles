@@ -12,6 +12,8 @@
 # 判定されて固定されないことが、この関数で一番壊れやすいため。
 
 DOTFILES=$(cd "$(dirname "$0")/../.." && pwd -P)
+# worktree の中でも流せるよう refuse_worktree を通す
+export DOTFILES_ALLOW_WORKTREE=1
 
 pass_count=0
 fail_count=0

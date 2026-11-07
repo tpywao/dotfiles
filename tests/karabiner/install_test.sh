@@ -11,6 +11,8 @@
 # そして GUI での有効化が要るルールと Karabiner 未起動が TODO へ回ること。
 
 DOTFILES=$(cd "$(dirname "$0")/../.." && pwd -P)
+# worktree の中でも流せるよう refuse_worktree を通す
+export DOTFILES_ALLOW_WORKTREE=1
 . "$DOTFILES/utils/install-common.sh"
 
 is_mac || {

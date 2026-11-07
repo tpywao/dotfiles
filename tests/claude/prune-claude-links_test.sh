@@ -8,6 +8,8 @@
 # 条件のどちらか一方しか満たさないリンクを並べ、消しすぎないことを確認する。
 
 DOTFILES=$(cd "$(dirname "$0")/../.." && pwd -P)
+# worktree の中でも流せるよう refuse_worktree を通す
+export DOTFILES_ALLOW_WORKTREE=1
 
 pass_count=0
 fail_count=0

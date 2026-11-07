@@ -13,6 +13,8 @@
 # ケースを置いている。
 
 DOTFILES=$(cd "$(dirname "$0")/../.." && pwd -P)
+# worktree の中でも流せるよう refuse_worktree を通す
+export DOTFILES_ALLOW_WORKTREE=1
 
 if ! command -v jq > /dev/null 2>&1; then
   echo "SKIP  jq が無いため検証できない"

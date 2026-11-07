@@ -13,6 +13,8 @@
 # 手動設定にしているドメインが毎回 [skipped] と手順の案内を出すこと。
 
 DOTFILES=$(cd "$(dirname "$0")/../.." && pwd -P)
+# worktree の中でも流せるよう refuse_worktree を通す
+export DOTFILES_ALLOW_WORKTREE=1
 . "$DOTFILES/utils/install-common.sh"
 
 is_mac || {

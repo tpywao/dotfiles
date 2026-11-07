@@ -8,6 +8,8 @@
 # 「出力タグ」「リンク先」「退避の中身」を確認する。
 
 DOTFILES=$(cd "$(dirname "$0")/../.." && pwd -P)
+# worktree の中でも流せるよう refuse_worktree を通す
+export DOTFILES_ALLOW_WORKTREE=1
 . "$DOTFILES/utils/install-common.sh"
 
 pass_count=0

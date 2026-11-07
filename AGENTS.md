@@ -15,19 +15,20 @@
   - **順序の制約は「`nix/` より後に `docker/`・`claude/`・`macos/`」だけ。** `docker/` と `claude/` は設定を `jq` でマージし、`jq` は `nix/packages.nix` で入る（前に置くと jq が無いマシンの初回実行でマージがスキップされ、2 回目まで反映されない）。`macos/` は ことえりの候補ウィンドウに `nix/firge.nix` が入れるフォントを指定するため、前に置くと初回実行でフォントが無いまま設定が入る。残りのディレクトリの順序に意味は無い
   - `docker/` と `claude/` の前で `nix-daemon.sh` を読み込む必要があるため、ループが 2 つに分かれている。**後半のループには `jq` が要る 2 つだけを置く**（それ以外を混ぜると、そこにいる理由をコメントで説明できなくなる）。`nix/` より後という制約しか無い `macos/` は前半のループの末尾で足りる
 - `zsh/install.sh` はループに入れず、`$SHELL` が zsh のときだけ case 分岐から実行する（`fish/`・bash 用のリンクも同じ分岐にある）
-- `utils/install-common.sh`: 各 `install.sh` が source する共通部（`link_config()`、`merge_config()`、`log_tag()`、`notice()` と `utils/utils.bash` の読み込み）
+- `utils/install-common.sh`: 各 `install.sh` が source する共通部（`refuse_worktree()`、`link_config()`、`merge_config()`、`log_tag()`、`notice()` と `utils/utils.bash` の読み込み）
+  - `refuse_worktree()` は source した時点で走り、worktree からの実行なら `exit 1` する。サブの `install.sh` も単体で実行できるので共通部に置いている。`DOTFILES_ALLOW_WORKTREE=1` で通せる。共通部を source するか `install.sh` を実行するテストは、worktree の中でも流れるよう先頭でこの変数を export する
   - `link_config()` はリンクの有無だけでなく**リンク先**を検証し、違う先を指していれば張り替える。リンク先に実体があるときは、ファイルは内容が一致すれば置き換え・分岐していれば `.presymlink.<ts>` へ退避、ディレクトリは内容を比較せず常に退避する。親ディレクトリの作成も関数内で行うので、呼び出し側に `mkdir -p` は要らない
   - `merge_config <src> <dst> [<jq フィルタ>]` は JSON の共有キーだけを既存の設定へ上書き適用する（下の「アプリ自身が書き込む設定ファイル」を参照）。フィルタは `.[0]` を `dst`、`.[1]` を `src` として受け取り、既定は再帰マージ（`.[0] * .[1]`）。第 4 引数以降に渡したファイルは `.[2]` 以降になる
     - マージ結果を確定させる前に「`dst` にあって結果に無い配列要素」を洗い出し、見つかれば `[dropped]` で列挙して `.premerge.<ts>` へ退避する。`src` と突き合わせるのではなく**マージ結果**と突き合わせるので、呼び出し側が渡すフィルタが何をするかに依存しない
   - `notice() <文言>` はインストール後にユーザ自身が実行しないと解決しない作業を積む。ルートの `install.sh` が受け皿の一時ファイルのパスを `DOTFILES_NOTICES` で渡し、全ディレクトリの実行後に `-----> TODO` としてまとめて表示する。サブプロセスから親へ値を返せないためファイルを経由する（各 `install.sh` を単体で実行したときは変数が無いので、その場で出力する）
-  - `utils/install-common.sh` を変更したら `sh tests/utils/link-config_test.sh` と `sh tests/utils/merge-config_test.sh` と `sh tests/utils/notice_test.sh` を流す。1 つ目はリンク先の状態ごとに 6 経路、2 つ目は `dst` の状態・フィルタの有無・追加の入力・配列要素の消失検出で 16 ケースあり、出力タグ・マージ後の内容・退避の中身をケースにしてある。3 つ目は `DOTFILES_NOTICES` の有無で出力先が分かれる経路をケースにしてある
+  - `utils/install-common.sh` を変更したら `sh tests/utils/link-config_test.sh` と `sh tests/utils/merge-config_test.sh` と `sh tests/utils/notice_test.sh` と `sh tests/utils/refuse-worktree_test.sh` を流す。1 つ目はリンク先の状態ごとに 6 経路、2 つ目は `dst` の状態・フィルタの有無・追加の入力・配列要素の消失検出で 16 ケースあり、出力タグ・マージ後の内容・退避の中身をケースにしてある。3 つ目は `DOTFILES_NOTICES` の有無で出力先が分かれる経路、4 つ目はメインの作業ツリー・worktree・許可あり・git 管理外・git 無しの経路をケースにしてある
 - 出力の書式は 3 系統に分ける。**対象ごとの結果**は `log_tag <色> <[タグ]> <対象>` でタグ付き 1 行にする（`[linked]` / `[new]` / `[relinked]` / `[replaced]` / `[dropped]` / `[backup]` / `[merged]` / `[imported]` / `[current]` / `[applied]` / `[installed]` / `[skipped]` / `[unlinked]` / `[failed]`）。色はシアン=変化なし、緑=新規、黄=既存を動かした、赤=失敗。**対象を持たない進行ログ**（`-----> Switching home-manager` など）は `----->` のままにする。**ユーザ自身がコマンドを打つまで解決しない作業**は `notice()` で末尾へ回す（タグ 1 行は出力が長いと流れてしまい、残タスクの提示には向かない）
 
 規約:
 
 - 各 `install.sh` は先頭で `DOTFILES` を自前で解決して `utils/install-common.sh` を source する。単体でも実行できる（例: `./claude/install.sh`）
 - ルートは `sh "$DOTFILES/<dir>/install.sh" || exit $?` で呼ぶ。**各サブは末尾で明示的に `exit 0` する**。これが無いと最後のコマンド（`home-manager switch`、`brew bundle`、`ln` など）の失敗がそのままスクリプトの終了ステータスになり、後続のディレクトリが丸ごとスキップされる（分割前は 1 プロセスで、失敗しても後続が走っていた）
-- 意図的に全体を止めたいときだけ `exit 1` する（現状は `nix/install.sh` の `DOTFILES_MACHINE` 未設定のみ）
+- 意図的に全体を止めたいときだけ `exit 1` する（現状は `refuse_worktree()` と `nix/install.sh` の `DOTFILES_MACHINE` 未設定のみ）
 - `link_config()` を `utils/utils.bash` に置かない。`utils.bash` は `zsh/.zshenv` から全 zsh 起動で source されるため、インストール時にしか使わない関数を常駐させない
 - サブプロセスなので、サブ側の環境変数・PATH の変更はルートへ届かない。Nix を初めて入れた回に `docker/install.sh` と `claude/install.sh` が `jq` / `gh` を見つけられるよう、ルートは `nix` の直後に `nix-daemon.sh` を読み込む
 - `fish/` と `fzf/` はディレクトリごとリンク先（`~/.config/fish`, `~/.fzf`）へ symlink するため、中に `install.sh` を置くとインストーラまでリンク先に配られる。この 2 つはルートの `install.sh` でリンクする
@@ -47,6 +48,8 @@
 
 ### 実装開始時のブランチ運用
 新規ブランチは必ず `origin/main` から作成する（`git fetch` 後）。古いローカル main や現在の作業ブランチを起点にしない。worktree を切ってから着手する手順そのものはユーザーメモリ側の規則が正本。
+
+**`install.sh` は worktree から実行しない。** `~/` に張る symlink と home-manager の flake 参照が worktree を指すため、worktree を消すとリンクが軒並み壊れる（`~/.zshenv` を含む）。`refuse_worktree()` が検出して中断する。動作確認はマージ後にメインの作業ツリーから行う。
 
 ### 効くか分からない設定を試すとき
 `link_config()` で symlink 配布している設定（`ghostty/config` など）が実際に効くかを確かめたいときは、例外的に main の作業ツリーで先に書き換えて試す。配布先はメインのチェックアウトを指しているため、worktree 側を書き換えても反映されない。
