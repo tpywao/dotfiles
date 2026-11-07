@@ -8,6 +8,8 @@
 # 「出力タグ」「マージ後の内容」「src を書き換えていないこと」を確認する。
 
 DOTFILES=$(cd "$(dirname "$0")/../.." && pwd -P)
+# worktree の中でも流せるよう refuse_worktree を通す
+export DOTFILES_ALLOW_WORKTREE=1
 . "$DOTFILES/utils/install-common.sh"
 
 if ! command -v jq > /dev/null 2>&1; then

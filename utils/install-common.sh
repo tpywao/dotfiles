@@ -8,6 +8,27 @@
 
 : "${DOTFILES:?DOTFILES must be set before sourcing install-common.sh}"
 
+# worktree から実行すると、~/ に張る symlink も home-manager の flake 参照も
+# その worktree を指す。worktree は作業が終われば消えるため、リンクが軒並み
+# dangling になる。特に ~/.zshenv が壊れるとシェルの起動に影響する。
+# サブの install.sh も単体で実行できるので、ルートではなく共通部で止める。
+# git が無い環境や git 管理外に置いた場合は判定できないのでそのまま続行する。
+refuse_worktree() {
+  [ -z "${DOTFILES_ALLOW_WORKTREE:-}" ] || return 0
+  git -C "$DOTFILES" rev-parse --is-inside-work-tree > /dev/null 2>&1 || return 0
+  case "$(git -C "$DOTFILES" rev-parse --git-dir)" in
+    */worktrees/*)
+      main_worktree=$(dirname "$(git -C "$DOTFILES" rev-parse --git-common-dir)")
+      echo "Error: worktree から実行されています: $DOTFILES" >&2
+      echo "  ~/ に張るリンクがこの worktree を指し、worktree を消すと壊れます。" >&2
+      echo "  メインの作業ツリーから実行してください: cd $main_worktree && ./install.sh" >&2
+      echo "  意図して worktree の内容を適用する場合: DOTFILES_ALLOW_WORKTREE=1 ./install.sh" >&2
+      exit 1
+      ;;
+  esac
+}
+refuse_worktree
+
 # OS 判定関数 (is_mac, is_wsl, is_linux)
 . "$DOTFILES/utils/utils.bash"
 
