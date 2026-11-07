@@ -4,10 +4,15 @@ Claude Code の設定一式。`claude/install.sh` の `link_claude_files` がこ
 
 ## symlink 同期の仕組み
 
-- リンクの作成は `claude/install.sh`（`claude/` 配下を再帰的に `~/.claude/` へ symlink。`settings.json` / `mcp-servers.json` / `install.sh` / `Skillfile` は除外）
-- **編集は必ず dotfiles 側で行う。`~/.claude/` 側は参照専用。** Claude Code の Edit は symlink 経由の書き込みを拒否する（`Refusing to write through symlink`）ため、`~/.claude/` 側を誤って編集することは構造的に起きない
+- リンクの作成は `claude/install.sh`。粒度は 2 種類ある
+  - `skills/` は**スキルのディレクトリ単位**（`~/.claude/skills/<name>` が dotfiles へのリンク）。スキル内に `references/` などを足しても `install.sh` の再実行は要らない
+  - それ以外は**ファイル単位**。`settings.json` / `mcp-servers.json` / `install.sh` / `Skillfile` は除外。skills 以外にファイルを新設したときは `install.sh` の再実行が要る
+- ディレクトリごと張らないのは、`~/.claude/` の各階層に dotfiles 管理外のものが同居するため。`skills/` には外部スキル、`usage/` には `collect.py` の生成物（`daily-usage.jsonl`、`dashboard.html`）、`~/.claude/` 直下にはセッション状態（`projects/`、`history.jsonl` など）がある。ディレクトリを 1 本の symlink にするとこれらが見えなくなる
+- **編集は必ず dotfiles 側で行う。`~/.claude/` 側は参照専用。** Claude Code の Edit は symlink 経由の書き込みを拒否する（`Refusing to write <path>: it is a symbolic link. Write to the link's target path instead.`）ため、`~/.claude/` 側を誤って編集することは構造的に起きない
 - symlink はパス参照なので、`git switch` や atomic save（tmpfile + rename）でリンクが切れない。hardlink だった頃はこれで頻繁に切れ、両側が黙って分岐していた
-- 既存の hardlink は `claude/install.sh` の再実行で symlink へ置き換わる。内容が分岐していた場合は `~/.claude/` 側を `*.presymlink.<ts>` へ退避してから張る（退避ファイルは中身を確認して手で消す）
+- 既存の実ファイル・実ディレクトリは `claude/install.sh` の再実行で symlink へ置き換わる
+  - ファイルは内容が分岐していたときだけ `*.presymlink.<ts>` へ退避する
+  - スキルのディレクトリは、中身がそのスキルへのリンクだけなら退避せずに張り替える。他のものが混ざっていれば `*.presymlink.<ts>` へ退避し、`notice()` で手で消すよう案内する（退避先は SKILL.md を持ったまま `skills/` の直下に残り、スキルとして読み込まれうる）
 - 新しい skill・hook・設定ファイルを追加するときは `claude-add-config` スキルを使う（リンク漏れを防ぐ手順になっている）
 
 ## settings.json をマージ方式にしている理由

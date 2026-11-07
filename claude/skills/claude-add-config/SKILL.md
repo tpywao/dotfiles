@@ -11,8 +11,9 @@ description: Use when ~/.claude/ に新しい skill・hook・agent・設定フ�
 
 `$DOTFILES` は dotfiles リポジトリのパス（`zsh/.zshenv` が export する）。リポジトリの配置はマシンによって変わりうるので、パスは直書きせずこの変数を使う。
 
-- 編集は必ず dotfiles 側で行う。Claude Code の Edit は symlink 経由の書き込みを拒否する（`Refusing to write through symlink`）
-- **新規ファイルは `install.sh` を実行するまでリンクされない**。手動で張る場合も含め、下記の手順に従う
+- 編集は必ず dotfiles 側で行う。Claude Code の Edit は symlink 経由の書き込みを拒否する（`Refusing to write <path>: it is a symbolic link. Write to the link's target path instead.`）
+- リンクの粒度は 2 種類。`skills/` は**スキルのディレクトリ単位**（`~/.claude/skills/<name>` がリンク）、それ以外は**ファイル単位**
+- **新規スキルと、skills 以外の新規ファイルは `install.sh` を実行するまでリンクされない**。既存スキルの中にファイル（`references/` など）を足す場合は、ディレクトリごとリンクされているので再実行は要らない。手動で張る場合も含め、下記の手順に従う
 - `settings.json` と `mcp-servers.json` は例外でリンクしない（配布先を Claude Code 自身が書き込むため）。`claude/install.sh` の `merge_claude_settings` / `merge_claude_mcp_servers` が共有キーのみを反映する（後者の配布先は `~/.claude.json`）。詳細は `claude/README.md`
 
 ## 手順（新規追加）
@@ -21,22 +22,37 @@ dotfiles リポジトリのフロー（origin/main から worktree を切って 
 
 1. `cd "$DOTFILES" && git fetch origin` し、`origin/main` から新規ブランチ + worktree を作成
 2. worktree 側に `claude/<path>` としてファイルを作成し、コミット → push → PR を作成
-3. すぐ有効化したい場合は worktree のファイルを `~/.claude/<path>` へコピー（worktree はマージ後に消えるので symlink を張らない。dotfiles 側が source of truth）
-4. PR マージ後、main を pull して `./install.sh` を実行する（暫定コピーは内容が一致すればそのまま symlink へ置き換わる。分岐していれば `*.presymlink.<ts>` に退避される）
-   - `install.sh` を通したくない場合は個別に張る: `/bin/rm ~/.claude/<path> && ln -s "$DOTFILES/claude/<path>" ~/.claude/<path>`
-5. 検証: `ls -la ~/.claude/<path>` — dotfiles 側を指す symlink になっていることを確認
+3. すぐ有効化したい場合は worktree のファイルを `~/.claude/<path>` へコピー（worktree はマージ後に消えるので symlink を張らない。dotfiles 側が source of truth）。新規スキルならディレクトリごとコピーする
+4. PR マージ後、main を pull して `./install.sh` を実行する
+   - skills 以外: 暫定コピーは内容が一致すればそのまま symlink へ置き換わる。分岐していれば `*.presymlink.<ts>` に退避される
+   - skills: 暫定コピーは `*.presymlink.<ts>` へ退避され、`~/.claude/skills/<name>` がディレクトリごと symlink になる。退避先は末尾の TODO に出るので、中身を確認して手で消す
+   - `install.sh` を通したくない場合は個別に張る
+     - skills: `mv ~/.claude/skills/<name> ~/.claude/skills/<name>.presymlink.bak && ln -s "$DOTFILES/claude/skills/<name>" ~/.claude/skills/<name>`
+     - それ以外: `/bin/rm ~/.claude/<path> && ln -s "$DOTFILES/claude/<path>" ~/.claude/<path>`
+5. 検証: skills は `ls -la ~/.claude/skills/<name>`、それ以外は `ls -la ~/.claude/<path>` — dotfiles 側を指す symlink になっていることを確認
 
 ## 修復（リンクされていない）
 
-症状: `~/.claude/<path>` が symlink ではなく実ファイルになっている。hardlink 時代の残り、手動コピー、`install.sh` 未実行のいずれか。
+症状: `~/.claude/<path>`（skills なら `~/.claude/skills/<name>`）が symlink ではなく実ファイル・実ディレクトリになっている。hardlink 時代の残り、手動コピー、`install.sh` 未実行のいずれか。
 
-1. `diff "$DOTFILES/claude/<path>" ~/.claude/<path>` で内容を確認。`~/.claude/` 側にしかない編集があれば dotfiles 側へ取り込む
-2. `./install.sh` を実行する（内容が分岐していれば `*.presymlink.<ts>` へ退避してから張り替える）
+1. `diff -r "$DOTFILES/claude/<path>" ~/.claude/<path>` で内容を確認。`~/.claude/` 側にしかない編集があれば dotfiles 側へ取り込む
+2. `./install.sh` を実行する（skills の実ファイル入りディレクトリと、内容が分岐したファイルは `*.presymlink.<ts>` へ退避してから張り替える）
 
 ## リンク状態の一括検出
 
 ```bash
-find "$DOTFILES/claude" -type f -not -name 'settings.json' | while read -r src; do
+# skills はスキルのディレクトリ単位
+for src in "$DOTFILES"/claude/skills/*/; do
+  dst="$HOME/.claude/skills/$(basename "$src")"
+  if [ ! -e "$dst" ]; then
+    echo "MISSING $dst"
+  elif [ ! -L "$dst" ]; then
+    echo "NOT A SYMLINK $dst"
+  fi
+done
+
+# skills 以外はファイル単位
+find "$DOTFILES/claude" -type f -not -name 'settings.json' -not -path "$DOTFILES/claude/skills/*/*" | while read -r src; do
   dst="$HOME/.claude/${src#$DOTFILES/claude/}"
   if [ ! -e "$dst" ]; then
     echo "MISSING $dst"

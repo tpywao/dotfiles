@@ -7,6 +7,12 @@ DOTFILES=$(cd "$(dirname "$0")/.." && pwd -P)
 # symlink はパス参照なので切れない。Claude Code の Edit は symlink 経由の書き込みを
 # 拒否するため、~/.claude/ 側が誤って編集されることもない（編集は dotfiles 側で行う）。
 link_claude_files() {
+  link_claude_skills
+
+  # skills 以外はファイル単位。~/.claude/ の他の階層にも管理外のファイルが同居する
+  # ため、ディレクトリごとは張れない。
+  # スキルの中のファイルを除外し忘れると、ディレクトリのリンク越しに実体へ
+  # link_config が当たり、dotfiles 側のファイルを消してしまう。
   # settings.json はリンクせず merge_claude_settings で共有キーのみを反映する。
   # mcp-servers.json も同様にマージ元で、~/.claude/ へ配るファイルではない。
   # install.sh と Skillfile はインストーラ側のファイルで ~/.claude/ には要らない
@@ -14,11 +20,60 @@ link_claude_files() {
     -not -path "$DOTFILES/claude/settings.json" \
     -not -path "$DOTFILES/claude/mcp-servers.json" \
     -not -path "$DOTFILES/claude/install.sh" \
-    -not -path "$DOTFILES/claude/Skillfile" | while read -r src; do
+    -not -path "$DOTFILES/claude/Skillfile" \
+    -not -path "$DOTFILES/claude/skills/*/*" | while read -r src; do
     rel="${src#$DOTFILES/claude/}"
     link_config "$src" "$HOME/.claude/$rel"
   done
   prune_claude_links
+}
+
+# skills はスキルのディレクトリ単位で張る。SKILL.md 以外（references/ など）を後から
+# 足しても install.sh を再実行せずに反映される。~/.claude/skills/ には外部スキルが
+# 同居するため、skills/ 自体ではなく配下を 1 つずつ張る
+link_claude_skills() {
+  for src in "$DOTFILES"/claude/skills/*/; do
+    [ -d "$src" ] || continue
+    src=${src%/}
+    dst="$HOME/.claude/skills/${src##*/}"
+    clear_file_links "$src" "$dst"
+    link_config "$src" "$dst"
+  done
+
+  # 退避先は SKILL.md を持ったまま skills/ の直下に残り、スキルとして読み込まれうる
+  backups=$(find "$HOME/.claude/skills" -mindepth 1 -maxdepth 1 -type d -name '*.presymlink.*')
+  if [ -n "$backups" ]; then
+    notice "退避したスキルがある。中身を確認して手で消す:
+$backups"
+  fi
+}
+
+# ファイル単位で張っていた頃のスキルは、実ディレクトリの中に dotfiles へのリンクが
+# 並んでいる。そのまま link_config に渡すと全スキルが退避されるので、中身が
+# そのスキルへのリンクだけなら（消しても失うものが無いので）先に片付ける。
+# 1 つでも他のものが混ざっていれば何もせず、link_config の退避に任せる
+clear_file_links() {
+  src=$1
+  dst=$2
+  { [ -d "$dst" ] && [ ! -L "$dst" ]; } || return 0
+
+  # macOS の /bin/sh (bash 3.2) は $(...) の中の case の ) を閉じ括弧と誤読するので、
+  # パターンに開き括弧を付ける
+  others=$(find "$dst" ! -type d | while read -r f; do
+    case "$(readlink "$f")" in
+      ("$src/"*) ;;
+      (*) echo "$f" ;;
+    esac
+  done)
+  [ -z "$others" ] || return 0
+
+  find "$dst" -type l | while read -r f; do
+    /bin/rm -- "$f"
+  done
+  find "$dst" -depth -type d | while read -r d; do
+    rmdir -- "$d"
+  done
+  log_tag "$LOG_CHANGED" "[unlinked]" "$dst (ファイル単位のリンク)"
 }
 
 # dotfiles 側で消したファイルへのリンクは、上の find に現れないので残り続ける。
