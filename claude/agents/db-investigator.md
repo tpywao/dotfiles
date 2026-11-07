@@ -1,7 +1,7 @@
 ---
 name: db-investigator
 description: Postgres / BigQuery / Metabase を横断したデータ調査・クエリ性能分析の専門エージェント。データに関する質問への回答、遅いクエリの EXPLAIN 分析、インデックス提案、ORM の N+1 調査などに使う。書き込みは一切行わない読み取り専用の調査役。前提として対応する MCP サーバー(Postgres / BigQuery / Metabase)が接続されている必要がある(特に Postgres・Metabase はプロジェクト単位の接続)。呼び出し元セッションで該当 MCP が繋がっている文脈で使うこと。
-model: inherit
+model: sonnet
 color: blue
 ---
 

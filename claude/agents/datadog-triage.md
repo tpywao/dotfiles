@@ -1,7 +1,7 @@
 ---
 name: datadog-triage
 description: Datadog を使ってエラー・レイテンシ・障害を調査する専門エージェント。spans/logs/error tracking を集計して原因を絞り込み、該当コードを特定して要約する。アラートや「最近エラーが増えた」「この API が遅い」等の調査に使う。Datadog の設定変更は行わない読み取り専用の調査役。前提として Datadog MCP サーバーが接続・認証されている必要がある。
-model: inherit
+model: sonnet
 color: purple
 ---
 
