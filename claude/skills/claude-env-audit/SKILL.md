@@ -56,7 +56,18 @@ description: Use when Claude Code 環境の定期監査・健全性チェック�
 4. **symlink 整合性**: `~/.claude/` 側が dotfiles を指す symlink になっているか確認する（`settings.json` は上記 2 で見るので対象外）
 
     ```bash
-    find "$DOTFILES/claude" -type f -not -name 'settings.json' -not -name '*.presymlink.*' -not -name '*.local.*' -not -path "$DOTFILES/claude/install.sh" -not -path "$DOTFILES/claude/Skillfile" | while read -r src; do
+    # skills はスキルのディレクトリ単位
+    for src in "$DOTFILES"/claude/skills/*/; do
+      dst="$HOME/.claude/skills/$(basename "$src")"
+      if [ ! -e "$dst" ]; then
+        echo "MISSING       $dst"
+      elif [ ! -L "$dst" ]; then
+        echo "NOT A SYMLINK $dst"
+      fi
+    done
+
+    # skills 以外はファイル単位
+    find "$DOTFILES/claude" -type f -not -name 'settings.json' -not -name '*.presymlink.*' -not -name '*.local.*' -not -path "$DOTFILES/claude/install.sh" -not -path "$DOTFILES/claude/Skillfile" -not -path "$DOTFILES/claude/skills/*/*" | while read -r src; do
       dst="$HOME/.claude/${src#$DOTFILES/claude/}"
       if [ ! -e "$dst" ]; then
         echo "MISSING       $dst"
