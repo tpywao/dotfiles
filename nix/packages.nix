@@ -16,6 +16,10 @@ pkgs: with pkgs; [
   gh
   ghq
   git
+  # nixpkgs のツール（git の curl 等）が使う CA バンドル。flake.lock の更新で
+  # 失効・除外されたルートが追従するよう、プロファイルに置いて NIX_SSL_CERT_FILE
+  # から参照する（設定は zsh/mac.zsh）
+  cacert
   gnused
   htop
   hyperfine  # time
