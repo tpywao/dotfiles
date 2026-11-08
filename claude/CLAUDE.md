@@ -149,8 +149,10 @@ hook が実行されない環境（hook が未インストール、コミット�
 - `find` → `fd`（.gitignore を尊重、正規表現がデフォルト）
 - `grep` → `rg`（ファイル横断検索のとき。パイプ内の絞り込み `| grep` はどちらでもよい）
 - `curl` / `wget` → `ax`（HTTP フェッチ。status/headers/body を JSON レポートで返す。`ax <url>` でフェッチ、`--body` で本文のみ出力）
-  - **デフォルトで 20MB / 30 秒で打ち切られる**（`--body` を付けても取得側のキャップは効く）。これを超えるファイルは `--max-bytes` / `-m` を明示するか、別手段を使う（Nix の fixed-output derivation なら `nix-prefetch-url` 等）
+  - **デフォルトで 20MB / 30 秒で打ち切られる**（`--body` を付けても取得側のキャップは効く）。サイズの上限は `--max-bytes <n>`（バイト数）、時間の上限は `-m <secs>`（秒）で上げるか、別手段を使う（Nix の fixed-output derivation なら `nix-prefetch-url` 等）
+    - `-m` はバイト数ではない。サイズのつもりで `-m 50000000` のような大きな値を渡すと、内部のタイマーが溢れて即座にタイムアウトする
   - 打ち切りは stderr に告知される。`2>/dev/null` で捨てると、途中で切れたファイルを正常なものとして掴んだまま気づけない
+  - **`--body` の出力をパイプで受けると 65536 バイトで切れる。** 上の取得側の打ち切りとは別物で、stderr に何も出ない。`ax --body <url> | jq ...` に 64KB を超える JSON を渡すと `Unfinished string at EOF at line 1, column 65536` のパースエラーになる。全量が要るときは `-o <file>` か `> file` でファイルに受けてから読む
   - **レスポンスヘッダも既定では一部しか返さない**（省略数は `headers_omitted` に出る）。`Content-Security-Policy` などセキュリティ系ヘッダを確かめるときは `--headers` を付ける。付け忘れると、実際には付いているヘッダを「無い」と誤判定する
 
 ただし専用ツール（Grep / Glob / Read / WebFetch）が使える場面ではそちらが最優先。これは Bash に降りる場合の選択規則。
