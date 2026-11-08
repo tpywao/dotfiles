@@ -35,8 +35,10 @@ git fetch origin <既定ブランチ>
 BASE=$(git merge-base origin/<既定ブランチ> <ブランチ>)
 
 # 引数なし
-BASE=$(git merge-base @{upstream} HEAD 2>/dev/null || git merge-base main HEAD 2>/dev/null || git rev-parse HEAD~1)
+BASE=$(git merge-base @{upstream} HEAD 2>/dev/null || git merge-base main HEAD 2>/dev/null || git rev-parse --verify -q HEAD~1)
 ```
+
+`git rev-parse` は `--verify` が無いと、解決できなかった引数（`HEAD~1` の文字列）をそのまま出力する。引数なしで `BASE` が空になったら（コミットが 1 つしかないリポジトリ）、比べる相手が無いので、パスを指定し直すようユーザーに頼む。
 
 引数なしの `BASE` は、`code-review` が引数なしで見る範囲（`@{upstream}...HEAD`、upstream が無ければ `main...HEAD`、`main` も無ければ `HEAD~1` に、作業ツリーの変更を足したもの）に合わせる。`code-review` は既定ブランチを調べず `main` という名前を決め打ちしているので、こちらも既定ブランチではなく `main` を使う。`A...B` の差分は A と B の merge-base から B までの差分なので、反証と `code-review` が同じ変更を見ることになり、手順 3 でコミット済みの変更が既存と判定されることもない。ただし未追跡の新規ファイルは `code-review` が見ないので、反証だけが見る。push 済みのブランチでは upstream が自分のリモートブランチになるので、まだ push していないコミットと作業ツリーの変更だけが対象になる。既定ブランチが `main` 以外で upstream も無いリポジトリでは、直前の 1 コミットと作業ツリーの変更だけが対象になる。ブランチ全体を見たいときはブランチ名を渡す。
 
@@ -52,7 +54,7 @@ BASE=$(git merge-base @{upstream} HEAD 2>/dev/null || git merge-base main HEAD 2
 1. 対象をスクラッチパッドの新しいファイルに保存する。先頭にリポジトリのパス、手順 1 で決めた head と `BASE`、作業ツリーの `HEAD` を書き、反証する側が周辺のコードを自分で読めるようにする。作業ツリーがレビュー対象の head と一致するとは限らない（他人の PR を手元のブランチのまま見るなど）ので、head と `BASE` は値として書く。引数なしは head を「作業ツリー（`HEAD` に未コミットの変更を足したもの）」と書く。
    - **PR**: `gh pr view <N> --json number,title,body,baseRefName,headRefOid,commits,files,url` と `gh pr diff <N>` の全文
    - **ブランチ**: ブランチ名、`git log ${BASE}..<ブランチ>` のコミットメッセージ、`git diff ${BASE} <ブランチ>` の全文
-   - **引数なし**: 現在のブランチ名、`git log ${BASE}..HEAD` のコミットメッセージ、`git diff ${BASE}` の全文（コミット済みと未コミットの変更の両方が入る）、`git ls-files --others --exclude-standard` で挙がる未追跡の新規ファイルの中身（`git diff` には出ない）
+   - **引数なし**: 現在のブランチ名、`git log ${BASE}..HEAD` のコミットメッセージ、`git diff ${BASE}` の全文（コミット済みと未コミットの変更の両方が入る）、`git ls-files --others --exclude-standard --full-name -- ':/'` で挙がる未追跡の新規ファイルの中身（`git diff` には出ない。`':/'` が無いと cwd より下しか挙がらず、`--full-name` が無いとパスが cwd からの相対になって `git diff` のパスと揃わない）
    - **パス**: 保存せず、そのパスを次でそのまま渡す。先頭の情報も書かない（絶対パスでどのリポジトリかは分かる）
 2. 先に `skeptic` スキルを呼び、引数にはこのファイル（パス指定ならそのパス）だけを渡す。レビューの経緯は渡さない。`skeptic` スキルの手順どおり、エージェントは起動したら完了を待たずに戻るので、起動を確かめたらすぐ次へ進む。環境によってエージェントが完了まで戻らないときは、`skeptic` のあとに `code-review` が順に走るだけで、手順はそのまま進められる。
    - `skillOverrides` で無効にされていて呼べない（`disabled for model invocation`）ときは、エージェントを直接呼んで迂回しない。ユーザーに `/skeptic <ファイルのパス>` の実行を依頼し、反証の結果を待たずに次へ進む。このときは `skeptic` スキル自身が報告の全文を出すが、ユーザーが自分で呼んだ結果なのでそのままにする。このスキルは全文を繰り返さず、指摘を選別の材料にだけ使う。
