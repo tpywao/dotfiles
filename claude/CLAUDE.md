@@ -199,6 +199,12 @@ sed -i.bak '/pattern/d' file && rm file.bak
 
 Bash ツールのシェルは zsh で、`$VAR:a` や `$VAR:h` の `:` 以降を変数の修飾子（`:a` は絶対パス化、`:h` は親ディレクトリ）として解釈する。`git show $REV:app/foo.py` は `$REV:a` が展開されて `<cwd>/<REV の値>pp/foo.py` になり、`fatal: ambiguous argument` で失敗する。`git show ${REV}:app/foo.py` と波括弧で区切る。
 
+### stderr だけをパイプへ流すのに `2>&1 >/dev/null` を使わない
+
+Bash ツールのシェルは zsh で、MULTIOS が有効になっている。bash なら `cmd 2>&1 >/dev/null | head` で stderr だけがパイプへ流れるが、zsh では標準出力がパイプと `/dev/null` の両方へ複製され、標準出力もパイプへ流れる。stderr だけを見たいときは `cmd 2>file` で別のファイルに分けてから読む。
+
+理由: `ax --body` が stderr に告知を出しているかを確かめるつもりで、本文の JSON を受け取った。
+
 ### ユーザーに `!` で流してもらうコマンドは 1 ブロック 1 コマンドで示す
 
 ユーザー自身に実行を頼むコマンド（`! <command>`）は、コードブロック 1 つにコマンド 1 つずつ書く。`&&` で長く連結した 1 行にしない。
