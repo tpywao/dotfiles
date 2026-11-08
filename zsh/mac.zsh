@@ -18,3 +18,10 @@ fpath=(
 if [[ -z $NIX_SSL_CERT_FILE && -r $HOME/.nix-profile/etc/ssl/certs/ca-bundle.crt ]]; then
   export NIX_SSL_CERT_FILE=$HOME/.nix-profile/etc/ssl/certs/ca-bundle.crt
 fi
+
+# Command Line Tools 同梱の pip（/usr/bin/pip3）は、pip に同梱された certifi の CA を使い、
+# OS の /etc/ssl/cert.pem から外したルートも信頼し続ける。cert.pem を使わせる。
+# macOS の信頼ストアを使う新しい pip（truststore）は、この指定があっても挙動が変わらない。
+if [[ -z $PIP_CERT && -r /etc/ssl/cert.pem ]]; then
+  export PIP_CERT=/etc/ssl/cert.pem
+fi
