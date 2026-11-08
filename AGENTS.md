@@ -61,6 +61,24 @@
 
 `merge_config()` で配る設定（`claude/settings.json` など）はコピーなので、書き換えただけでは反映されない。この手順の対象外。
 
+#### worktree にあるスキル・エージェント定義の変更を試すとき
+
+`~/.claude/skills/<name>` と `~/.claude/agents/<name>.md` はメインのチェックアウトを指しているので、新しいセッションは worktree 側の変更を読まない。試すあいだだけリンクを worktree へ向け、終わったら戻す。
+
+```sh
+ln -sfn <worktree>/claude/skills/<name> ~/.claude/skills/<name>
+ln -sf <worktree>/claude/agents/<name>.md ~/.claude/agents/<name>.md
+```
+
+- 試す対象のプロジェクトの `.claude/skills/` に同じ名前で置いても効かない。同じ名前のスキルは個人（`~/.claude/skills/`）がプロジェクトより優先される
+- 張り替えているあいだは、ほかのセッションも worktree 側を読む。試し終えたら `~/.dotfiles` 側へ張り直し、`readlink` で戻ったことを確かめる
+- スキルが中で別のスキルやエージェントを呼ぶなら（`triaged-review` → `skeptic` など）、変更したものはすべて張り替える。一部だけだと新旧の版が混ざる
+
+手で通して確かめるときは次のようにする。
+
+- 期待する結果を先に決めてから流す。使い捨てのリポジトリに、経路ごとに結果が分かれるバグ（push 済み・未 push・未コミット・未追跡・変更前からあるもの）を仕込み、それぞれ残るか・範囲外になるかを書いておく
+- 経路ごとに新しいセッションで流す。同じセッションで続けると、前回の結果が判断に混ざる
+
 ### コミットメッセージと main の履歴
 
 コミットメッセージは `feat(component):` 形式で記述する。サブジェクトは日本語で書く。
