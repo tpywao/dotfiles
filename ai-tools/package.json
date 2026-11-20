@@ -5,7 +5,7 @@
   "description": "AI CLI tools pinned via package-lock.json (built with Nix buildNpmPackage)",
   "dependencies": {
     "@colbymchenry/codegraph": "1.6.2",
-    "ccusage": "20.0.48"
+    "ccusage": "20.0.50"
   },
   "overrides": {
     "@hono/node-server": "^2.0.11"
