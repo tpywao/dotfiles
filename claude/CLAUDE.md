@@ -205,6 +205,10 @@ Bash ツールのシェルは zsh で、MULTIOS が有効になっている。ba
 
 理由: `ax --body` が stderr に告知を出しているかを確かめるつもりで、本文の JSON を受け取った。
 
+### `#` を含む引数はクォートする
+
+ユーザーの対話シェル（zsh）は `extendedglob` が有効で、`#` をグロブの演算子として扱う。`nix shell nixpkgs#postgresql_16` は `zsh: no matches found: nixpkgs#postgresql_16` で失敗する。flake 参照（`nixpkgs#pkg`、`.#name`）など `#` を含む引数は `'nixpkgs#postgresql_16'` とシングルクォートで囲む。ユーザーに実行してもらうコマンドでも、Bash ツールで流すコマンドでも同じにする（Bash ツールのシェルで `extendedglob` が効くかは確かめていないが、クォートしておけばどちらでも通る）。
+
 ### ユーザーに `!` で流してもらうコマンドは 1 ブロック 1 コマンドで示す
 
 ユーザー自身に実行を頼むコマンド（`! <command>`）は、コードブロック 1 つにコマンド 1 つずつ書く。`&&` で長く連結した 1 行にしない。
