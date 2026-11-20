@@ -3,6 +3,8 @@
 {
   imports = [
     ./common.nix
+    # PR を出していないブランチと止まっている PR を平日の朝夕に通知する
+    ./stale-work-check.nix
   ];
 
   # マシン固有: aarch64-darwin への ai-tools 統合
