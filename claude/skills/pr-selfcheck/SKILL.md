@@ -26,10 +26,10 @@ description: Use when 自分の PR を出す直前 — gh pr create / gh pr edit
 
 ### 1. base を決めて diff を取る
 
-base は PR の向き先。applynow は `origin/dev`、applynow-scraper は `origin/stg`。既存 PR なら `gh pr view --json baseRefName --jq .baseRefName` で確認する。
+base は PR の向き先。既存 PR なら `gh pr view --json baseRefName --jq .baseRefName` で確認する。これから出す PR なら、プロジェクトの指示ファイルにブランチ運用（`origin/dev` から切る、など）が書いてあればそれに従い、無ければデフォルトブランチ（`gh repo view --json defaultBranchRef --jq .defaultBranchRef.name`）を使う。
 
 ```bash
-BASE=origin/dev
+BASE=origin/main   # 上で決めた base に置き換える
 git fetch -q origin && git diff --numstat $(git merge-base $BASE HEAD)..HEAD
 ```
 
