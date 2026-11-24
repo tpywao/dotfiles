@@ -163,6 +163,7 @@ fi
 source $ZDOTDIR/aliases.zsh
 source $ZDOTDIR/keybinds.zsh
 source $ZDOTDIR/cmux.zsh
+source $ZDOTDIR/ssm-pf.zsh
 source $ZDOTDIR/check.zsh
 
 # local (このマシン固有・dotfiles 管理外)

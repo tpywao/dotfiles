@@ -17,7 +17,7 @@ zsh の設定一式。`~/.zshenv` をこのディレクトリの `.zshenv` へ�
     ├── history・補完・prompt・vcs_info の設定
     ├── ../fzf/fzf.functions.zsh   fzf ウィジェットの関数定義
     ├── zoxide、gcloud
-    ├── aliases.zsh → keybinds.zsh → check.zsh
+    ├── aliases.zsh → keybinds.zsh → ssm-pf.zsh → check.zsh
     └── ~/.local/zsh/*.zsh   マシン固有設定（dotfiles 管理外）
 ```
 
@@ -32,6 +32,7 @@ zsh の設定一式。`~/.zshenv` をこのディレクトリの `.zshenv` へ�
 | `aliases.zsh` | alias と小物関数。eza/bat への置き換え、`mkcd`、ファイルパスを許容する `cd` ラッパー、グローバルエイリアス（`L`, `G`, `C` など）、WSL/Linux のクリップボード |
 | `keybinds.zsh` | キーバインドの集約先（emacs ベース）。fzf ウィジェットや zsh-abbr 展開のバインドもここに置く |
 | `check.zsh` | シェル起動時の更新チェック。sheldon/brew は週次で自動更新チェック（同期・進行ログあり）、nix（flake.lock と home-manager profile の差・上流の新コミット）・sheldon・brew の要更新通知は日次（バックグラウンド実行。所要時間と結果は次回の起動で表示する） |
+| `ssm-pf.zsh` | `ssm-pf <名前>`。AWS Session Manager のポートフォワードを fzf で並べ、選んだ接続の起動と停止を切り替える。接続の定義（`名前 リージョン 踏み台のインスタンス ID 接続先ホスト 接続先ポート ローカルポート` を 1 行 1 接続）は標準入力で渡す。定義はマシン固有なので、`~/.local/zsh/` に定義を渡して呼ぶ関数を置く（書き方はファイル冒頭のコメント）。起動はバックグラウンドで、待ち受けが始まる前に aws が終了したらその場でログを表示する。ログは `$XDG_CACHE_HOME/ssm-pf/<名前>.log` |
 | `load-log.zsh` | `_load_begin` / `_load_end`。対話シェルでのみ、各初期化ブロックの所要時間をログ出力する。第 2・第 3 引数で表示語を差し替えられる（既定は `loading` / `loaded`） |
 | `mac.zsh` | macOS 専用。Homebrew shellenv・site-functions、iTerm2 shell integration |
 | `wsl.zsh` | WSL 専用。`open` コマンドの Windows 連携 |
