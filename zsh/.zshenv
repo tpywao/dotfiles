@@ -3,6 +3,8 @@ export LANG=ja_JP.UTF-8
 export LESSCHARSET=utf-8
 
 export EDITOR=vim
+# opt out of telemetry in tools that honor DO_NOT_TRACK; tools that ignore it still send
+export DO_NOT_TRACK=1
 # path to .zshrc
 ZSHENV=$(readlink $HOME/.zshenv)
 export ZDOTDIR=${ZSHENV%/*}
