@@ -66,6 +66,7 @@ MCP サーバーの登録先 `~/.claude.json` は、Claude Code 自身がセッ�
 | --- | --- | --- |
 | `block-dangerous.sh` | PreToolUse (Bash) | `rm -rf` など破壊的コマンドを exit 2 でブロック |
 | `inject-context.sh` | SessionStart | session_id・ブランチ名・working tree の状態をコンテキストに注入 |
+| `agent-status.sh` | Stop | 作業の状態が変わったときに `agent-status` スキルでのシートへの記録を促す（詳細は「agent-status」の節） |
 | `update-usage.sh` | SessionStart | `usage/collect.py` をバックグラウンド起動（セッション開始を遅延させない） |
 
 このほか UserPromptSubmit に `codegraph prompt-hook` が配線されている（スクリプトではなく `settings.json` に直接記述）。

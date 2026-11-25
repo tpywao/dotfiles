@@ -1,0 +1,128 @@
+#!/bin/sh
+# Stop hook: 作業の状態が変わったら、agent-status スキルでシートへ記録するよう促す。
+#
+# シート（Claude Sheets）は Docs コネクタ経由でモデルしか書けない。hook は記録に使う値を集めて
+# additionalContext で渡すところまでを受け持ち、シートへの書き方はスキルに任せる。
+#
+# 促すのは、そのセッションで初めてのターン終わり、指紋（ブランチ・HEAD・未 push 件数）が
+# 変わったとき、前回促してから 30 分以上たったときだけ。stop_hook_active が true のときは
+# 何もしないので、続けさせるのは 1 回に限られる。シートを設定していないマシン、jq・git の
+# 無い環境、壊れた入力、存在しない cwd では黙って exit 0 で終わる（ターンを終えられなく
+# してはいけないため）。
+#
+#   agent-status.sh --collect <session_id>
+#
+# は cwd の値の一覧だけを出力し、指紋を更新する。モデルが hook の合図を待たずに記録する
+# ときに使う（直後の Stop で同じ内容の記録をもう一度促さないよう、指紋も更新する）。
+set -u
+
+command -v jq >/dev/null 2>&1 || exit 0
+command -v git >/dev/null 2>&1 || exit 0
+
+config="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/agent-status-sheet"
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/agent-status"
+
+if [ "${1:-}" = --collect ]; then
+  session_id=${2:-}
+else
+  input=$(cat)
+  printf '%s' "$input" | jq -e 'type == "object"' >/dev/null 2>&1 || exit 0
+  if [ "$(printf '%s' "$input" | jq -r '.stop_hook_active // false')" = true ]; then
+    exit 0
+  fi
+  session_id=$(printf '%s' "$input" | jq -r '.session_id // empty')
+  cwd=$(printf '%s' "$input" | jq -r '.cwd // empty')
+  if [ -z "$cwd" ] || ! cd "$cwd" 2>/dev/null; then
+    exit 0
+  fi
+fi
+
+# 状態ファイルの名前に使うので、パス区切りなどを含む値は受け付けない
+case $session_id in
+  '' | *[!A-Za-z0-9_-]*) exit 0 ;;
+esac
+
+sheet=$(sed -n 1p "$config" 2>/dev/null)
+[ -n "$sheet" ] || exit 0
+
+# --- 値を集める ---
+repo=$(basename "$PWD")
+branch=
+head=
+count=0
+subject=
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  url=$(git remote get-url origin 2>/dev/null)
+  if [ -n "$url" ]; then
+    # scp 形式（git@host:o/r.git）・https・ssh://host:port/o/r.git のどれでも、最後の 2 つが owner/repo
+    repo=$(printf '%s\n' "${url%.git}" | awk -F'[/:]' '{ print $(NF-1) "/" $NF }')
+  fi
+
+  # ブランチを切らない作業（デフォルトブランチ・detached HEAD・メインの作業ツリー）は空にする。
+  # 行はセッション ID で探すことになる
+  branch=$(git symbolic-ref -q --short HEAD 2>/dev/null)
+  default=$(git symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null)
+  if [ -n "$default" ] && [ "$branch" = "${default#origin/}" ]; then
+    branch=
+  fi
+  # --path-format=absolute が無いと、サブディレクトリでは片方だけ相対パスで返り、
+  # メインの作業ツリーでも一致しなくなる
+  dirs=$(git rev-parse --path-format=absolute --git-dir --git-common-dir 2>/dev/null)
+  if [ "$(printf '%s\n' "$dirs" | sed -n 1p)" = "$(printf '%s\n' "$dirs" | sed -n 2p)" ]; then
+    branch=
+  fi
+
+  head=$(git rev-parse -q --verify HEAD 2>/dev/null)
+  # どのリモートブランチにも含まれていないコミット。一度も push していないブランチでも同じ式で数えられる
+  count=$(git rev-list --count HEAD --not --remotes 2>/dev/null) || count=0
+  if [ "$count" -gt 0 ]; then
+    subject=$(git log -1 --format=%s 2>/dev/null)
+  fi
+fi
+host=$(hostname -s 2>/dev/null || uname -n)
+now=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S)
+fingerprint=$(printf '%s\t%s\t%s' "$branch" "$head" "$count")
+
+# field <名前> <値>: 値が空の項目も行は出す（行末に空白は残さない）
+field() {
+  if [ -n "$2" ]; then
+    printf -- '- %s: %s\n' "$1" "$2"
+  else
+    printf -- '- %s:\n' "$1"
+  fi
+}
+
+fields=$(
+  field 'シート' "$sheet"
+  field 'セッション ID' "$session_id"
+  field 'リポジトリ' "$repo"
+  field 'ブランチ' "$branch"
+  field '未 push 件数' "$count"
+  field '最新コミット件名' "$subject"
+  field 'マシン' "$host"
+  field '現在時刻（日本時間）' "$now"
+)
+
+# --- 間引き ---
+mkdir -p "$state_dir" 2>/dev/null
+find "$state_dir" -type f -mtime +7 -exec rm -f {} + 2>/dev/null
+state="$state_dir/$session_id"
+
+if [ "${1:-}" = --collect ]; then
+  printf '%s\n' "$fingerprint" > "$state" 2>/dev/null
+  printf '%s\n' "$fields"
+  exit 0
+fi
+
+if [ -f "$state" ] && [ "$(cat "$state")" = "$fingerprint" ] \
+  && [ -n "$(find "$state" -mmin -30 2>/dev/null)" ]; then
+  exit 0
+fi
+printf '%s\n' "$fingerprint" > "$state" 2>/dev/null
+
+message="作業状況のシートへの記録が要る。agent-status スキルの手順で、次の値を使って記録してからターンを終える。記録できない事情（コネクタに繋がらないなど）があれば、記録せずにその旨を一言報告して終える。
+${fields}"
+
+jq -n --arg message "$message" \
+  '{hookSpecificOutput: {hookEventName: "Stop", additionalContext: $message}}'
+exit 0

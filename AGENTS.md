@@ -124,6 +124,7 @@ ln -sf <worktree>/claude/agents/<name>.md ~/.claude/agents/<name>.md
   - `claude/CLAUDE.md` はグローバル指示（`~/.claude/CLAUDE.md`）の配布元で、例外的に `CLAUDE.md` の名前を持つ。`claude/` を cwd にしてセッションを始めるとこれがプロジェクトの `CLAUDE.md` として数えられ、ルートの `AGENTS.md` が読まれないので、セッションはリポジトリのルートで始める
   - サブディレクトリの `AGENTS.md` は、ルートで起動したセッションに自動では載らないことがある。Claude Code はそのディレクトリのファイルを Read したときに読み足すが、Codex は起動時にルートから cwd までの分しか読まない。サブディレクトリに `AGENTS.md` を足したら、ルートのこのファイルの該当節から名指しで参照する
 - `claude/hooks/block-dangerous.sh` を変更したら `sh tests/claude/block-dangerous_test.sh` を流す。止めるべきコマンドと通すべきコマンドの両方をケースにしてある
+- `claude/hooks/agent-status.sh` を変更したら `sh tests/claude/agent-status_test.sh` を流す。促す経路・黙る経路（設定なし・`stop_hook_active`・同じ指紋で 30 分以内・jq や git が無い・壊れた入力）、ブランチ列とリポジトリ列の値、`--collect` をケースにしてあり、設定・状態のディレクトリは mktemp の下へ向けるので実際の `~/.config`・`~/.local/state` は触らない
 - `claude/hooks/inject-context.sh` を変更したら `sh tests/claude/inject-context_test.sh` を流す。`session_id` の行を git の中でも外でも出すことをケースにしてある（`agent-status` スキルが `--collect` に渡す値の出どころ）
 - `claude/install.sh` の `merge_claude_settings` を変更したら `sh tests/claude/merge-claude-settings_test.sh` を流す。既存の設定と状態ファイルの組み合わせ（他のアプリの hook あり・前回配った hook が残っている・状態ファイル無し・1 グループに混在）ごとの経路をケースにしてあり、期待値は実物の `claude/settings.json` から取る
 - `claude/install.sh` の `prune_claude_links` を変更したら `sh tests/claude/prune-claude-links_test.sh` を流す。消すリンク（dotfiles の `claude/` を指していてリンク先が無い）と、条件を片方しか満たさず残すリンクをケースにしてある
