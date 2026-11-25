@@ -54,8 +54,28 @@ subject=
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   url=$(git remote get-url origin 2>/dev/null)
   if [ -n "$url" ]; then
-    # scp 形式（git@host:o/r.git）・https・ssh://host:port/o/r.git のどれでも、最後の 2 つが owner/repo
-    repo=$(printf '%s\n' "${url%.git}" | awk -F'[/:]' '{ print $(NF-1) "/" $NF }')
+    # リポジトリ列は行を探すキーなので、マシンごとの URL の書き方（末尾の / や .git の有無）で
+    # 値が変わらないようにする。また、scheme と authority（user:pass@host:port）は先に落とす。
+    # 最後の 2 つを取るだけでは、パスが 1 階層の URL でホストと認証情報が owner として出てしまう
+    path=${url%/}
+    path=${path%.git}
+    path=${path%/}
+    case $path in
+      *://*)
+        path=${path#*://}
+        path=${path#*/}
+        ;;
+      [!/]*:*)
+        # scp 形式（[user@]host:path）。ローカルパスは / か . で始まるのでここに来ない
+        case ${path%%:*} in
+          */*) ;;
+          *) path=${path#*:} ;;
+        esac
+        ;;
+    esac
+    # owner/repo。パスが 1 階層なら repo だけ。ローカルパスや Azure Repos（org/project/_git/repo）は
+    # 最後の 2 つになるが、同じ URL からは同じ値が出るので行の照合には足りる
+    repo=$(printf '%s\n' "$path" | awk -F/ '{ if (NF >= 2) print $(NF-1) "/" $NF; else print $NF }')
   fi
 
   # ブランチを切らない作業（デフォルトブランチ・detached HEAD・メインの作業ツリー）は空にする。

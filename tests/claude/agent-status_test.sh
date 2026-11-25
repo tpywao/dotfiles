@@ -119,13 +119,20 @@ git -C "$T/quote" commit -q --allow-empty -m 'say "hi" \ back'
 new_worktree thr feat/thr
 new_worktree col feat/col
 
-for form in scp https ssh; do
-  git init -q "$T/url-$form"
-  git -C "$T/url-$form" commit -q --allow-empty -m init
-done
-git -C "$T/url-scp" remote add origin git@github.com:o/r.git
-git -C "$T/url-https" remote add origin https://github.com/o/r
-git -C "$T/url-ssh" remote add origin ssh://git@github.com:22/o/r.git
+# url_repo <名前> <origin の URL>
+url_repo() {
+  git init -q "$T/url-$1"
+  git -C "$T/url-$1" commit -q --allow-empty -m init
+  git -C "$T/url-$1" remote add origin "$2"
+}
+url_repo scp git@github.com:o/r.git
+url_repo https https://github.com/o/r
+url_repo ssh ssh://git@github.com:22/o/r.git
+url_repo slash https://github.com/o/r/
+url_repo gitslash https://github.com/o/r.git/
+url_repo cred https://user:s3cret@git.example.com/repo.git
+url_repo token https://tok123@git.example.com/repo.git
+url_repo scp1 git@host:repo.git
 
 git init -q "$T/nocommit"
 mkdir "$T/plain"
@@ -210,9 +217,17 @@ assert_remind "メインの作業ツリーのルート" "$(payload b-root "$T/re
 assert_remind "メインの作業ツリーのサブディレクトリ" "$(payload b-rootsub "$T/repo/sub")" "- ブランチ:"
 
 # --- リポジトリ列 ---
-for form in scp https ssh; do
+for form in scp https ssh slash gitslash; do
   assert_remind "origin の URL（${form}）" "$(payload "u-$form" "$T/url-$form")" "- リポジトリ: o/r"
 done
+# パスが 1 階層の URL では、ホスト（と認証情報）を owner として出さない
+for form in cred token scp1; do
+  assert_remind "origin の URL（${form}）" "$(payload "u-$form" "$T/url-$form")" "- リポジトリ: repo"
+done
+case $(payload u-cred2 "$T/url-cred" | sh "$HOOK" 2>&1) in
+  *s3cret*) fail "origin の URL の認証情報が出力に入った" ;;
+  *) pass ;;
+esac
 
 # --- 壊れない ---
 assert_remind "件名に引用符とバックスラッシュ" "$(payload q-quote "$T/quote")" \
