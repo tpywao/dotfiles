@@ -6,9 +6,9 @@
 #
 # 促すのは、そのセッションで初めてのターン終わり、指紋（ブランチ・HEAD・未 push 件数）が
 # 変わったとき、前回促してから 30 分以上たったときだけ。stop_hook_active が true のときは
-# 何もしないので、続けさせるのは 1 回に限られる。シートを設定していないマシン、jq・git の
-# 無い環境、壊れた入力、存在しない cwd では黙って exit 0 で終わる（ターンを終えられなく
-# してはいけないため）。
+# 何もしないので、続けさせるのは 1 回に限られる。シートを設定していないマシン、claude -p
+# （ヘッドレス実行）、jq・git の無い環境、壊れた入力、存在しない cwd では黙って exit 0 で
+# 終わる（ターンを終えられなくしてはいけないため）。
 #
 #   agent-status.sh --collect <session_id>
 #
@@ -25,6 +25,12 @@ state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/agent-status"
 if [ "${1:-}" = --collect ]; then
   session_id=${2:-}
 else
+  # claude -p（ヘッドレス実行）では促さない。-p は最後のメッセージだけを出力するので、記録のために
+  # 続けたターンの出力が本来の答えを置き換えてしまう（utils.bash の ask() などが壊れる）。
+  # 2026-11-25 に確かめた時点で、-p では sdk-cli、対話のセッションでは cli だった
+  if [ "${CLAUDE_CODE_ENTRYPOINT:-}" = sdk-cli ]; then
+    exit 0
+  fi
   input=$(cat)
   printf '%s' "$input" | jq -e 'type == "object"' >/dev/null 2>&1 || exit 0
   if [ "$(printf '%s' "$input" | jq -r '.stop_hook_active // false')" = true ]; then

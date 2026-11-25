@@ -21,6 +21,8 @@ export GIT_CONFIG_GLOBAL="$T/gitconfig"
 export GIT_CONFIG_NOSYSTEM=1
 export XDG_CONFIG_HOME="$T/config"
 export XDG_STATE_HOME="$T/state"
+# 対話セッションの値。テストを claude -p の中から流しても経路が変わらないよう固定する
+export CLAUDE_CODE_ENTRYPOINT=cli
 STATE_DIR="$XDG_STATE_HOME/dotfiles/agent-status"
 mkdir -p "$XDG_CONFIG_HOME/dotfiles"
 printf '%s\n' 'https://example.invalid/sheet' > "$XDG_CONFIG_HOME/dotfiles/agent-status-sheet"
@@ -228,6 +230,16 @@ case $(payload u-cred2 "$T/url-cred" | sh "$HOOK" 2>&1) in
   *s3cret*) fail "origin の URL の認証情報が出力に入った" ;;
   *) pass ;;
 esac
+
+# --- ヘッドレス実行（claude -p） ---
+# -p の出力は最後のメッセージだけなので、記録のために続けたターンが本来の答えを置き換えてしまう
+out=$(payload h-headless "$T/wt" | CLAUDE_CODE_ENTRYPOINT=sdk-cli sh "$HOOK" 2>&1)
+status=$?
+if [ "$status" -eq 0 ] && [ -z "$out" ]; then
+  pass
+else
+  fail "claude -p（CLAUDE_CODE_ENTRYPOINT=sdk-cli）で黙らない: status=$status out=$out"
+fi
 
 # --- 壊れない ---
 assert_remind "件名に引用符とバックスラッシュ" "$(payload q-quote "$T/quote")" \
