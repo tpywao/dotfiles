@@ -65,10 +65,24 @@ MCP サーバーの登録先 `~/.claude.json` は、Claude Code 自身がセッ�
 | スクリプト | イベント | 役割 |
 | --- | --- | --- |
 | `block-dangerous.sh` | PreToolUse (Bash) | `rm -rf` など破壊的コマンドを exit 2 でブロック |
-| `inject-context.sh` | SessionStart | ブランチ名と working tree の状態をコンテキストに注入 |
+| `inject-context.sh` | SessionStart | session_id・ブランチ名・working tree の状態をコンテキストに注入 |
+| `agent-status.sh` | Stop | 作業の状態が変わったときに `agent-status` スキルでのシートへの記録を促す（詳細は「agent-status」の節） |
 | `update-usage.sh` | SessionStart | `usage/collect.py` をバックグラウンド起動（セッション開始を遅延させない） |
 
 このほか UserPromptSubmit に `codegraph prompt-hook` が配線されている（スクリプトではなく `settings.json` に直接記述）。
+
+### agent-status（作業状況のシート）
+
+各マシンの Claude Code のセッションが、作業の状態を Claude Sheets の 1 つのシートへ 1 作業 1 行で記録する。未 push のコミットや返答待ちの作業が手元の worktree にしか無く、別のセッションや GitHub から見えない問題への対処。コードは外へ出さず、状態だけを組織の claude.ai アカウント内の非公開のシートに書く。
+
+- **シートを書くのはモデル。** Claude Sheets は Docs コネクタ経由でしか書けないため、`agent-status.sh`（Stop hook）は値を集めて記録を促すだけで、書き方は `agent-status` スキルにある
+- **マシンごとの設定**: シートの URL を `~/.config/dotfiles/agent-status-sheet` の 1 行目に書く。URL はアカウント固有の値なので、このリポジトリには入れない。ファイルが無いマシンでは hook は何もしない
+- **`claude -p`（ヘッドレス実行）では記録しない。** `-p` は最後のメッセージだけを出力するので、記録のために続けたターンが本来の答えを置き換えてしまう（`ask()` などが壊れる）。hook は `CLAUDE_CODE_ENTRYPOINT` が `sdk-cli` のときに黙る（2026-11-25 に確かめた時点で、`-p` では `sdk-cli`、対話のセッションでは `cli` だった）
+- **シートの構成**: `active`（いまの作業）・`deactivated`（完了から一定時間たった作業）・`設定`（回収と放置の時間）の 3 枚。列と状態の値はスキルを参照
+- **読み方**
+  - `完了` の行の `deactivated` への移動と、更新の無い行の `放置` への変更は、どれかのセッションが記録したときにしか起きない。誰も記録しないあいだは状態が古いまま残るので、状態と合わせて最終更新も見る
+  - `放置` は、落ちたセッションと、返答を待ったまま止まっている生きたセッションを区別しない
+  - Claude でマージ後の片付けをせず、GitHub 上でだけマージした作業は `PR 待ち` のまま残る。自動では片付けないので、不要になった行は人が消す
 
 ## skills/
 
