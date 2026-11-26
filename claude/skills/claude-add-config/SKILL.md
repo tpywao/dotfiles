@@ -1,6 +1,6 @@
 ---
 name: claude-add-config
-description: Use when ~/.claude/ に新しい skill・hook・agent・設定ファイルを追加するとき、または ~/.claude/ 配下が dotfiles への symlink になっていない・反映されていないことに気づいたとき。
+description: Use when ~/.claude/ 配下のファイル（CLAUDE.md・skill・hook・agent・設定ファイル）を追加・編集するとき、Edit が ~/.claude/ 配下への書き込みを symlink だとして拒否したとき、または ~/.claude/ 配下が dotfiles への symlink になっていない・反映されていないことに気づいたとき。
 ---
 
 # Claude 設定ファイルの追加と dotfiles 同期
@@ -11,7 +11,8 @@ description: Use when ~/.claude/ に新しい skill・hook・agent・設定フ�
 
 `$DOTFILES` は dotfiles リポジトリのパス（`zsh/.zshenv` が export する）。リポジトリの配置はマシンによって変わりうるので、パスは直書きせずこの変数を使う。
 
-- 編集は必ず dotfiles 側で行う。Claude Code の Edit は symlink 経由の書き込みを拒否する（`Refusing to write <path>: it is a symbolic link. Write to the link's target path instead.`）
+- 着手前に dotfiles の `AGENTS.md` を全文読む。固有文言の禁止（勤務先の社名・プロジェクト名などを書かない）やコミット規約がそこにある
+- 編集は必ず dotfiles 側で行う。Claude Code の Edit は symlink 経由の書き込みを拒否する（`Refusing to write <path>: it is a symbolic link. Write to the link's target path instead.`）。示されたリンク先はメインのチェックアウトなので、そこへ直接書かず、下の手順で worktree から編集する
 - リンクの粒度は 2 種類。`skills/` は**スキルのディレクトリ単位**（`~/.claude/skills/<name>` がリンク）、それ以外は**ファイル単位**
 - **新規スキルと、skills 以外の新規ファイルは `install.sh` を実行するまでリンクされない**。既存スキルの中にファイル（`references/` など）を足す場合は、ディレクトリごとリンクされているので再実行は要らない。手動で張る場合も含め、下記の手順に従う
 - `settings.json` と `mcp-servers.json` は例外でリンクしない（配布先を Claude Code 自身が書き込むため）。`claude/install.sh` の `merge_claude_settings` / `merge_claude_mcp_servers` が共有キーのみを反映する（後者の配布先は `~/.claude.json`）。詳細は `claude/README.md`
@@ -30,6 +31,14 @@ dotfiles リポジトリのフロー（origin/main から worktree を切って 
      - skills: `mv ~/.claude/skills/<name> ~/.claude/skills/<name>.presymlink.bak && ln -s "$DOTFILES/claude/skills/<name>" ~/.claude/skills/<name>`
      - それ以外: `/bin/rm ~/.claude/<path> && ln -s "$DOTFILES/claude/<path>" ~/.claude/<path>`
 5. 検証: skills は `ls -la ~/.claude/skills/<name>`、それ以外は `ls -la ~/.claude/<path>` — dotfiles 側を指す symlink になっていることを確認
+
+## 手順（既存ファイルの編集）
+
+既存の `CLAUDE.md`・スキル・hook などを書き換える場合も、新規追加と同じく dotfiles のフローに従う。
+
+1. `cd "$DOTFILES" && git fetch origin` し、`origin/main` から新規ブランチ + worktree を作成
+2. worktree 側の `claude/<path>` を編集し、コミット → push → PR を作成
+3. `~/.claude/` のリンクはメインのチェックアウトを指しているので、反映されるのは PR のマージ後に main を pull してから。マージ前に試したいときは、dotfiles の `AGENTS.md` の「効くか分からない設定を試すとき」に従う
 
 ## 修復（リンクされていない）
 
@@ -65,6 +74,7 @@ done
 ## よくある間違い
 
 - `~/.claude/` 側を編集しようとする → symlink なので Edit が拒否される。dotfiles 側を編集する
+- Edit が示したリンク先（メインのチェックアウト）をそのまま書き換える → main の作業ツリーに未コミットの変更が残り、PR を経ない。worktree から編集する
 - `settings.json` にリンクを張る → Claude Code が書き込むマシン固有の値（`autoMode.environment` にホームのパスやリポジトリ名が入る）が dotfiles へ流入する。マージ方式のまま触らない
 - `~/.claude/` 側だけに作成して dotfiles 反映を忘れる → 他マシンへの同期から漏れる
 - セッション状態（history.jsonl, projects/, backups/, plans/, shell-snapshots/ 等）まで dotfiles に入れる → 対象外。永続設定のみ管理する
