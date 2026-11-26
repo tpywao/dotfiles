@@ -29,6 +29,9 @@
     "allow": []
   },
   "model": "opus[1m]",
+  "env": {
+    "DO_NOT_TRACK": "0"
+  },
   "statusLine": {
     "type": "command",
     "command": "bash $HOME/.claude/statusline-command.sh"
