@@ -16,8 +16,8 @@ description: Use when 会話で得た学び・フィードバックをメモリ 
 | 保存先 | 対象 | 反映方法 |
 |--------|------|----------|
 | **メモリ** (`~/.claude/projects/<slug>/memory/`) | 会話をまたいで効く事実・背景・参照先 | 1ファイル1事実。frontmatter（`name`/`description`/`metadata.type` = user\|feedback\|project\|reference）。`MEMORY.md` に1行ポインタを追記 |
-| **指示ファイル** | 恒久的な作業規則 | グローバル `~/.claude/CLAUDE.md` かプロジェクトの `AGENTS.md`（既に `CLAUDE.md` で運用しているリポジトリはそちら）かを内容で判断。**既存規則の改善**（矛盾の修正・重複の整理・陳腐化した記述の更新）も含む。共有物なので追記・変更は慎重に |
-| **スキル化** | 手順化できる反復作業 | `superpowers:writing-skills` を呼ぶ。既存スキルの改善もここ |
+| **指示ファイル** | 恒久的な作業規則 | グローバル `~/.claude/CLAUDE.md` かプロジェクトの `AGENTS.md`（既に `CLAUDE.md` で運用しているリポジトリはそちら）かを内容で判断。**既存規則の改善**（矛盾の修正・重複の整理・陳腐化した記述の更新）も含む。共有物なので追記・変更は慎重に。グローバル `~/.claude/CLAUDE.md` の実体は dotfiles の `claude/CLAUDE.md` なので、dotfiles の `AGENTS.md` を読んでから `claude-add-config` の手順（worktree を切って PR）で編集する。dotfiles には勤務先固有の文言を書けないので、理由や例は一般化する |
+| **スキル化** | 手順化できる反復作業 | `superpowers:writing-skills` を呼ぶ。既存スキルの改善もここ。`~/.claude/skills/` も dotfiles の `claude/skills/` が実体なので、編集は指示ファイルと同じく `claude-add-config` の手順で行う |
 
 ## 手順
 
