@@ -4,6 +4,7 @@ export LESSCHARSET=utf-8
 
 export EDITOR=vim
 # opt out of telemetry in tools that honor DO_NOT_TRACK; tools that ignore it still send
+# (claude/settings.json sets it back to 0 for Claude Code; see claude/README.md)
 export DO_NOT_TRACK=1
 # path to .zshrc
 ZSHENV=$(readlink $HOME/.zshenv)
