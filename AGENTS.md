@@ -117,13 +117,6 @@ ln -sf <worktree>/claude/agents/<name>.md ~/.claude/agents/<name>.md
 - このリポジトリ自身の指示ファイルは `AGENTS.md`（ルート・`ai-tools/`・`nix/`・`macos/`・`karabiner/`・`brew/`・`zsh/`・`utils/`）。**ルートに `CLAUDE.md` / `.claude/CLAUDE.md` / `CLAUDE.local.md` を置かない。** cwd かその親にどれか 1 つでもあると、Claude Code は `AGENTS.md` を読まなくなる
   - `claude/CLAUDE.md` はグローバル指示（`~/.claude/CLAUDE.md`）の配布元で、例外的に `CLAUDE.md` の名前を持つ。`claude/` を cwd にしてセッションを始めるとこれがプロジェクトの `CLAUDE.md` として数えられ、ルートの `AGENTS.md` が読まれないので、セッションはリポジトリのルートで始める
   - サブディレクトリの `AGENTS.md` は、ルートで起動したセッションに自動では載らないことがある。Claude Code はそのディレクトリのファイルを Read したときに読み足すが、Codex は起動時にルートから cwd までの分しか読まない。サブディレクトリに `AGENTS.md` を足したら、ルートのこのファイルの該当節から名指しで参照する
-- `claude/hooks/block-dangerous.sh` を変更したら `sh tests/claude/block-dangerous_test.sh` を流す。止めるべきコマンドと通すべきコマンドの両方をケースにしてある
-- `claude/hooks/agent-status.sh` を変更したら `sh tests/claude/agent-status_test.sh` を流す。促す経路・黙る経路（設定なし・`stop_hook_active`・同じ指紋で 30 分以内・jq や git が無い・壊れた入力）、ブランチ列とリポジトリ列の値、`--collect` をケースにしてあり、設定・状態のディレクトリは mktemp の下へ向けるので実際の `~/.config`・`~/.local/state` は触らない
-- `claude/hooks/inject-context.sh` を変更したら `sh tests/claude/inject-context_test.sh` を流す。`session_id` の行を git の中でも外でも出すことをケースにしてある（`agent-status` スキルが `--collect` に渡す値の出どころ）
-- `claude/install.sh` の `merge_claude_settings` を変更したら `sh tests/claude/merge-claude-settings_test.sh` を流す。既存の設定と状態ファイルの組み合わせ（他のアプリの hook あり・前回配った hook が残っている・状態ファイル無し・1 グループに混在）ごとの経路をケースにしてあり、期待値は実物の `claude/settings.json` から取る
-- `claude/install.sh` の `prune_claude_links` を変更したら `sh tests/claude/prune-claude-links_test.sh` を流す。消すリンク（dotfiles の `claude/` を指していてリンク先が無い）と、条件を片方しか満たさず残すリンクをケースにしてある
-- `claude/install.sh` の `link_claude_skills` / `clear_file_links` を変更したら `sh tests/claude/link-claude-skills_test.sh` を流す。未作成・ファイル単位のリンクだけが残る・実ファイルが混ざる・管理外のスキルの経路と、2 回目の実行をケースにしてある
-- `claude/install.sh` の `install_external_skills` を変更したら `sh tests/claude/install-external-skills_test.sh` を流す。`gh` をスタブに差し替えて認証状態と導入の成否ごとの経路をケースにしてあり、ネットワークへは出ず実際の `~/.claude/` も触らない
 
 ### AI ツール環境（ai-tools）
 - ccusage / codegraph を Nix flake で提供する。パッケージング方式と更新手順は `ai-tools/AGENTS.md`
@@ -141,6 +134,7 @@ ln -sf <worktree>/claude/agents/<name>.md ~/.claude/agents/<name>.md
 1. 新しい dotfiles はインストーラに追加（対象ディレクトリの `install.sh`。無ければルートの `install.sh`）
 2. コミットメッセージは `feat(component):` 形式（詳細は「コミットメッセージと main の履歴」）
 3. テストは対象コードの隣ではなく `tests/<component>/` に置く（例: `tests/claude/`）。`claude/` 配下に置くと `link_claude_files` が `~/.claude/` へ配ってしまい、除外の追加が必要になる
+4. スクリプトや設定を変更したら、対応するテストを流す。テストは `tests/<component>/<名前>_test.sh`（zsh のものは `.zsh`）で、`<名前>` は対象のスクリプト名か関数名を kebab-case にしたもの（`claude/hooks/block-dangerous.sh` → `block-dangerous_test.sh`、`merge_claude_settings` → `merge-claude-settings_test.sh`）。1 本のテストが複数の関数を見ていたり、実物の設定ファイル（`claude/settings.json` など）から期待値を取っていたりするので、名前で見つからなくても `rg -l '<関数名かファイル名>' tests/` で探して、当たったものを流す
 
 ## 参考資料
 - [README.md](README.md)
