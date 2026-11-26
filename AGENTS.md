@@ -28,33 +28,22 @@
   - **順序の制約は「`nix/` より後に `docker/`・`claude/`・`macos/`」だけ。** `docker/` と `claude/` は設定を `jq` でマージし、`jq` は `nix/packages.nix` で入る（前に置くと jq が無いマシンの初回実行でマージがスキップされ、2 回目まで反映されない）。`macos/` は ことえりの候補ウィンドウに `nix/firge.nix` が入れるフォントを指定するため、前に置くと初回実行でフォントが無いまま設定が入る。残りのディレクトリの順序に意味は無い
   - `docker/` と `claude/` の前で `nix-daemon.sh` を読み込む必要があるため、ループが 2 つに分かれている。**後半のループには `jq` が要る 2 つだけを置く**（それ以外を混ぜると、そこにいる理由をコメントで説明できなくなる）。`nix/` より後という制約しか無い `macos/` は前半のループの末尾で足りる
 - `zsh/install.sh` はループに入れず、`$SHELL` が zsh のときだけ case 分岐から実行する（`fish/`・bash 用のリンクも同じ分岐にある）
-- `utils/install-common.sh`: 各 `install.sh` が source する共通部（`refuse_worktree()`、`link_config()`、`merge_config()`、`log_tag()`、`notice()` と `utils/utils.bash` の読み込み）
-  - `refuse_worktree()` は source した時点で走り、worktree からの実行なら `exit 1` する。サブの `install.sh` も単体で実行できるので共通部に置いている。`DOTFILES_ALLOW_WORKTREE=1` で通せる。共通部を source するか `install.sh` を実行するテストは、worktree の中でも流れるよう先頭でこの変数を export する
-  - `link_config()` はリンクの有無だけでなく**リンク先**を検証し、違う先を指していれば張り替える。リンク先に実体があるときは、ファイルは内容が一致すれば置き換え・分岐していれば `.presymlink.<ts>` へ退避、ディレクトリは内容を比較せず常に退避する。親ディレクトリの作成も関数内で行うので、呼び出し側に `mkdir -p` は要らない
-  - `merge_config <src> <dst> [<jq フィルタ>]` は JSON の共有キーだけを既存の設定へ上書き適用する（下の「アプリ自身が書き込む設定ファイル」を参照）。フィルタは `.[0]` を `dst`、`.[1]` を `src` として受け取り、既定は再帰マージ（`.[0] * .[1]`）。第 4 引数以降に渡したファイルは `.[2]` 以降になる
-    - マージ結果を確定させる前に「`dst` にあって結果に無い配列要素」を洗い出し、見つかれば `[dropped]` で列挙して `.premerge.<ts>` へ退避する。`src` と突き合わせるのではなく**マージ結果**と突き合わせるので、呼び出し側が渡すフィルタが何をするかに依存しない
-  - `notice() <文言>` はインストール後にユーザ自身が実行しないと解決しない作業を積む。ルートの `install.sh` が受け皿の一時ファイルのパスを `DOTFILES_NOTICES` で渡し、全ディレクトリの実行後に `-----> TODO` としてまとめて表示する。サブプロセスから親へ値を返せないためファイルを経由する（各 `install.sh` を単体で実行したときは変数が無いので、その場で出力する）
-  - `utils/install-common.sh` を変更したら `sh tests/utils/link-config_test.sh` と `sh tests/utils/merge-config_test.sh` と `sh tests/utils/notice_test.sh` と `sh tests/utils/refuse-worktree_test.sh` を流す。1 つ目はリンク先の状態ごとに 6 経路、2 つ目は `dst` の状態・フィルタの有無・追加の入力・配列要素の消失検出で 16 ケースあり、出力タグ・マージ後の内容・退避の中身をケースにしてある。3 つ目は `DOTFILES_NOTICES` の有無で出力先が分かれる経路、4 つ目はメインの作業ツリー・worktree・許可あり・git 管理外・git 無しの経路をケースにしてある
-- 出力の書式は 3 系統に分ける。**対象ごとの結果**は `log_tag <色> <[タグ]> <対象>` でタグ付き 1 行にする（`[linked]` / `[new]` / `[relinked]` / `[replaced]` / `[dropped]` / `[backup]` / `[merged]` / `[imported]` / `[current]` / `[applied]` / `[installed]` / `[skipped]` / `[unlinked]` / `[failed]`）。色はシアン=変化なし、緑=新規、黄=既存を動かした、赤=失敗。**対象を持たない進行ログ**（`-----> Switching home-manager` など）は `----->` のままにする。**ユーザ自身がコマンドを打つまで解決しない作業**は `notice()` で末尾へ回す（タグ 1 行は出力が長いと流れてしまい、残タスクの提示には向かない）
+- `utils/install-common.sh`: 各 `install.sh` が source する共通部（`link_config()`・`merge_config()`・`log_tag()`・`notice()` など）。**`install.sh` か `utils/` を変更するときは、先に `utils/AGENTS.md`（共通部の関数の挙動・出力の書式・テスト・`[dropped]` からの復旧）を読む**
 
 規約:
 
 - 各 `install.sh` は先頭で `DOTFILES` を自前で解決して `utils/install-common.sh` を source する。単体でも実行できる（例: `./claude/install.sh`）
 - ルートは `sh "$DOTFILES/<dir>/install.sh" || exit $?` で呼ぶ。**各サブは末尾で明示的に `exit 0` する**。これが無いと最後のコマンド（`home-manager switch`、`brew bundle`、`ln` など）の失敗がそのままスクリプトの終了ステータスになり、後続のディレクトリが丸ごとスキップされる（分割前は 1 プロセスで、失敗しても後続が走っていた）
 - 意図的に全体を止めたいときだけ `exit 1` する（現状は `refuse_worktree()` と `nix/install.sh` の `DOTFILES_MACHINE` 未設定のみ）
-- `link_config()` を `utils/utils.bash` に置かない。`utils.bash` は `zsh/.zshenv` から全 zsh 起動で source されるため、インストール時にしか使わない関数を常駐させない
 - サブプロセスなので、サブ側の環境変数・PATH の変更はルートへ届かない。Nix を初めて入れた回に `docker/install.sh` と `claude/install.sh` が `jq` / `gh` を見つけられるよう、ルートは `nix` の直後に `nix-daemon.sh` を読み込む
 - `fish/` と `fzf/` はディレクトリごとリンク先（`~/.config/fish`, `~/.fzf`）へ symlink するため、中に `install.sh` を置くとインストーラまでリンク先に配られる。この 2 つはルートの `install.sh` でリンクする
 - `claude/install.sh` と `claude/Skillfile` は `link_claude_files` の `find` で除外している。除外しないと `~/.claude/` へリンクされる
 - **アプリ自身が書き込む設定ファイルは `link_config()` ではなく `merge_config()` を使う。** リンクを張るとアプリが書いたマシン固有の値が dotfiles 側へ流れ込み、逆に dotfiles 側の内容で置き換えるとその値が失われる。dotfiles 側は共有したいキーだけを持ち、`dst` にしか無いキーは触らない。該当するのは `claude/settings.json`、`claude/mcp-servers.json`、`docker/config.json`、`karabiner/profile-defaults.json` の 4 つ
-  - `claude/settings.json`: Claude Code が `model` / `effortLevel` / `autoMode` を書き込む。`hooks` は `merge_claude_settings` が `merge_config` へフィルタを渡して組み立てる。dotfiles が配った hook だけを入れ替え、他のアプリ（エージェント管理ツール等）が足した hook は残す。「配った」かは設定の中身から判別できないため、配った hook を `${XDG_STATE_HOME:-~/.local/state}/dotfiles/claude-hooks.json` に積み増しで記録し、`.[2]` として渡す（`jq` の `*` は再帰マージだけで削除を表現できず、丸ごと差し替えると他のアプリの hook が毎回消える）
-  - `claude/mcp-servers.json`: 配布先は `~/.claude.json`（Claude Code がセッション状態やプロジェクト履歴を書き込む）。dotfiles 側はマシン間で共有したい `mcpServers` のエントリだけを持ち、フィルタは既定のまま（差し替えるとマシン固有のサーバーが消える）。dotfiles 側で消したサーバーは各マシンで `claude mcp remove` する
+  - `claude/settings.json`: Claude Code が `model` / `effortLevel` / `autoMode` を書き込む。`hooks` は dotfiles が配った hook だけを入れ替え、他のアプリが足した hook は残す。仕組みは `claude/README.md` の「settings.json をマージ方式にしている理由」
+  - `claude/mcp-servers.json`: 配布先は `~/.claude.json`（Claude Code がセッション状態やプロジェクト履歴を書き込む）。詳細は `claude/README.md` の「mcpServers の共有（mcp-servers.json）」
   - `docker/config.json`: Docker Desktop が `credsStore` / `currentContext` / `plugins` / `features` を書き込む。dotfiles 側が持つのは `detachKeys` だけで、フィルタは既定のまま
   - `karabiner/profile-defaults.json`: 配布先は `~/.config/karabiner/karabiner.json`。詳細は `karabiner/AGENTS.md` を参照
-  - **配列は再帰マージされず `src` の内容で置換される。** `jq` の `*` はオブジェクトだけを再帰マージするため、`dst` にしか無い配列要素は失われる。アプリが書き込む値が配列に入るキー（`permissions.allow` に「常に許可」で追加されたルールなど）がこれに該当する。`merge_config` は消える要素を確定前に洗い出して `[dropped]` で列挙し、マージ前の `dst` を `.premerge.<ts>` へ退避する。復旧の選択肢は 2 つ
-    - **恒久化**: 残したい要素を dotfiles 側の `src` に追記して再実行する。dotfiles 側が正なので全マシンへ配布される
-    - **その場の復旧**: `.premerge.<ts>` を `dst` へ戻す。ただし dotfiles 側の更新も巻き戻り、次の実行で再び `[dropped]` になる
-    - そのマシンだけで使いたい許可は、グローバルではなくプロジェクトの `.claude/settings.local.json` に置く（`merge_config` の対象外なので消えない）
+  - **配列は再帰マージされず `src` の内容で置換される。** `dst` にしか無い配列要素（`permissions.allow` に「常に許可」で追加されたルールなど）は失われる。消える要素は `[dropped]` で列挙され、マージ前の `dst` は `.premerge.<ts>` に退避される。復旧手順は `utils/AGENTS.md`
   - `merge_config` は以前のバージョンが張った symlink を見つけたら、内容を実体へコピーし直してからマージする（リンクのまま書き込むと `src` を書き換えるため）。これらのファイルを新たに symlink 管理へ戻さないこと
 
 ## 作業時の注意事項
@@ -125,7 +114,7 @@ ln -sf <worktree>/claude/agents/<name>.md ~/.claude/agents/<name>.md
 - MCP サーバーをマシン間で共有するには `claude/mcp-servers.json` に書く。`merge_claude_mcp_servers` が `~/.claude.json` へ再帰マージする。マシン固有のサーバーや API キー等のマシン側追記キーは保持される。API キーの値は dotfiles 側に書かない
 - 外部スキルの導入は `claude/Skillfile` に行を追加して `./claude/install.sh` を実行する。**`npx skills add` は使わない**（`find-skills` スキルの手順はこれを指示するが従わない）。`find-skills` は探索にだけ使い、見つけた `<owner>/<repo> <skill> <tag>` は Skillfile へ書く
 - 仕組みの詳細は `claude/README.md`
-- このリポジトリ自身の指示ファイルは `AGENTS.md`（ルート・`ai-tools/`・`nix/`・`macos/`・`karabiner/`・`brew/`）。**ルートに `CLAUDE.md` / `.claude/CLAUDE.md` / `CLAUDE.local.md` を置かない。** cwd かその親にどれか 1 つでもあると、Claude Code は `AGENTS.md` を読まなくなる
+- このリポジトリ自身の指示ファイルは `AGENTS.md`（ルート・`ai-tools/`・`nix/`・`macos/`・`karabiner/`・`brew/`・`zsh/`・`utils/`）。**ルートに `CLAUDE.md` / `.claude/CLAUDE.md` / `CLAUDE.local.md` を置かない。** cwd かその親にどれか 1 つでもあると、Claude Code は `AGENTS.md` を読まなくなる
   - `claude/CLAUDE.md` はグローバル指示（`~/.claude/CLAUDE.md`）の配布元で、例外的に `CLAUDE.md` の名前を持つ。`claude/` を cwd にしてセッションを始めるとこれがプロジェクトの `CLAUDE.md` として数えられ、ルートの `AGENTS.md` が読まれないので、セッションはリポジトリのルートで始める
   - サブディレクトリの `AGENTS.md` は、ルートで起動したセッションに自動では載らないことがある。Claude Code はそのディレクトリのファイルを Read したときに読み足すが、Codex は起動時にルートから cwd までの分しか読まない。サブディレクトリに `AGENTS.md` を足したら、ルートのこのファイルの該当節から名指しで参照する
 - `claude/hooks/block-dangerous.sh` を変更したら `sh tests/claude/block-dangerous_test.sh` を流す。止めるべきコマンドと通すべきコマンドの両方をケースにしてある
