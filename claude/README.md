@@ -98,6 +98,7 @@ MCP サーバーの登録先 `~/.claude.json` は、Claude Code 自身がセッ�
 | `def` | Backlog チケットから実装方針をまとめる |
 | `impl` | チケット ID から feature ブランチを作って実装開始 |
 | `mb-reorder-params` | Metabase カードのパラメータ並び替え |
+| `outbound-diff` | OSS の 2 つの版の差分から、外部への送信（テレメトリ・新しい接続先・端末情報の報告）の増減を洗い出す |
 | `pr-format` | PR タイトル・本文のフォーマット |
 | `pr-selfcheck` | PR を出す前に diff を走査し、レビュー負荷を上げる要因を本文の追記案にする |
 | `qa-test-request` | QA にチケットのコメントで UI テストを依頼する文面（準備データ・テスト項目・依頼）を作る |
